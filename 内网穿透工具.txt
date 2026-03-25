@@ -1,0 +1,10 @@
+多因素身份验证
+使用1Password、Google Authenticator或Microsoft Authenticator等身份验证器应用程序生成一次性密码，这些密码将在您登录 ngrok 时用作第二因素。
+
+您可随时在用户设置页面启用或禁用多因素身份验证 (MFA)。
+
+使用您的身份验证器应用程序扫描二维码
+
+或者在身份验证器应用程序中输入以下代码
+
+XFGEMG4GDMTBFP6DWGOLGMBIMLIVNOS2

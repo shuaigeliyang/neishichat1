@@ -23,15 +23,17 @@ wheels/
 .installed.cfg
 *.egg
 
-# 数据文件
-document_chunks.json
-retrieval_index.json
-student_handbook_extracted.json
-student_handbook_full.json
+# 数据文件（保留必要的数据，只排除过大的索引文件）
+retrieval_index.json  # 58MB，太大，需要重新生成
+# document_chunks.json - 保留（RAG系统依赖）
+# student_handbook_full.json - 保留（API依赖）
 
-# Excel 数据文件
-*.xlsx
-*.xls
+# Excel 数据文件（排除用户数据，保留示例数据）
+# *.xlsx
+# *.xls
+个人信息.xlsx
+学院信息.xlsx
+班级信息.xlsx
 
 # 图片文件（截图等）
 *.png
@@ -41,7 +43,9 @@ student_handbook_full.json
 
 # 敏感信息
 coze个人令牌.txt
-*.txt
+# 保留重要的 txt 文件：
+# - requirements.txt (Python依赖)
+# - 各种提示词文件（项目文档）
 
 # 导出目录
 exports/

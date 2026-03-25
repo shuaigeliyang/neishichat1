@@ -1,0 +1,18 @@
+# Excel导出核心依赖
+openpyxl==3.1.2          # Excel文件生成（.xlsx格式）
+pandas==2.0.3            # 数据处理和Excel导出
+xlsxwriter==3.1.9        # 高性能Excel写入引擎
+
+# Web框架依赖（根据你实际使用的选择）
+Flask==3.0.0             # 如果使用Flask
+# Django==4.2.0          # 如果使用Django
+# fastapi==0.109.0       # 如果使用FastAPI
+
+# 数据库依赖
+# SQLAlchemy==2.0.25     # 如果使用SQLAlchemy
+# pymysql==1.1.0         # 如果使用MySQL
+# psycopg2-binary==2.9.9 # 如果使用PostgreSQL
+
+# 工具类依赖
+python-dateutil==2.8.2   # 日期处理
+pytz==2023.3             # 时区处理

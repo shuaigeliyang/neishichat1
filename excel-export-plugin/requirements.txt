@@ -1,0 +1,12 @@
+# Excel导出核心依赖
+openpyxl==3.1.2
+pandas==2.0.3
+xlsxwriter==3.1.9
+
+# Web框架依赖
+Flask==3.0.0
+flask-cors==4.0.0
+
+# 工具类依赖
+python-dateutil==2.8.2
+pytz==2023.3
