@@ -11,6 +11,7 @@ import axios from 'axios';
 import Markdown from 'react-markdown';
 import QueryResultTable from '../components/QueryResultTable';
 import HandbookViewer from '../components/HandbookViewer';
+import FormList from '../components/FormList';
 import { detectIntent, getIntentDescription } from '../utils/intentDetector';
 import './Chat.css';
 
@@ -26,6 +27,7 @@ function Chat({ user }) {
   const [isAutoScrollEnabled, setIsAutoScrollEnabled] = useState(true);
   const [handbookModalVisible, setHandbookModalVisible] = useState(false);
   const [selectedPageNum, setSelectedPageNum] = useState(null);
+  const [copiedFormName, setCopiedFormName] = useState(null);
   // 🎯 分页状态：为每个消息独立管理来源分页（每页5条）
   const [sourcesPageMap, setSourcesPageMap] = useState({});
   const SOURCES_PER_PAGE = 5;
@@ -403,23 +405,25 @@ function Chat({ user }) {
       if (response.data.success && response.data.data) {
         const forms = response.data.data;
 
-        // 按分类组织表单
-        const formsByCategory = forms.reduce((acc, form) => {
-          const category = form.category || '其他';
-          if (!acc[category]) {
-            acc[category] = [];
+        // 按项目组织表单（与实际目录结构对齐）
+        const formsByProject = forms.reduce((acc, form) => {
+          const project = form.project_name || '其他';
+          if (!acc[project]) {
+            acc[project] = [];
           }
-          acc[category].push(form);
+          acc[project].push(form);
           return acc;
         }, {});
 
         // 构建表单列表消息
         let formContent = '📝 **系统可下载的表单列表**\n\n';
+        formContent += '📁 按项目分类（与实际目录完全对齐）\n\n';
 
-        Object.keys(formsByCategory).forEach(category => {
-          formContent += `### ${category}\n`;
-          formsByCategory[category].forEach(form => {
-            formContent += `- **${form.template_name}**\n`;
+        Object.keys(formsByProject).sort().forEach(project => {
+          formContent += `### 【${project}】\n`;
+          formsByProject[project].forEach(form => {
+            // 使用代码块格式，方便用户复制完整的表单名称
+            formContent += `- \`${form.template_name}\`\n`;
             if (form.description) {
               formContent += `  ${form.description}\n`;
             }
@@ -427,7 +431,19 @@ function Chat({ user }) {
           formContent += '\n';
         });
 
-        formContent += `---\n\n💡 **提示：** 您可以说"下载[表单名称]"来生成具体的表单文件。\n\n例如：\n`;
+        formContent += `---\n\n💡 **提示：** 点击下方按钮可以直接生成表单，或复制表单名称后输入"下载[表单名称]"。\n\n`;
+
+        // 添加快速生成按钮列表
+        formContent += `**🚀 快速生成（点击即可）：**\n\n`;
+
+        Object.keys(formsByProject).sort().forEach(project => {
+          formContent += `**【${project}】**\n`;
+          formsByProject[project].forEach(form => {
+            formContent += `📄 [${form.template_name}](#form:${form.template_id})\n`;
+          });
+        });
+
+        formContent += `\n\n**💡 或者手动输入：**\n`;
         formContent += `- "下载竞赛申请表"\n`;
         formContent += `- "生成奖学金申请表"\n`;
         formContent += `- "我要转专业申请表"`;
@@ -436,7 +452,9 @@ function Chat({ user }) {
           role: 'assistant',
           content: formContent,
           isFormList: true,
-          forms: forms
+          forms: forms,
+          // 添加复制提示
+          extraInfo: '💡 提示：点击表单名称可自动复制到输入框'
         }]);
         return;
       }
@@ -472,46 +490,20 @@ function Chat({ user }) {
    */
   const handleFormGenerate = async (question) => {
     try {
-      // 从问题中提取表单名称
-      const formNames = [
-        '学科竞赛参赛申请表', '转专业申请表', '奖学金申请表', '休学申请表',
-        '复学申请表', '请假申请表', '缓考申请表', '重修申请表',
-        '辅修申请表', '交换生申请表', '宿舍申请表', '贫困生认定申请表',
-        '助学金申请表', '助学贷款申请表', '优秀学生申请表', '优秀毕业生申请表',
-        '成绩证明申请表', '在读证明申请表', '毕业证明申请表', '学位证明申请表',
-        '预毕业证明申请表', '离校手续单'
-      ];
+      console.log('📄 发送表单生成请求:', question);
 
-      let matchedFormName = null;
-      for (const formName of formNames) {
-        if (question.toLowerCase().includes(formName.toLowerCase())) {
-          matchedFormName = formName;
-          break;
-        }
-      }
-
-      if (!matchedFormName) {
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: '抱歉，我没有识别到您要生成的表单名称。\n\n请说"下载[表单名称]"，例如：\n- "下载转专业申请表"\n- "生成奖学金申请表"\n- "我要竞赛申请表"'
-        }]);
-        return;
-      }
-
-      console.log('识别到表单名称:', matchedFormName);
-
-      // 调用表单生成接口
+      // 直接发送用户输入给后端，由后端的智能匹配来识别表单
       const response = await axios.post('/api/forms/generate',
-        { templateName: matchedFormName },
+        { templateName: question },
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );
 
       if (response.data.success && response.data.data) {
-        const { fileName, downloadUrl } = response.data.data;
+        const { fileName, downloadUrl, templateName } = response.data.data;
 
         // 构建成功消息
         const successContent = `✅ **表单生成成功！**\n\n` +
-          `📄 **表单名称：** ${matchedFormName}\n` +
+          `📄 **表单名称：** ${templateName}\n` +
           `📁 **文件名：** ${fileName}\n\n` +
           `💡 **提示：** 请点击下方按钮下载文件。\n\n` +
           `如果您还需要其他表单，可以说：\n` +
@@ -540,6 +532,9 @@ function Chat({ user }) {
         response: error.response?.data,
         status: error.response?.status
       });
+
+      // 显示后端返回的错误信息
+      const errorMsg = error.response?.data?.message || error.message;
 
       message.warning('表单生成服务暂时不可用，正在使用AI助手为您回答...');
 
@@ -698,6 +693,31 @@ function Chat({ user }) {
               isDownload: true,
               downloadUrl: downloadUrl,
               downloadType: parsed.downloadType
+            }]);
+          } else if (parsed.type === 'form_download') {
+            // 🎯 处理表单下载响应
+            const downloadUrl = parsed.downloadUrl;
+            const fileName = parsed.fileName;
+            const templateName = parsed.templateName;
+
+            if (!downloadUrl || !downloadUrl.startsWith('/api/')) {
+              console.error('❌ 无效的表单下载URL:', downloadUrl);
+              message.error('表单下载链接无效，请联系管理员');
+              return;
+            }
+
+            // 构建成功消息
+            const successContent = parsed.message || `✅ **表单生成成功！**\n\n` +
+              `📄 **表单名称：** ${templateName}\n` +
+              `📁 **文件名：** ${fileName}\n\n` +
+              `💡 **提示：** 请点击下方按钮下载文件。`;
+
+            return setMessages(prev => [...prev, {
+              role: 'assistant',
+              content: successContent,
+              isFormDownload: true,
+              downloadUrl: downloadUrl,
+              fileName: fileName
             }]);
           }
         } catch (e) {
@@ -880,7 +900,17 @@ function Chat({ user }) {
               {msg.role === 'user' && <UserOutlined />}
               {msg.role === 'assistant' && <RobotOutlined />}
               <div className="message-content">
-                {msg.isFormDownload ? (
+                {msg.isFormList ? (
+                  <FormList
+                    content={msg.content}
+                    forms={msg.forms || []}
+                    onCopyFormName={(text) => {
+                      setInput(text);
+                      setCopiedFormName(text);
+                      message.success('✅ 已复制到输入框，点击发送即可生成表单！');
+                    }}
+                  />
+                ) : msg.isFormDownload ? (
                   <div>
                     <Markdown>{msg.content}</Markdown>
                     <button

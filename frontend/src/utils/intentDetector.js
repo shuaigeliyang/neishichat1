@@ -42,7 +42,40 @@ export const detectIntent = (question) => {
     return 'document';
   }
 
-  // 0.15 明确的数据库查询模式（优先级最高）
+  // 0.15 表单生成关键词（优先级最高，必须在数据库查询之前）
+  // 格式：生成动词+表单名称
+  const formGenerateKeywords = ['下载', '生成', '我要', '我需要', '帮我', '给我'];
+
+  const formNames = [
+    '竞赛申请表', '转专业申请表', '奖学金申请表', '休学申请表',
+    '复学申请表', '请假申请表', '缓考申请表', '重修申请表',
+    '辅修申请表', '交换生申请表', '宿舍申请表', '贫困生认定申请表',
+    '助学金申请表', '助学贷款申请表', '优秀学生申请表', '优秀毕业生申请表',
+    '成绩证明', '在读证明', '毕业证明', '学位证明', '预毕业证明',
+    '离校手续单', '申请表', '证明表', '证明申请表',
+    // 🎯 新增：支持更多表单类型
+    '考核表', '汇总表', '体系表', '认定表', '审批表',
+    '登记表', '报名表', '推荐表', '呈批表', '评价标准',
+    '实施办法', '实施细则', '管理细则', '工作细则',
+    // 🎯 支持完整的内江师范学院表单名称
+    '素质活动', '德育实践', '补修', '第二课堂成绩单',
+    '本科毕业论文', '学生违纪处分', '成绩单'
+  ];
+
+  const hasGenerateKeyword = formGenerateKeywords.some(keyword =>
+    question.toLowerCase().includes(keyword.toLowerCase())
+  );
+
+  const hasFormName = formNames.some(formName =>
+    question.toLowerCase().includes(formName.toLowerCase())
+  );
+
+  if (hasGenerateKeyword && hasFormName) {
+    console.log('🎯 意图识别：表单生成');
+    return 'form_generate';
+  }
+
+  // 0.16 明确的数据库查询模式（优先级低于表单生成）
   // 格式："我的+具体数据项" 或 "动词+数据项"
   const explicitDatabaseQuery = [
     // "我的+X" 模式
@@ -67,9 +100,10 @@ export const detectIntent = (question) => {
     '帮我查成绩', '帮我看成绩', '给我看成绩',
     '帮我查课表', '帮我看课表', '给我看课表',
     '帮我查课程', '帮我看课程',
-    '成绩单', '课表', '分数多少', '考了多少',
+    '课表', '分数多少', '考了多少',
     '成绩怎么样', '成绩如何', '成绩情况',
     '课程情况', '学分情况', '还有多少学分'
+    // 注意：'成绩单' 已移至表单名称列表，因为"下载成绩单"更常见
   ];
 
   const hasExplicitDatabaseKeyword = explicitDatabaseQuery.some(keyword =>
@@ -79,32 +113,6 @@ export const detectIntent = (question) => {
   if (hasExplicitDatabaseKeyword) {
     console.log('🎯 意图识别：数据库查询（个人数据）');
     return 'database';
-  }
-
-  // 0.16 表单生成关键词（优先级高于政策咨询）
-  // 格式：生成动词+表单名称
-  const formGenerateKeywords = ['下载', '生成', '我要', '我需要', '帮我', '给我'];
-
-  const formNames = [
-    '竞赛申请表', '转专业申请表', '奖学金申请表', '休学申请表',
-    '复学申请表', '请假申请表', '缓考申请表', '重修申请表',
-    '辅修申请表', '交换生申请表', '宿舍申请表', '贫困生认定申请表',
-    '助学金申请表', '助学贷款申请表', '优秀学生申请表', '优秀毕业生申请表',
-    '成绩证明', '在读证明', '毕业证明', '学位证明', '预毕业证明',
-    '离校手续单', '申请表', '证明表', '证明申请表'
-  ];
-
-  const hasGenerateKeyword = formGenerateKeywords.some(keyword =>
-    question.toLowerCase().includes(keyword.toLowerCase())
-  );
-
-  const hasFormName = formNames.some(formName =>
-    question.toLowerCase().includes(formName.toLowerCase())
-  );
-
-  if (hasGenerateKeyword && hasFormName) {
-    console.log('🎯 意图识别：表单生成');
-    return 'form_generate';
   }
 
   // 0.17 政策咨询关键词（优先级高于一般数据库查询）

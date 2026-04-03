@@ -13,6 +13,8 @@ const { chat, detectIntent } = require('../services/zhipuAI');
 const contextService = require('../services/contextService');
 const queryPermissionValidator = require('../validators/queryPermissionValidator');
 const downloadPermissionValidator = require('../validators/downloadPermissionValidator');
+const { checkFormDownloadIntent } = require('../services/formIntentHelper');
+const realFormGenerator = require('../services/realFormGeneratorService');
 
 /**
  * AI对话接口（增强版）
@@ -30,7 +32,105 @@ router.post('/', authenticate, async (req, res) => {
 
     console.log('💬 收到对话请求', { userId, userType, sessionId, message: message.substring(0, 50) });
 
-    // ========== 步骤1：获取对话上下文 ==========
+    // ========== 步骤1：检查表单下载请求（新增！）==========
+    const formCheck = await checkFormDownloadIntent(message);
+
+    if (formCheck.isFormRequest) {
+      console.log('📝 检测到表单下载请求', formCheck);
+
+      if (formCheck.formInfo && formCheck.formInfo.recognized) {
+        // 识别成功，生成表单
+        try {
+          // 获取学生信息
+          let studentInfo = null;
+          if (userType === 'student') {
+            const students = await query(`
+              SELECT s.*, c.class_name, m.major_name, col.college_name
+              FROM students s
+              LEFT JOIN classes c ON s.class_id = c.class_id
+              LEFT JOIN majors m ON c.major_id = m.major_id
+              LEFT JOIN colleges col ON m.college_id = col.college_id
+              WHERE s.student_id = ?
+            `, [userId]);
+            studentInfo = students[0];
+          } else {
+            studentInfo = {
+              name: '示例学生',
+              student_code: '20240001'
+            };
+          }
+
+          // 生成表单
+          const result = await realFormGenerator.generateForm(
+            formCheck.formInfo.templateName,
+            studentInfo,
+            userType
+          );
+
+          const answer = `✅ 已为您生成表单：**${result.templateName}**\n\n点击下方按钮即可下载Word文件。`;
+
+          // 保存对话历史
+          await query(`
+            INSERT INTO chat_history (user_type, user_id, user_question, ai_answer, intent, session_id)
+            VALUES (?, ?, ?, ?, ?, ?)
+          `, [userType, userId, message, answer, 'form_download', sessionId || null]);
+
+          // 更新上下文
+          contextService.updateContext(sessionId, message, answer);
+
+          return success(res, {
+            answer: JSON.stringify({
+              success: true,
+              type: 'form_download',
+              downloadUrl: result.downloadUrl,
+              fileName: result.fileName,
+              templateName: result.templateName,
+              message: answer
+            }),
+            intent: 'form_download'
+          });
+        } catch (err) {
+          console.error('❌ 表单生成失败:', err);
+          return error(res, '表单生成失败：' + err.message, 500);
+        }
+      } else {
+        // 识别失败，返回建议
+        const suggestions = formCheck.similarForms || [];
+        let suggestionText = '';
+
+        if (suggestions.length > 0) {
+          suggestionText = '\n\n**💡 您是不是想要下载以下表单？**\n' +
+            suggestions.map((f, i) =>
+              `${i + 1}. ${f.template_name}\n   （${f.project_name}）`
+            ).join('\n\n');
+        } else {
+          suggestionText = '\n\n**💡 提示：**\n' +
+            '您可以说"下载[表单名称]"来生成具体的表单文件。\n\n' +
+            '例如：\n' +
+            '- "下载转专业申请表"\n' +
+            '- "生成奖学金申请表"\n' +
+            '- "我要竞赛申请表"';
+        }
+
+        const answer = `抱歉，我没有识别到您要生成的表单名称。${suggestionText}`;
+
+        // 保存对话历史
+        await query(`
+          INSERT INTO chat_history (user_type, user_id, user_question, ai_answer, intent, session_id)
+          VALUES (?, ?, ?, ?, ?, ?)
+        `, [userType, userId, message, answer, 'form_not_recognized', sessionId || null]);
+
+        // 更新上下文
+        contextService.updateContext(sessionId, message, answer);
+
+        return success(res, {
+          answer,
+          intent: 'form_not_recognized'
+        });
+      }
+    }
+
+    // ========== 步骤2：获取对话上下文 ==========
     const maxTurns = 5; // 保留最近5轮对话
     const conversationHistory = await contextService.getContext(sessionId, maxTurns);
 
