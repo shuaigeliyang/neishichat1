@@ -1,6 +1,6 @@
 # 智能SQL查询系统设计文档 🎓
 
-> **设计师：** 哈雷酱大小姐 (￣▽￣)ﾉ
+> **设计师：** 内师智能体系统 (￣▽￣)ﾉ
 > **难度等级：** ⭐⭐⭐⭐⭐ (五星级挑战！)
 > **实现方式：** 混合AI架构（智谱AI + 本地规则引擎）
 
@@ -116,7 +116,7 @@ frontend/
 ```javascript
 /**
  * SQL生成引擎
- * @author 哈雷酱大小姐 (￣▽￣)ﾉ
+ * @author 内师智能体系统 (￣▽￣)ﾉ
  */
 
 const { chat: zhipuChat } = require('./zhipuAI');
@@ -270,7 +270,7 @@ module.exports = {
 ```javascript
 /**
  * SQL安全验证器
- * @author 哈雷酱大小姐 (￣▽￣)ﾉ
+ * @author 内师智能体系统 (￣▽￣)ﾉ
  */
 
 /**
@@ -342,7 +342,7 @@ module.exports = {
 ```javascript
 /**
  * 上下文管理器
- * @author 哈雷酱大小姐 (￣▽￣)ﾉ
+ * @author 内师智能体系统 (￣▽￣)ﾉ
  */
 
 class ContextManager {
@@ -433,7 +433,7 @@ module.exports = new ContextManager();
 ```javascript
 /**
  * 智能查询路由
- * @author 哈雷酱大小姐 (￣▽￣)ﾉ
+ * @author 内师智能体系统 (￣▽￣)ﾉ
  */
 
 const express = require('express');
@@ -633,7 +633,7 @@ try {
 ```javascript
 /**
  * 查询结果表格组件
- * @author 哈雷酱大小姐 (￣▽￣)ﾉ
+ * @author 内师智能体系统 (￣▽￣)ﾉ
  */
 
 import React, { useState } from 'react';
@@ -767,5 +767,5 @@ AI: ✅ 查询成功！找到 5234 条记录
 ---
 
 _设计完成时间：2026-03-20_
-_设计师：哈雷酱大小姐_
+_设计师：内师智能体系统_
 _版本：v1.0 智能SQL查询系统_

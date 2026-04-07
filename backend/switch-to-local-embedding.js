@@ -1,6 +1,6 @@
 /**
  * 切换到本地Embedding模式并重建索引
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  * 用途：一键切换到本地embedding模式
  */
 
@@ -10,7 +10,7 @@ const { execSync } = require('child_process');
 
 console.log('\n' + '🔥'.repeat(40));
 console.log('🔥 切换到本地Embedding模式');
-console.log('🔥 设计师：哈雷酱大小姐 (￣▽￣)ﾉ');
+console.log('🔥 设计师：内师智能体系统 (￣▽￣)ﾉ');
 console.log('🔥'.repeat(40) + '\n');
 
 // 1. 检查.env配置

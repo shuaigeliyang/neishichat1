@@ -2,7 +2,7 @@
 MySQL数据导出脚本 - 导出为Excel格式
 用于导入到Coze数据库
 
-设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+设计师：内师智能体系统 (￣▽￣)ﾉ
 """
 
 import pandas as pd
@@ -162,7 +162,7 @@ def export_all():
 
     print("=" * 50)
     print("  MySQL数据导出工具")
-    print("  设计师：哈雷酱大小姐")
+    print("  设计师：内师智能体系统")
     print("=" * 50)
     print(f"开始时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 

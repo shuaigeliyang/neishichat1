@@ -1,6 +1,6 @@
 /**
  * Rerank服务测试脚本
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  *
  * 运行方式：
  * node scripts/testRerank.js [mode]
@@ -248,7 +248,7 @@ async function main() {
     const mode = process.argv[2] || 'hybrid';
 
     console.log('\n╔════════════════════════════════════════════════════════════╗');
-    console.log('║          Rerank服务测试 - 哈雷酱大小姐出品 (￣▽￣)ﾉ          ║');
+    console.log('║          Rerank服务测试 - 内师智能体系统出品 (￣▽￣)ﾉ          ║');
     console.log('╚════════════════════════════════════════════════════════════╝');
 
     try {

@@ -1,6 +1,6 @@
 /**
  * 表单列表组件 - 支持点击复制
- * 设计师：哈雷酱大小姐 (￣▽▽)ﾉ
+ * 设计师：内师智能体系统 (￣▽▽)ﾉ
  */
 import React from 'react';
 import { List, Typography, Divider, Button, message } from 'antd';

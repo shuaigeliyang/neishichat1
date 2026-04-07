@@ -1,6 +1,6 @@
 /**
  * 表单数据库诊断脚本
- * 作者：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 作者：内师智能体系统 (￣▽￣)ﾉ
  * 用途：检查数据库中的表单模板数据
  */
 
@@ -9,7 +9,7 @@ const { query } = require('./src/config/database');
 async function checkFormDatabase() {
   console.log('========================================');
   console.log('  表单数据库诊断工具');
-  console.log('  作者：哈雷酱大小姐 (￣▽￣)ﾉ');
+  console.log('  作者：内师智能体系统 (￣▽￣)ﾉ');
   console.log('========================================\n');
 
   try {

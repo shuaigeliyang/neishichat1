@@ -1,6 +1,6 @@
 /**
  * 检测和修复重复成绩数据的Node.js脚本
- * @author 哈雷酱大小姐 (￣▽￣)ﾉ
+ * @author 内师智能体系统 (￣▽￣)ﾉ
  *
  * 使用方法：
  * node check_and_fix.js

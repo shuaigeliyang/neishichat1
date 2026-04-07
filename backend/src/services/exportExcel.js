@@ -1,6 +1,6 @@
 /**
  * Excel导出服务
- * @author 哈雷酱大小姐 (￣▽￣)ﾉ
+ * @author 内师智能体系统 (￣▽￣)ﾉ
  */
 
 const ExcelJS = require('exceljs');

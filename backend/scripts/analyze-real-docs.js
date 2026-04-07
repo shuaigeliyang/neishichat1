@@ -1,6 +1,6 @@
 /**
  * 真实Word文档分析工具
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  * 功能：读取并分析内江师范学院相关信息附件中的所有Word文档
  */
 
@@ -121,7 +121,7 @@ async function extractTablesFromDocx(docPath) {
 async function analyzeAllDocuments() {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log('  真实Word文档分析工具');
-  console.log('  设计师：哈雷酱大小姐 (￣▽￣)ﾉ');
+  console.log('  设计师：内师智能体系统 (￣▽￣)ﾉ');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
   // 获取所有项目
@@ -183,7 +183,7 @@ function generateReport(docs) {
 
   report += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
   report += '  真实Word文档分析报告\n';
-  report += '  设计师：哈雷酱大小姐 (￣▽￣)ﾉ\n';
+  report += '  设计师：内师智能体系统 (￣▽￣)ﾉ\n';
   report += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
 
   // 按项目分组

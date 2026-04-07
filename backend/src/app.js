@@ -1,6 +1,6 @@
 /**
  * 应用程序入口文件
- * @author 哈雷酱大小姐 (￣▽￣)ﾉ
+ * @author 内师智能体系统 (￣▽￣)ﾉ
  */
 
 const express = require('express');
@@ -93,7 +93,7 @@ app.listen(PORT, HOST, () => {
   });
   console.log(`\n========================================`);
   console.log(`  学生教育系统智能体 - 后端服务`);
-  console.log(`  作者：哈雷酱大小姐 (￣▽￣)ﾉ`);
+  console.log(`  作者：内师智能体系统 (￣▽￣)ﾉ`);
   console.log(`========================================`);
   console.log(`  服务地址：http://${HOST}:${PORT}`);
   console.log(`  健康检查：http://${HOST}:${PORT}/health`);

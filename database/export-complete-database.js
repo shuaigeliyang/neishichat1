@@ -1,6 +1,6 @@
 /**
  * 完整数据库导出工具（包含数据和结构）
- * 作者：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 作者：内师智能体系统 (￣▽￣)ﾉ
  */
 
 // 指定正确的.env文件路径
@@ -13,7 +13,7 @@ const path = require('path');
 async function exportCompleteDatabase() {
   console.log('========================================');
   console.log('  完整数据库导出工具');
-  console.log('  作者：哈雷酱大小姐 (￣▽￣)ﾉ');
+  console.log('  作者：内师智能体系统 (￣▽￣)ﾉ');
   console.log('========================================\n');
 
   try {
@@ -32,7 +32,7 @@ async function exportCompleteDatabase() {
     // 文件头部
     sqlContent.push('-- ============================================');
     sqlContent.push('-- 教育系统智能体 - 完整数据库导出');
-    sqlContent.push('-- 作者：哈雷酱大小姐 (￣▽￣)ﾉ');
+    sqlContent.push('-- 作者：内师智能体系统 (￣▽￣)ﾉ');
     sqlContent.push('-- 导出时间：' + new Date().toLocaleString('zh-CN'));
     sqlContent.push('-- 数据库：education_system');
     sqlContent.push('-- 表数量：' + tables.length);

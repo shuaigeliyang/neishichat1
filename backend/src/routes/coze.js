@@ -1,7 +1,7 @@
 /**
  * Coze平台专用API接口
  * 允许Coze Bot查询本地数据库数据
- * @author 哈雷酱大小姐 (￣▽￣)ﾉ
+ * @author 内师智能体系统 (￣▽￣)ﾉ
  */
 
 const express = require('express');

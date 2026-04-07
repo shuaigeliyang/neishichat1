@@ -1,6 +1,6 @@
 /**
  * RAG服务测试脚本
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  */
 
 const RAGService = require('./services/ragService');
@@ -11,7 +11,7 @@ dotenv.config();
 
 async function testRAG() {
   console.log('╔════════════════════════════════════════════════════════════╗');
-  console.log('║        RAG服务测试 - 哈雷酱大小姐出品 (￣▽￣)ﾉ             ║');
+  console.log('║        RAG服务测试 - 内师智能体系统出品 (￣▽￣)ﾉ             ║');
   console.log('╚════════════════════════════════════════════════════════════╝\n');
 
   try {

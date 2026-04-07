@@ -1,6 +1,6 @@
 /**
  * 快速测试表单生成功能
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  */
 
 const realFormGenerator = require('../src/services/realFormGeneratorService');

@@ -1,6 +1,6 @@
 /**
  * 测试表单识别功能
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  */
 const formNameRecognizer = require('../src/services/formNameRecognizer');
 

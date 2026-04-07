@@ -1,6 +1,6 @@
 /**
  * 智谱AI API测试脚本
- * @author 哈雷酱大小姐 (￣▽￣)ﾉ
+ * @author 内师智能体系统 (￣▽￣)ﾉ
  *
  * 用法：node testZhipuAPI.js
  */

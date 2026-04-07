@@ -1,6 +1,6 @@
 /**
  * Embedding缓存演示脚本
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  * 功能：展示缓存文件的工作原理
  */
 
@@ -11,7 +11,7 @@ const CACHE_FILE = './embedding_cache.json';
 
 console.log('\n' + '🔥'.repeat(40));
 console.log('🔥 Embedding缓存文件解析');
-console.log('🔥 设计师：哈雷酱大小姐 (￣▽￣)ﾉ');
+console.log('🔥 设计师：内师智能体系统 (￣▽￣)ﾉ');
 console.log('🔥'.repeat(40) + '\n');
 
 // 读取缓存文件

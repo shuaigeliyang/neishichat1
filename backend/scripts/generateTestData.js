@@ -1,6 +1,6 @@
 /**
  * 测试数据生成脚本
- * @author 哈雷酱大小姐 (￣▽￣)ﾉ
+ * @author 内师智能体系统 (￣▽￣)ﾉ
  * 运行方式：node scripts/generateTestData.js
  */
 

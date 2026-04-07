@@ -1,6 +1,6 @@
 /**
  * 检查数据库与实际目录的对齐情况
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  */
 const { query } = require('../src/config/database');
 const fs = require('fs');

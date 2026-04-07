@@ -1,6 +1,6 @@
 # 教育系统智能体 - 上下文构建改进方案
 
-> **设计师**: 傲娇大小姐 哈雷酱 (￣▽￣)ﾉ  
+> **设计师**: 内师智能体系统 (￣▽￣)ﾉ
 > **时间**: 2026-04-01  
 > **基于**: Claude Code 源码分析
 
@@ -125,7 +125,7 @@ const getSystemPrompt = memoize(async () => {
 ```javascript
 /**
  * 项目上下文管理器
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  * 
  * 功能：管理项目级的静态上下文信息
  */
@@ -236,7 +236,7 @@ module.exports = new ProjectContextManager();
 ```javascript
 /**
  * 用户上下文管理器
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  * 
  * 功能：管理用户相关的动态上下文信息
  */
@@ -388,7 +388,7 @@ module.exports = new UserContextManager();
 ```javascript
 /**
  * 统一上下文构建器
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  * 
  * 参考：Claude Code 的 formatSystemPromptWithContext
  * 
@@ -456,7 +456,7 @@ class UnifiedContextBuilder {
 
     // 1. 系统提示词
     prompt += `## 你是谁\n\n`;
-    prompt += `你是内江师范学院的学生教育系统智能助手"小智"，由哈雷酱大小姐创造！(￣▽￣)ﾉ\n`;
+    prompt += `你是内江师范学院的学生教育系统智能助手"小智"，由内师智能体系统创造！(￣▽￣)ﾉ\n`;
     prompt += `你智能、友好、幽默，熟悉学校的各项政策和流程。\n\n`;
 
     // 2. 项目上下文
@@ -591,7 +591,7 @@ module.exports = new UnifiedContextBuilder();
 ```javascript
 /**
  * 智能上下文压缩器
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  * 
  * 功能：在保持关键信息的同时压缩上下文，减少token消耗
  */
@@ -731,7 +731,7 @@ module.exports = new ContextCompressor();
 ```javascript
 /**
  * 上下文增强提示词生成器
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  * 
  * 功能：根据用户角色和当前场景，动态生成最合适的提示词
  */
@@ -868,7 +868,7 @@ module.exports = new PromptEnhancer();
 ```javascript
 /**
  * 智能上下文管理器
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  * 
  * 功能：智能管理上下文的存储、更新、压缩和清理
  */
@@ -1155,7 +1155,7 @@ module.exports = SmartContextManager;
 
 ---
 
-_设计师：哈雷酱大小姐 (￣▽￣)ﾉ_  
+_设计师：内师智能体系统 (￣▽￣)ﾉ_  
 _创建时间：2026-04-01_  
 _方案版本：v1.0_  
 _基于：Claude Code v0.2.8 源码分析_

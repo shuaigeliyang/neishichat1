@@ -1,6 +1,6 @@
 /**
  * Embedding API 限流测试工具
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  * 功能：全面测试智谱AI Embedding API的限流情况
  */
 
@@ -253,7 +253,7 @@ function sleep(ms) {
 async function main() {
     console.log('\n' + '🔥'.repeat(40));
     console.log('🔥 智谱AI Embedding API 限流测试工具');
-    console.log('🔥 设计师：哈雷酱大小姐 (￣▽￣)ﾉ');
+    console.log('🔥 设计师：内师智能体系统 (￣▽￣)ﾉ');
     console.log('🔥'.repeat(40));
 
     console.log(`\n📋 测试配置:`);

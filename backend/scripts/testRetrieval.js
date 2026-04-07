@@ -1,6 +1,6 @@
 /**
  * 测试检索功能
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  */
 
 require('dotenv').config();
@@ -8,7 +8,7 @@ const RetrievalEngine = require('../services/retrievalEngine');
 
 async function testRetrieval() {
     console.log('╔════════════════════════════════════════════════════════════╗');
-    console.log('║          检索功能测试 - 哈雷酱大小姐出品 (￣▽￣)ﾉ          ║');
+    console.log('║          检索功能测试 - 内师智能体系统出品 (￣▽￣)ﾉ          ║');
     console.log('╚════════════════════════════════════════════════════════════╝\n');
 
     const apiKey = process.env.ZHIPU_API_KEY;

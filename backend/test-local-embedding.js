@@ -1,6 +1,6 @@
 /**
  * 本地Embedding服务测试工具
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  * 功能：测试本地embedding服务的性能和效果
  */
 
@@ -9,7 +9,7 @@ const LocalEmbeddingService = require('./services/localEmbeddingService');
 async function testLocalEmbedding() {
     console.log('\n' + '🔥'.repeat(40));
     console.log('🔥 本地Embedding服务测试');
-    console.log('🔥 设计师：哈雷酱大小姐 (￣▽￣)ﾉ');
+    console.log('🔥 设计师：内师智能体系统 (￣▽￣)ﾉ');
     console.log('🔥'.repeat(40) + '\n');
 
     const localService = new LocalEmbeddingService();

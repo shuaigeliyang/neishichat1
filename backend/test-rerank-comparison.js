@@ -1,6 +1,6 @@
 /**
  * Rerank方案对比测试工具
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  * 功能：对比API Rerank vs 本地Rerank的效果
  */
 
@@ -55,7 +55,7 @@ function calculateKeywordMatch(topDocs, expectedKeywords) {
  */
 async function runComparisonTest() {
     console.log('\n' + '='.repeat(80));
-    console.log('🔬 Rerank方案对比测试 - 哈雷酱大小姐出品');
+    console.log('🔬 Rerank方案对比测试 - 内师智能体系统出品');
     console.log('='.repeat(80) + '\n');
 
     // 1. 加载数据

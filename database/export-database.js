@@ -1,6 +1,6 @@
 /**
  * 教育系统智能体 - 完整数据库导出工具
- * 作者：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 作者：内师智能体系统 (￣▽￣)ﾉ
  * 用途：导出 education_system 数据库的所有表结构和数据
  * 输出：完整的 SQL 文件，包含建表语句和数据
  */
@@ -13,7 +13,7 @@ const path = require('path');
 async function exportDatabase() {
   console.log('========================================');
   console.log('  教育系统数据库导出工具');
-  console.log('  作者：哈雷酱大小姐 (￣▽￣)ﾉ');
+  console.log('  作者：内师智能体系统 (￣▽￣)ﾉ');
   console.log('========================================\n');
 
   try {
@@ -40,7 +40,7 @@ async function exportDatabase() {
     const sqlContent = [];
     sqlContent.push('-- ============================================');
     sqlContent.push('-- 教育系统智能体 - 完整数据库导出');
-    sqlContent.push('-- 作者：哈雷酱大小姐 (￣▽￣)ﾉ');
+    sqlContent.push('-- 作者：内师智能体系统 (￣▽￣)ﾉ');
     sqlContent.push('-- 导出时间：' + new Date().toLocaleString('zh-CN'));
     sqlContent.push('-- 数据库：education_system');
     sqlContent.push('-- 表数量：' + tables.length);
@@ -170,7 +170,7 @@ async function exportDatabase() {
     // 7. 生成使用说明文档
     const readmeContent = `# 教育系统数据库 - 完整导出
 
-> 作者：哈雷酱大小姐 (￣▽￣)ﾉ
+> 作者：内师智能体系统 (￣▽￣)ﾉ
 > 导出时间：${new Date().toLocaleString('zh-CN')}
 > 数据库：education_system
 > 表数量：${tables.length}
@@ -342,7 +342,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 **文档版本：** 1.0
 **最后更新：** ${new Date().toLocaleString('zh-CN')}
-**作者：** 哈雷酱大小姐 (￣▽￣)ﾉ
+**作者：** 内师智能体系统 (￣▽￣)ﾉ
 
 哼，跟着本小姐的步骤，一定能成功导入！笨蛋！(￣ω￣)ﾉ
 `;
@@ -357,13 +357,13 @@ SET FOREIGN_KEY_CHECKS = 1;
     const batScript = `@echo off
 REM ============================================
 REM 教育系统数据库 - 快速导入脚本
-REM 作者：哈雷酱大小姐 (￣▽￣)ﾉ
+REM 作者：内师智能体系统 (￣▽￣)ﾉ
 REM ============================================
 
 echo.
 echo ==========================================
 echo   教育系统数据库导入工具
-echo   作者：哈雷酱大小姐 (￣▽￣)ﾉ
+echo   作者：内师智能体系统 (￣▽￣)ﾉ
 echo ==========================================
 echo.
 
@@ -423,13 +423,13 @@ pause
     const shScript = `#!/bin/bash
 # ============================================
 # 教育系统数据库 - 快速导入脚本
-# 作者：哈雷酱大小姐 (￣▽￣)ﾉ
+# 作者：内师智能体系统 (￣▽￣)ﾉ
 # ============================================
 
 echo ""
 echo "=========================================="
 echo "  教育系统数据库导入工具"
-echo "  作者：哈雷酱大小姐 (￣▽￣)ﾉ"
+echo "  作者：内师智能体系统 (￣▽￣)ﾉ"
 echo "=========================================="
 echo ""
 

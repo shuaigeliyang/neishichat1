@@ -1,6 +1,6 @@
 /**
  * 内江师范学院相关信息附件目录结构扫描器
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  */
 
 const fs = require('fs');
@@ -11,7 +11,7 @@ const DOCS_DIR = 'E:/外包/教育系统智能体/内江师范学院相关信息
 function scanDirectory() {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log('  内江师范学院相关信息附件目录扫描');
-  console.log('  设计师：哈雷酱大小姐 (￣▽￣)ﾉ');
+  console.log('  设计师：内师智能体系统 (￣▽￣)ﾉ');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
   const projects = fs.readdirSync(DOCS_DIR, { withFileTypes: true })

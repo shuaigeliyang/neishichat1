@@ -1,6 +1,6 @@
 /**
  * 认证中间件
- * @author 哈雷酱大小姐 (￣▽￣)ﾉ
+ * @author 内师智能体系统 (￣▽￣)ﾉ
  */
 
 const jwt = require('jsonwebtoken');

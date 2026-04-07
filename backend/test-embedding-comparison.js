@@ -1,6 +1,6 @@
 /**
  * Embedding服务对比测试
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  * 功能：对比API Embedding和本地Embedding的性能
  */
 
@@ -157,7 +157,7 @@ async function testLocalService() {
 async function main() {
     console.log('\n' + '🔥'.repeat(40));
     console.log('🔥 Embedding服务对比测试');
-    console.log('🔥 设计师：哈雷酱大小姐 (￣▽￣)ﾉ');
+    console.log('🔥 设计师：内师智能体系统 (￣▽￣)ﾉ');
     console.log('🔥'.repeat(40));
 
     console.log(`\n📋 测试配置：`);

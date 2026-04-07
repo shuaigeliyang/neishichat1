@@ -1,6 +1,6 @@
 /**
  * 快速诊断表单识别问题
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  */
 
 const { query } = require('./src/config/database');

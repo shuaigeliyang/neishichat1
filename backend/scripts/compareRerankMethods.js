@@ -1,6 +1,6 @@
 /**
  * Rerank效果对比测试
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  * 功能：对比关键词匹配 vs 智谱AI Rerank的效果差异
  */
 
@@ -163,7 +163,7 @@ function mockSemanticSearch(question, documents) {
  */
 async function compareRerankMethods() {
     console.log('╔════════════════════════════════════════════════════════════╗');
-    console.log('║        Rerank效果对比测试 - 哈雷酱大小姐出品 (￣▽￣)ﾉ        ║');
+    console.log('║        Rerank效果对比测试 - 内师智能体系统出品 (￣▽￣)ﾉ        ║');
     console.log('╚════════════════════════════════════════════════════════════╝\n');
 
     for (const testCase of testQueries) {

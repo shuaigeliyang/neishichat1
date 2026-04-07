@@ -1,6 +1,6 @@
 /**
  * 数据库配置和连接池管理
- * @author 哈雷酱大小姐 (￣▽￣)ﾉ
+ * @author 内师智能体系统 (￣▽￣)ﾉ
  */
 
 require('dotenv').config();

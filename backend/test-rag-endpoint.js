@@ -1,6 +1,6 @@
 /**
  * 测试RAG文档查询功能
- * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 设计师：内师智能体系统 (￣▽￣)ﾉ
  * 用途：测试embedding和文档查询功能是否正常
  */
 
@@ -96,7 +96,7 @@ async function testQuery(token, question, index) {
 async function main() {
     console.log('\n' + '🔥'.repeat(40));
     console.log('🔥 RAG文档查询功能测试');
-    console.log('🔥 设计师：哈雷酱大小姐 (￣▽￣)ﾉ');
+    console.log('🔥 设计师：内师智能体系统 (￣▽￣)ﾉ');
     console.log('🔥'.repeat(40));
 
     try {

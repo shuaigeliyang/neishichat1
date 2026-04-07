@@ -1,6 +1,6 @@
 /**
  * 检查测试用户并生成Token
- * 作者：哈雷酱大小姐 (￣▽￣)ﾉ
+ * 作者：内师智能体系统 (￣▽￣)ﾉ
  */
 
 const { query } = require('./src/config/database');
@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken');
 async function checkTestUser() {
   console.log('========================================');
   console.log('  测试用户检查工具');
-  console.log('  作者：哈雷酱大小姐 (￣▽￣)ﾉ');
+  console.log('  作者：内师智能体系统 (￣▽￣)ﾉ');
   console.log('========================================\n');
 
   try {

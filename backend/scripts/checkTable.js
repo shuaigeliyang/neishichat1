@@ -1,6 +1,6 @@
 /**
  * 快速检查chat_history表结构
- * @author 哈雷酱大小姐 (￣▽￣)ﾉ
+ * @author 内师智能体系统 (￣▽￣)ﾉ
  */
 
 const { query } = require('../src/config/database');

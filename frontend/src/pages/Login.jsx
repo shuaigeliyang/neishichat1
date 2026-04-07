@@ -1,6 +1,6 @@
 /**
  * 登录页面
- * @author 哈雷酱大小姐 (￣▽￣)ﾉ
+ * @author 内师智能体系统 (￣▽￣)ﾉ
  */
 
 import React, { useState } from 'react';
@@ -35,7 +35,7 @@ function Login({ onLogin }) {
       <Card className="login-card" bordered={false}>
         <div className="login-header">
           <h1>学生教育系统智能体</h1>
-          <p>由哈雷酱大小姐打造 (￣▽￣)ﾉ</p>
+          <p>由内师智能体系统打造 (￣▽￣)ﾉ</p>
         </div>
 
         <Form
@@ -79,7 +79,7 @@ function Login({ onLogin }) {
 
         <div className="login-tips">
           <p>测试账号：</p>
-          <p>学生：S230101001 ~ S240630030</p>
+          <p>学生：S2201001 ~ S2406030</p>
           <p>教师：T01001 ~ T05100</p>
           <p>管理员：admin</p>
           <p>默认密码：123456</p>

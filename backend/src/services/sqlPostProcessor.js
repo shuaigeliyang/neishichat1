@@ -1,6 +1,6 @@
 /**
  * SQL后处理器 - 在执行前后进行权限验证和修正
- * @author 哈雷酱大小姐 (￣▽￣)ﾉ
+ * @author 内师智能体系统 (￣▽￣)ﾉ
  */
 
 const logger = require('../utils/logger');
