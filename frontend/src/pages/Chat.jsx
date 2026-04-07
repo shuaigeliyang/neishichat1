@@ -1,11 +1,28 @@
 /**
- * AI对话页面 - 智能增强版本
+ * AI对话页面 - 全新设计
  * @author 内师智能体系统 (￣▽￣)ﾉ
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Card, Input, Button, message, Spin, Badge, Divider } from 'antd';
-import { SendOutlined, UserOutlined, RobotOutlined, HistoryOutlined, ArrowLeftOutlined, VerticalAlignBottomOutlined, BulbOutlined, BookOutlined } from '@ant-design/icons';
+import { Card, Input, Button, message, Spin, Badge, Dropdown, Modal, Divider } from 'antd';
+import {
+  SendOutlined,
+  UserOutlined,
+  RobotOutlined,
+  HistoryOutlined,
+  ArrowLeftOutlined,
+  VerticalAlignBottomOutlined,
+  BulbOutlined,
+  BookOutlined,
+  MenuOutlined,
+  CloseOutlined,
+  CopyOutlined,
+  DeleteOutlined,
+  ReloadOutlined,
+  SmileOutlined,
+  LoadingOutlined,
+  ThunderboltOutlined
+} from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Markdown from 'react-markdown';
@@ -20,82 +37,90 @@ function Chat({ user }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [historyVisible, setHistoryVisible] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
   const [sessionId] = useState(() => Date.now().toString());
-  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
   const [isAutoScrollEnabled, setIsAutoScrollEnabled] = useState(true);
   const [handbookModalVisible, setHandbookModalVisible] = useState(false);
   const [selectedPageNum, setSelectedPageNum] = useState(null);
-  const [copiedFormName, setCopiedFormName] = useState(null);
-  // 🎯 分页状态：为每个消息独立管理来源分页（每页5条）
   const [sourcesPageMap, setSourcesPageMap] = useState({});
   const SOURCES_PER_PAGE = 5;
+  const [multiline, setMultiline] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
+  const inputRef = useRef(null);
+
+  /**
+   * 获取AI表情图标 - 根据对话内容动态显示
+   */
+  const getAIIcon = (msg) => {
+    if (msg.role === 'system') {
+      return <LoadingOutlined style={{ color: '#faad14' }} />;
+    }
+
+    const content = msg.content || '';
+
+    // 根据关键词返回不同表情
+    if (content.includes('✅') || content.includes('成功') || content.includes('完成')) {
+      return <SmileOutlined style={{ color: '#52c41a' }} />;
+    }
+    if (content.includes('💡') || content.includes('建议') || content.includes('提示')) {
+      return <BulbOutlined style={{ color: '#faad14' }} />;
+    }
+    if (content.includes('⚡') || content.includes('快速') || content.includes('立即')) {
+      return <ThunderboltOutlined style={{ color: '#1890ff' }} />;
+    }
+    if (content.includes('❌') || content.includes('错误') || content.includes('失败')) {
+      return <RobotOutlined style={{ color: '#ff4d4f' }} />;
+    }
+    if (content.includes('📊') || content.includes('查询') || content.includes('数据')) {
+      return <ThunderboltOutlined style={{ color: '#722ed1' }} />;
+    }
+
+    // 默认表情
+    return <RobotOutlined style={{ color: '#667eea' }} />;
+  };
 
   /**
    * 清理和标准化用户输入
-   * 处理重复的词语、多余的空格等
    */
   const cleanInput = (text) => {
     if (!text) return text;
 
     let cleaned = text;
-
-    // 1. 去除重复的"我的"（如："我的我的我的成绩" → "我的成绩"）
     cleaned = cleaned.replace(/我的+/g, '我的');
-
-    // 2. 去除重复的"我的"和其他词的组合（如："我的我的我的" → "我的"）
     cleaned = cleaned.replace(/(我的)\s+/g, '我的 ');
-
-    // 3. 去除多余的空格
     cleaned = cleaned.replace(/\s+/g, ' ').trim();
-
-    // 4. 去除重复的标点符号（如："！！！？" → "！"）
     cleaned = cleaned.replace(/([！？。，、；：])\1+/g, '$1');
-
-    // 5. 去除首尾的标点符号
     cleaned = cleaned.replace(/^[！？。，、；：，]+|[！？。，、；：，]+$/g, '');
 
     return cleaned;
   };
+
   const lastMessageCountRef = useRef(0);
 
-  // 获取对话历史 - 添加详细日志
+  // 获取对话历史
   const fetchChatHistory = async () => {
     try {
       console.log('🔍 开始获取历史记录...');
-      console.log('Token:', localStorage.getItem('token')?.substring(0, 20) + '...');
 
       const response = await axios.get('/api/chat/history?limit=50', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
 
-      console.log('✅ 历史记录响应:', response.data);
-
       if (response.data.success) {
         const history = response.data.data || [];
 
         if (history.length === 0) {
-          message.info('暂无历史记录，开始新的对话吧！');
+          // 不显示消息，避免打扰
         } else {
           setChatHistory(history);
-          message.success(`加载了 ${history.length} 条历史记录`);
         }
-      } else {
-        message.warning(response.data.message || '获取历史记录失败');
       }
     } catch (error) {
       console.error('❌ 获取历史记录失败：', error);
-      console.error('错误详情:', {
-        message: error.message,
-        code: error.code,
-        response: error.response?.data,
-        status: error.response?.status
-      });
-      message.error('获取历史记录失败：' + (error.response?.data?.message || error.message));
       setChatHistory([]);
     }
   };
@@ -105,17 +130,15 @@ function Chat({ user }) {
     fetchChatHistory();
   }, []);
 
-  // 智能自动滚动：只有当用户已经在底部时才自动滚动
+  // 智能自动滚动
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (!container) return;
 
-    // 检测是否是新消息添加（不是初始化）
     const isNewMessage = messages.length > lastMessageCountRef.current;
     lastMessageCountRef.current = messages.length;
 
     if (isNewMessage && isAutoScrollEnabled) {
-      // 使用 requestAnimationFrame 确保DOM完全渲染后再滚动
       requestAnimationFrame(() => {
         setTimeout(() => {
           scrollToBottom(false);
@@ -132,11 +155,8 @@ function Chat({ user }) {
     const scrollHeight = container.scrollHeight;
     const clientHeight = container.clientHeight;
 
-    // 判断是否在底部（容差50px）
-    const isAtBottom = scrollHeight - scrollTop <= clientHeight + 50;
-    const isNearTop = scrollTop < 100;
+    const isAtBottom = scrollHeight - scrollTop <= clientHeight + 100;
 
-    // 更新自动滚动状态：只有当用户滚动到底部时才重新启用自动滚动
     if (isAtBottom) {
       setIsAutoScrollEnabled(true);
       setShowScrollButton(false);
@@ -146,20 +166,59 @@ function Chat({ user }) {
     }
   };
 
-  const scrollToBottom = (hideButton = true) => {
+  const scrollToBottom = (smooth = true) => {
     const container = messagesContainerRef.current;
     if (!container) return;
 
-    // 使用原生scrollTo获得更好的性能和控制
     container.scrollTo({
       top: container.scrollHeight,
-      behavior: 'smooth'
+      behavior: smooth ? 'smooth' : 'auto'
     });
+  };
 
-    if (hideButton) {
-      setShowScrollButton(false);
-      setIsAutoScrollEnabled(true);
+  /**
+   * 消息快速操作
+   */
+  const handleMessageAction = (action, messageIndex) => {
+    const msg = messages[messageIndex];
+
+    switch (action) {
+      case 'copy':
+        navigator.clipboard.writeText(msg.content);
+        message.success('✅ 已复制到剪贴板');
+        break;
+      case 'delete':
+        Modal.confirm({
+          title: '确认删除',
+          content: '确定要删除这条消息吗？',
+          onOk: () => {
+            setMessages(prev => prev.filter((_, i) => i !== messageIndex));
+            message.success('已删除消息');
+          }
+        });
+        break;
+      case 'regenerate':
+        if (msg.role === 'user') {
+          // 重新发送用户消息
+          regenerateMessage(messageIndex);
+        }
+        break;
     }
+  };
+
+  /**
+   * 重新生成消息
+   */
+  const regenerateMessage = async (messageIndex) => {
+    const userMsg = messages[messageIndex];
+    if (!userMsg || userMsg.role !== 'user') return;
+
+    // 删除这条消息及之后的所有消息
+    setMessages(prev => prev.slice(0, messageIndex));
+
+    // 重新发送
+    setInput(userMsg.content);
+    handleSend();
   };
 
   const handleDownload = async (url, type) => {
@@ -226,7 +285,6 @@ function Chat({ user }) {
       return;
     }
 
-    // 🔒 输入清理和标准化
     const cleanedInput = cleanInput(input);
     console.log('💬 发送消息:', input);
     if (cleanedInput !== input) {
@@ -237,10 +295,9 @@ function Chat({ user }) {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setLoading(true);
-    // 发送消息时始终启用自动滚动，以便看到AI回复
+    setMultiline(false);
     setIsAutoScrollEnabled(true);
 
-    // 立即滚动到底部，确保用户消息可见
     requestAnimationFrame(() => {
       setTimeout(() => {
         scrollToBottom(false);
@@ -248,41 +305,28 @@ function Chat({ user }) {
     });
 
     try {
-      // 🎯 智能意图识别（使用清理后的输入）
       const intent = detectIntent(cleanedInput);
       console.log(`🎯 识别意图：${getIntentDescription(intent)}`);
 
-      // 根据意图直接调用对应接口（使用清理后的输入）
       if (intent === 'database') {
-        // 数据库查询（个人数据）
         console.log('📊 调用数据库查询接口...');
         await handleDatabaseQuery(cleanedInput);
       } else if (intent === 'document') {
-        // 文档问答（基于学生手册）
         console.log('📚 调用RAG文档问答接口...');
         await handleDocumentQuery(cleanedInput);
       } else if (intent === 'form_list') {
-        // 表单列表查询
         console.log('📝 调用表单列表查询接口...');
         await handleFormQuery(cleanedInput);
       } else if (intent === 'form_generate') {
-        // 表单生成
         console.log('📄 调用表单生成接口...');
         await handleFormGenerate(cleanedInput);
       } else {
-        // 普通聊天（智谱AI）
         console.log('💬 调用普通聊天接口...');
         await handleChatQuery(cleanedInput);
       }
 
     } catch (error) {
       console.error('❌ 发送消息错误:', error);
-      console.error('错误详情:', {
-        message: error.message,
-        code: error.code,
-        response: error.response?.data,
-        status: error.response?.status
-      });
 
       const errorMsg = error.response?.data?.message || error.message;
       message.error('发送失败：' + errorMsg);
@@ -308,44 +352,32 @@ function Chat({ user }) {
       );
 
       if (response.data.success) {
-        // 🔒 特殊处理：检查是否需要切换到普通聊天
         if (response.data.meta?.switchToChat) {
-          console.log('🎉 后端返回switchToChat标记，显示表扬消息');
-
           setMessages(prev => [...prev, {
             role: 'assistant',
             content: response.data.answer,
             timestamp: new Date().toISOString()
           }]);
-
           return;
         }
 
-        // 🔒 特殊处理：检查是否是权限拒绝或特殊消息
         if (response.data.meta?.type === 'permission_denied' || response.data.meta?.type === 'no_failed_grades') {
-          console.log('📋 后端返回特殊消息:', response.data.meta?.type);
-
           setMessages(prev => [...prev, {
             role: 'assistant',
             content: response.data.answer,
             timestamp: new Date().toISOString()
           }]);
-
           return;
         }
 
         const aiContent = response.data.data.answer;
 
-        // 🔒 特殊处理：如果answer不是JSON，直接显示
         if (!aiContent || !aiContent.trim().startsWith('{')) {
-          console.log('📝 answer不是JSON格式，直接显示');
-
           setMessages(prev => [...prev, {
             role: 'assistant',
             content: aiContent || response.data.answer,
             timestamp: new Date().toISOString()
           }]);
-
           return;
         }
 
@@ -367,22 +399,13 @@ function Chat({ user }) {
         }
       }
 
-      // 如果不是智能查询结果，回退到普通聊天
       console.log('不是智能查询结果，回退到普通聊天');
       await handleChatQuery(question);
 
     } catch (error) {
       console.error('❌ 数据库查询失败:', error);
-      console.error('错误详情:', {
-        message: error.message,
-        code: error.code,
-        response: error.response?.data,
-        status: error.response?.status
-      });
-
       message.warning('数据库查询服务暂时不可用，正在使用AI助手为您回答...');
 
-      // 添加降级通知
       setMessages(prev => [...prev, {
         role: 'system',
         content: '📊 数据库查询服务暂时不可用，正在使用AI助手为您回答...',
@@ -405,7 +428,6 @@ function Chat({ user }) {
       if (response.data.success && response.data.data) {
         const forms = response.data.data;
 
-        // 按项目组织表单（与实际目录结构对齐）
         const formsByProject = forms.reduce((acc, form) => {
           const project = form.project_name || '其他';
           if (!acc[project]) {
@@ -415,14 +437,12 @@ function Chat({ user }) {
           return acc;
         }, {});
 
-        // 构建表单列表消息
         let formContent = '📝 **系统可下载的表单列表**\n\n';
-        formContent += '📁 按项目分类（与实际目录完全对齐）\n\n';
+        formContent += '📁 按项目分类\n\n';
 
         Object.keys(formsByProject).sort().forEach(project => {
           formContent += `### 【${project}】\n`;
           formsByProject[project].forEach(form => {
-            // 使用代码块格式，方便用户复制完整的表单名称
             formContent += `- \`${form.template_name}\`\n`;
             if (form.description) {
               formContent += `  ${form.description}\n`;
@@ -432,8 +452,6 @@ function Chat({ user }) {
         });
 
         formContent += `---\n\n💡 **提示：** 点击下方按钮可以直接生成表单，或复制表单名称后输入"下载[表单名称]"。\n\n`;
-
-        // 添加快速生成按钮列表
         formContent += `**🚀 快速生成（点击即可）：**\n\n`;
 
         Object.keys(formsByProject).sort().forEach(project => {
@@ -443,38 +461,23 @@ function Chat({ user }) {
           });
         });
 
-        formContent += `\n\n**💡 或者手动输入：**\n`;
-        formContent += `- "下载竞赛申请表"\n`;
-        formContent += `- "生成奖学金申请表"\n`;
-        formContent += `- "我要转专业申请表"`;
-
         setMessages(prev => [...prev, {
           role: 'assistant',
           content: formContent,
           isFormList: true,
           forms: forms,
-          // 添加复制提示
           extraInfo: '💡 提示：点击表单名称可自动复制到输入框'
         }]);
         return;
       }
 
-      // 如果获取失败，回退到普通聊天
       console.log('获取表单列表失败，回退到普通聊天');
       await handleChatQuery(question);
 
     } catch (error) {
       console.error('❌ 表单查询失败:', error);
-      console.error('错误详情:', {
-        message: error.message,
-        code: error.code,
-        response: error.response?.data,
-        status: error.response?.status
-      });
-
       message.warning('表单查询服务暂时不可用，正在使用AI助手为您回答...');
 
-      // 添加降级通知
       setMessages(prev => [...prev, {
         role: 'system',
         content: '📝 表单查询服务暂时不可用，正在使用AI助手为您回答...',
@@ -492,7 +495,6 @@ function Chat({ user }) {
     try {
       console.log('📄 发送表单生成请求:', question);
 
-      // 直接发送用户输入给后端，由后端的智能匹配来识别表单
       const response = await axios.post('/api/forms/generate',
         { templateName: question },
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
@@ -501,7 +503,6 @@ function Chat({ user }) {
       if (response.data.success && response.data.data) {
         const { fileName, downloadUrl, templateName } = response.data.data;
 
-        // 构建成功消息
         const successContent = `✅ **表单生成成功！**\n\n` +
           `📄 **表单名称：** ${templateName}\n` +
           `📁 **文件名：** ${fileName}\n\n` +
@@ -520,25 +521,14 @@ function Chat({ user }) {
         return;
       }
 
-      // 如果生成失败，回退到普通聊天
       console.log('表单生成失败，回退到普通聊天');
       await handleChatQuery(question);
 
     } catch (error) {
       console.error('❌ 表单生成失败:', error);
-      console.error('错误详情:', {
-        message: error.message,
-        code: error.code,
-        response: error.response?.data,
-        status: error.response?.status
-      });
-
-      // 显示后端返回的错误信息
-      const errorMsg = error.response?.data?.message || error.message;
 
       message.warning('表单生成服务暂时不可用，正在使用AI助手为您回答...');
 
-      // 添加降级通知
       setMessages(prev => [...prev, {
         role: 'system',
         content: '📄 表单生成服务暂时不可用，正在使用AI助手为您回答...',
@@ -561,23 +551,9 @@ function Chat({ user }) {
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );
 
-      console.log('📚 [RAG] 收到响应:', {
-        success: response.data.success,
-        hasData: !!response.data.data,
-        dataKeys: response.data.data ? Object.keys(response.data.data) : []
-      });
-
       if (response.data.success && response.data.data) {
         const ragData = response.data.data;
 
-        console.log('📚 [RAG] 成功，显示结果:', {
-          answerLength: ragData.answer?.length || 0,
-          sourcesCount: ragData.sources?.length || 0,
-          confidence: ragData.confidence,
-          answerPreview: ragData.answer?.substring(0, 100)
-        });
-
-        // 🔒 特殊处理：检测RAG是否找不到相关文档
         const notFoundKeywords = [
           '没有找到', '未找到', '抱歉', '对不起',
           '建议您检查问题表述', '查阅学生手册纸质版',
@@ -588,28 +564,23 @@ function Chat({ user }) {
           ragData.answer.includes(keyword)
         );
 
-        // 如果RAG找不到文档，降级到普通聊天
         if (isNotFound || (ragData.sources && ragData.sources.length === 0)) {
           console.log('📚 [RAG] 未找到相关文档，降级到普通聊天');
 
           message.info('📚 学生手册中没有找到完全匹配的信息，正在使用AI助手为您解答...');
 
-          // 添加降级通知
           setMessages(prev => [...prev, {
             role: 'system',
             content: '📚 学生手册中没有找到完全匹配的信息，正在使用AI助手为您解答...',
             timestamp: new Date().toISOString()
           }]);
 
-          // 降级到普通聊天
           await handleChatQuery(question);
           return;
         }
 
-        // 构建RAG回答消息
         let ragContent = ragData.answer;
 
-        // 添加来源信息（不在这里添加，在渲染时处理）
         setMessages(prev => [...prev, {
           role: 'assistant',
           content: ragContent,
@@ -620,32 +591,20 @@ function Chat({ user }) {
         return;
       }
 
-      // RAG失败，回退到普通聊天
       console.log('📚 [RAG] 返回成功但没有数据，回退到普通聊天');
       await handleChatQuery(question);
 
     } catch (error) {
-      // 优化2：详细的错误日志记录
       console.error('❌ RAG文档问答失败:', error);
-      console.error('错误详情:', {
-        message: error.message,
-        code: error.code,
-        response: error.response?.data,
-        status: error.response?.status,
-        stack: error.stack
-      });
 
-      // 优化2：向用户显示友好的错误提示
       message.warning('文档查询服务暂时不可用，正在使用AI助手为您回答...');
 
-      // 优化3：添加系统消息通知用户降级机制
       setMessages(prev => [...prev, {
         role: 'system',
         content: '📚 文档查询服务暂时不可用，正在使用AI助手为您回答...',
         timestamp: new Date().toISOString()
       }]);
 
-      // 回退到普通聊天
       await handleChatQuery(question);
     }
   };
@@ -663,8 +622,6 @@ function Chat({ user }) {
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );
 
-      console.log('✅ 收到响应:', response.data);
-
       if (response.data.success) {
         let aiContent = response.data.data.answer;
 
@@ -679,7 +636,6 @@ function Chat({ user }) {
           } else if (parsed.type === 'regulations') {
             aiContent = renderRegulations(parsed.data, parsed.message);
           } else if (parsed.type === 'download') {
-            // 验证downloadUrl是否有效（必须是/api/开头的相对路径）
             const downloadUrl = parsed.downloadUrl;
             if (!downloadUrl || !downloadUrl.startsWith('/api/')) {
               console.error('❌ 无效的下载URL:', downloadUrl);
@@ -695,7 +651,6 @@ function Chat({ user }) {
               downloadType: parsed.downloadType
             }]);
           } else if (parsed.type === 'form_download') {
-            // 🎯 处理表单下载响应
             const downloadUrl = parsed.downloadUrl;
             const fileName = parsed.fileName;
             const templateName = parsed.templateName;
@@ -706,7 +661,6 @@ function Chat({ user }) {
               return;
             }
 
-            // 构建成功消息
             const successContent = parsed.message || `✅ **表单生成成功！**\n\n` +
               `📄 **表单名称：** ${templateName}\n` +
               `📁 **文件名：** ${fileName}\n\n` +
@@ -728,7 +682,7 @@ function Chat({ user }) {
       }
     } catch (error) {
       console.error('❌ 聊天请求失败:', error);
-      throw error; // 重新抛出错误，让外层处理
+      throw error;
     }
   };
 
@@ -836,37 +790,98 @@ function Chat({ user }) {
   };
 
   return (
-    <div className="chat-container">
-      <Card className="chat-card">
+    <div className="chat-page">
+      {/* 侧边栏 */}
+      <div className={`chat-sidebar ${sidebarVisible ? 'visible' : ''}`}>
+        <div className="sidebar-header">
+          <h3>📜 历史记录</h3>
+          <Button
+            type="text"
+            icon={<CloseOutlined />}
+            onClick={() => setSidebarVisible(false)}
+            className="close-sidebar-btn"
+          />
+        </div>
+
+        <div className="sidebar-content">
+          {chatHistory.length === 0 ? (
+            <div className="empty-history">
+              <p>暂无历史记录</p>
+              <p className="hint">开始对话后，记录会保存在这里</p>
+            </div>
+          ) : (
+            chatHistory.map((item) => (
+              <div
+                key={item.chat_id}
+                className="history-item"
+                onClick={() => {
+                  setMessages([
+                    { role: 'user', content: item.user_question },
+                    { role: 'assistant', content: item.ai_answer_preview || item.ai_answer }
+                  ]);
+                  setSidebarVisible(false);
+                  message.success('已加载历史对话');
+                }}
+              >
+                <div className="history-item-question">
+                  {item.user_question}
+                </div>
+                <div className="history-item-meta">
+                  <span className="time">
+                    {new Date(item.created_at).toLocaleString('zh-CN', {
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
+                  <span className="intent">
+                    {item.intent === 'chat' ? '💬 闲聊' :
+                     item.intent === 'download' ? '📥 下载' : '📊 查询'}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* 主聊天区域 */}
+      <div className="chat-main">
+        {/* 头部 */}
         <div className="chat-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="header-left">
             <Button
               type="text"
               icon={<ArrowLeftOutlined />}
               onClick={() => navigate(-1)}
-              style={{ fontSize: '16px' }}
-            >
-              返回
-            </Button>
-            <div>
-              <h2>智能助手</h2>
-              <p>欢迎，{user.name}！有什么我可以帮助您的吗？</p>
+              className="back-btn"
+            />
+            <Button
+              type="text"
+              icon={<MenuOutlined />}
+              onClick={() => setSidebarVisible(true)}
+              className="menu-btn"
+            />
+            <div className="header-title">
+              <h2>🤖 智能助手</h2>
+              <p>欢迎，{user.name}！</p>
             </div>
           </div>
-          <Button
-            icon={<HistoryOutlined />}
-            onClick={() => {
-              fetchChatHistory();
-              setHistoryVisible(true);
-            }}
-          >
-            历史记录
-            {chatHistory.length > 0 && (
-              <Badge count={chatHistory.length} style={{ marginLeft: 8 }} />
-            )}
-          </Button>
+
+          <div className="header-right">
+            <Badge count={chatHistory.length} showZero={false}>
+              <Button
+                icon={<HistoryOutlined />}
+                onClick={() => setSidebarVisible(true)}
+              >
+                历史记录
+              </Button>
+            </Badge>
+          </div>
         </div>
 
+        {/* 消息区域 */}
         <div
           ref={messagesContainerRef}
           className="chat-messages"
@@ -874,326 +889,276 @@ function Chat({ user }) {
         >
           {messages.length === 0 && (
             <div className="chat-welcome">
-              <RobotOutlined style={{ fontSize: 64, color: '#667eea' }} />
-              <h3>👋 您好！我是小智，您的智能学习助手~</h3>
-              <p>🎓 我可以帮您：</p>
-              <ul>
-                <li>📊 查询个人信息、成绩、课程表</li>
-                <li>📥 下载各类表格数据</li>
-                <li>💬 回答大学生活相关问题</li>
-                <li>🎯 提供学习建议和指导</li>
-                <li>😊 陪您聊天解闷</li>
-              </ul>
-              <p style={{ marginTop: 20, color: '#999' }}>
-                试试问我："你好"、"最近压力大"、"校长是谁"、"我的成绩"...
-              </p>
-              {chatHistory.length > 0 && (
-                <p style={{ marginTop: 10, color: '#667eea', fontSize: '12px' }}>
-                  💡 您有 {chatHistory.length} 条历史记录，点击右上角"历史记录"查看
-                </p>
-              )}
+              <div className="welcome-icon">
+                🤖
+              </div>
+              <h3>👋 您好！我是小智</h3>
+              <p>您的智能学习助手，随时为您服务~</p>
+
+              <div className="welcome-features">
+                <div className="feature-item">
+                  <span className="feature-icon">📊</span>
+                  <span>查询成绩、课程、个人信息</span>
+                </div>
+                <div className="feature-item">
+                  <span className="feature-icon">📥</span>
+                  <span>下载各类表格和表单</span>
+                </div>
+                <div className="feature-item">
+                  <span className="feature-icon">📚</span>
+                  <span>查询学生手册和政策</span>
+                </div>
+                <div className="feature-item">
+                  <span className="feature-icon">💬</span>
+                  <span>聊天解闷，提供建议</span>
+                </div>
+              </div>
+
+              <div className="welcome-examples">
+                <p className="examples-title">💡 试试问我：</p>
+                <div className="example-chips">
+                  <button onClick={() => setInput('你好')} className="example-chip">你好</button>
+                  <button onClick={() => setInput('我的成绩')} className="example-chip">我的成绩</button>
+                  <button onClick={() => setInput('课程表')} className="example-chip">课程表</button>
+                  <button onClick={() => setInput('最近压力大')} className="example-chip">最近压力大</button>
+                </div>
+              </div>
             </div>
           )}
 
           {messages.map((msg, index) => (
-            <div key={index} className={`message ${msg.role}`}>
-              {msg.role === 'user' && <UserOutlined />}
-              {msg.role === 'assistant' && <RobotOutlined />}
-              <div className="message-content">
-                {msg.isFormList ? (
-                  <FormList
-                    content={msg.content}
-                    forms={msg.forms || []}
-                    onCopyFormName={(text) => {
-                      setInput(text);
-                      setCopiedFormName(text);
-                      message.success('✅ 已复制到输入框，点击发送即可生成表单！');
-                    }}
-                  />
-                ) : msg.isFormDownload ? (
-                  <div>
-                    <Markdown>{msg.content}</Markdown>
-                    <button
-                      onClick={() => handleFormDownload(msg.downloadUrl, msg.fileName)}
-                      className="download-button"
-                      style={{
-                        marginTop: '12px',
-                        padding: '8px 16px',
-                        background: '#667eea',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        transition: 'all 0.2s'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.background = '#5568d3';
-                        e.target.style.transform = 'translateY(-1px)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.background = '#667eea';
-                        e.target.style.transform = 'translateY(0)';
-                      }}
-                    >
-                      📥 点击下载表单文件
-                    </button>
+            <div key={index} className={`message-row ${msg.role}`}>
+              {msg.role === 'user' ? (
+                <>
+                  <div className="message-bubble user">
+                    <div className="message-content">
+                      {msg.content}
+                    </div>
                   </div>
-                ) : msg.isDownload ? (
-                  <div>
-                    <p>{msg.content}</p>
-                    <button
-                      onClick={() => handleDownload(msg.downloadUrl, msg.downloadType)}
-                      className="download-button"
-                    >
-                      📥 点击下载 {msg.downloadType}
-                    </button>
+                  <div className="message-avatar user">
+                    <UserOutlined />
                   </div>
-                ) : msg.isIntelligentQuery ? (
-                  <div style={{ width: '100%' }}>
-                    {/* 查询说明 */}
-                    <Markdown>{msg.content}</Markdown>
-
-                    {/* 查询结果表格 */}
-                    {msg.queryData && msg.queryData.length > 0 && (
-                      <QueryResultTable
-                        data={msg.queryData}
-                        rowCount={msg.rowCount}
-                        downloadUrl={msg.downloadUrl}
-                      />
-                    )}
-
-                    {/* 下载按钮（如果没有数据预览） */}
-                    {msg.downloadUrl && (!msg.queryData || msg.queryData.length === 0) && (
-                      <button
-                        onClick={() => handleDownload(msg.downloadUrl, '查询结果')}
-                        className="download-button"
+                </>
+              ) : (
+                <>
+                  <div className="message-avatar assistant">
+                    {getAIIcon(msg)}
+                  </div>
+                  <div className="message-bubble assistant">
+                    {/* 消息操作按钮 */}
+                    <Dropdown
+                      menu={{
+                        items: [
+                          {
+                            key: 'copy',
+                            icon: <CopyOutlined />,
+                            label: '复制',
+                            onClick: () => handleMessageAction('copy', index)
+                          },
+                          {
+                            key: 'regenerate',
+                            icon: <ReloadOutlined />,
+                            label: '重新生成',
+                            onClick: () => handleMessageAction('regenerate', index)
+                          },
+                          {
+                            key: 'delete',
+                            icon: <DeleteOutlined />,
+                            label: '删除',
+                            onClick: () => handleMessageAction('delete', index)
+                          }
+                        ]
+                      }}
+                      trigger={['click']}
+                    >
+                      <Button
+                        type="text"
+                        size="small"
+                        className="message-action-btn"
                       >
-                        📥 点击下载查询结果
-                      </button>
-                    )}
+                        ⋯
+                      </Button>
+                    </Dropdown>
 
-                    {/* 建议 */}
-                    {msg.suggestions && msg.suggestions.length > 0 && (
-                      <div style={{ marginTop: 16 }}>
-                        <Divider style={{ margin: '12px 0' }} />
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: 8 }}>
-                          <BulbOutlined style={{ color: '#faad14' }} />
-                          <span style={{ fontWeight: 500, color: '#666' }}>后续查询建议：</span>
-                        </div>
-                        {msg.suggestions.map((suggestion, idx) => (
-                          <div
-                            key={idx}
-                            style={{
-                              padding: '8px 12px',
-                              background: '#f5f5f5',
-                              borderRadius: '6px',
-                              marginBottom: '6px',
-                              cursor: 'pointer',
-                              fontSize: '14px',
-                              color: '#667eea',
-                              transition: 'all 0.2s'
-                            }}
-                            onClick={() => setInput(suggestion)}
-                            onMouseEnter={(e) => {
-                              e.target.style.background = '#e6e6e6';
-                              e.target.style.transform = 'translateX(4px)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.background = '#f5f5f5';
-                              e.target.style.transform = 'translateX(0)';
-                            }}
+                    <div className="message-content">
+                      {msg.isFormList ? (
+                        <FormList
+                          content={msg.content}
+                          forms={msg.forms || []}
+                          onCopyFormName={(text) => {
+                            setInput(text);
+                            message.success('✅ 已复制到输入框，点击发送即可生成表单！');
+                          }}
+                        />
+                      ) : msg.isFormDownload ? (
+                        <div>
+                          <Markdown>{msg.content}</Markdown>
+                          <button
+                            onClick={() => handleFormDownload(msg.downloadUrl, msg.fileName)}
+                            className="action-button"
                           >
-                            💡 {suggestion}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* 解释说明 */}
-                    {msg.explanation && (
-                      <div style={{
-                        marginTop: 12,
-                        padding: '8px 12px',
-                        background: '#e6f7ff',
-                        borderLeft: '3px solid #1890ff',
-                        borderRadius: '4px',
-                        fontSize: '13px',
-                        color: '#666'
-                      }}>
-                        <strong>💡 查询说明：</strong>{msg.explanation}
-                      </div>
-                    )}
-                  </div>
-                ) : msg.isRAGAnswer ? (
-                  <div style={{ width: '100%' }}>
-                    {/* RAG回答内容 */}
-                    <Markdown>{msg.content}</Markdown>
-
-                    {/* 可点击的来源链接 - 支持分页 */}
-                    {msg.sources && msg.sources.length > 0 && (
-                      <div style={{ marginTop: '16px' }}>
-                        <Divider style={{ margin: '12px 0' }} />
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <BookOutlined style={{ color: '#1890ff' }} />
-                            <span style={{ fontWeight: 500, color: '#666' }}>📖 参考来源：</span>
-                          </div>
-                          <span style={{ fontSize: '13px', color: '#999' }}>
-                            共 {msg.sources.length} 条
-                          </span>
+                            📥 点击下载表单文件
+                          </button>
                         </div>
+                      ) : msg.isDownload ? (
+                        <div>
+                          <p>{msg.content}</p>
+                          <button
+                            onClick={() => handleDownload(msg.downloadUrl, msg.downloadType)}
+                            className="action-button"
+                          >
+                            📥 点击下载 {msg.downloadType}
+                          </button>
+                        </div>
+                      ) : msg.isIntelligentQuery ? (
+                        <div className="query-result">
+                          <Markdown>{msg.content}</Markdown>
 
-                        {/* 计算当前页的来源 */}
-                        {(() => {
-                          const currentPage = sourcesPageMap[index] || 1;
-                          const totalPages = Math.ceil(msg.sources.length / SOURCES_PER_PAGE);
-                          const startIndex = (currentPage - 1) * SOURCES_PER_PAGE;
-                          const endIndex = startIndex + SOURCES_PER_PAGE;
-                          const currentSources = msg.sources.slice(startIndex, endIndex);
+                          {msg.queryData && msg.queryData.length > 0 && (
+                            <QueryResultTable
+                              data={msg.queryData}
+                              rowCount={msg.rowCount}
+                              downloadUrl={msg.downloadUrl}
+                            />
+                          )}
 
-                          return (
-                            <>
-                              {/* 当前页的来源列表 */}
-                              {currentSources.map((source, idx) => (
+                          {msg.downloadUrl && (!msg.queryData || msg.queryData.length === 0) && (
+                            <button
+                              onClick={() => handleDownload(msg.downloadUrl, '查询结果')}
+                              className="action-button"
+                            >
+                              📥 点击下载查询结果
+                            </button>
+                          )}
+
+                          {msg.suggestions && msg.suggestions.length > 0 && (
+                            <div className="suggestions">
+                              <Divider style={{ margin: '12px 0' }} />
+                              <div className="suggestions-title">
+                                <BulbOutlined style={{ color: '#faad14' }} />
+                                <span>后续查询建议：</span>
+                              </div>
+                              {msg.suggestions.map((suggestion, idx) => (
                                 <div
                                   key={idx}
-                                  onClick={() => {
-                                    setSelectedPageNum(source.page);
-                                    setHandbookModalVisible(true);
-                                  }}
-                                  style={{
-                                    padding: '8px 12px',
-                                    background: '#e6f7ff',
-                                    border: '1px solid #91d5ff',
-                                    borderRadius: '6px',
-                                    marginBottom: '8px',
-                                    cursor: 'pointer',
-                                    fontSize: '14px',
-                                    color: '#0050b3',
-                                    transition: 'all 0.2s',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px'
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    e.target.style.background = '#bae7ff';
-                                    e.target.style.transform = 'translateX(4px)';
-                                    e.target.style.borderColor = '#69c0ff';
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.target.style.background = '#e6f7ff';
-                                    e.target.style.transform = 'translateX(0)';
-                                    e.target.style.borderColor = '#91d5ff';
-                                  }}
+                                  className="suggestion-chip"
+                                  onClick={() => setInput(suggestion)}
                                 >
-                                  <BookOutlined />
-                                  <span style={{ flex: 1 }}>
-                                    {source.chapter || '未知章节'}（第{source.page}页）
-                                  </span>
-                                  <span style={{ fontSize: '12px', color: '#999' }}>
-                                    点击查看 →
-                                  </span>
+                                  💡 {suggestion}
                                 </div>
                               ))}
+                            </div>
+                          )}
 
-                              {/* 分页控件 */}
-                              {totalPages > 1 && (
-                                <div
-                                  style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '12px',
-                                    marginTop: '12px',
-                                    padding: '8px',
-                                    background: '#f5f5f5',
-                                    borderRadius: '6px'
-                                  }}
-                                >
-                                  <Button
-                                    size="small"
-                                    icon={<span>←</span>}
-                                    disabled={currentPage === 1}
-                                    onClick={() => {
-                                      setSourcesPageMap(prev => ({
-                                        ...prev,
-                                        [index]: currentPage - 1
-                                      }));
-                                    }}
-                                    style={{
-                                      fontSize: '12px',
-                                      minWidth: '60px'
-                                    }}
-                                  >
-                                    上一页
-                                  </Button>
+                          {msg.explanation && (
+                            <div className="explanation">
+                              <strong>💡 查询说明：</strong>{msg.explanation}
+                            </div>
+                          )}
+                        </div>
+                      ) : msg.isRAGAnswer ? (
+                        <div className="rag-result">
+                          <Markdown>{msg.content}</Markdown>
 
-                                  <span
-                                    style={{
-                                      fontSize: '13px',
-                                      color: '#666',
-                                      fontWeight: 500
-                                    }}
-                                  >
-                                    第 {currentPage} / {totalPages} 页
-                                  </span>
+                          {msg.sources && msg.sources.length > 0 && (
+                            <div className="rag-sources">
+                              <Divider style={{ margin: '12px 0' }} />
+                              <div className="sources-header">
+                                <BookOutlined style={{ color: '#1890ff' }} />
+                                <span>📖 参考来源：</span>
+                                <span className="sources-count">共 {msg.sources.length} 条</span>
+                              </div>
 
-                                  <Button
-                                    size="small"
-                                    icon={<span>→</span>}
-                                    disabled={currentPage === totalPages}
-                                    onClick={() => {
-                                      setSourcesPageMap(prev => ({
-                                        ...prev,
-                                        [index]: currentPage + 1
-                                      }));
-                                    }}
-                                    style={{
-                                      fontSize: '12px',
-                                      minWidth: '60px'
-                                    }}
-                                  >
-                                    下一页
-                                  </Button>
-                                </div>
-                              )}
-                            </>
-                          );
-                        })()}
-                      </div>
-                    )}
+                              {(() => {
+                                const currentPage = sourcesPageMap[index] || 1;
+                                const totalPages = Math.ceil(msg.sources.length / SOURCES_PER_PAGE);
+                                const startIndex = (currentPage - 1) * SOURCES_PER_PAGE;
+                                const endIndex = startIndex + SOURCES_PER_PAGE;
+                                const currentSources = msg.sources.slice(startIndex, endIndex);
 
-                    {/* 置信度信息 */}
-                    {msg.confidence && (
-                      <div style={{
-                        marginTop: '8px',
-                        padding: '6px 12px',
-                        background: '#f5f5f5',
-                        borderRadius: '4px',
-                        fontSize: '12px',
-                        color: '#666',
-                        textAlign: 'center'
-                      }}>
-                        🎯 置信度：{(msg.confidence * 100).toFixed(0)}%
-                      </div>
-                    )}
+                                return (
+                                  <>
+                                    {currentSources.map((source, idx) => (
+                                      <div
+                                        key={idx}
+                                        onClick={() => {
+                                          setSelectedPageNum(source.page);
+                                          setHandbookModalVisible(true);
+                                        }}
+                                        className="source-item"
+                                      >
+                                        <BookOutlined />
+                                        <span className="source-text">
+                                          {source.chapter || '未知章节'}（第{source.page}页）
+                                        </span>
+                                        <span className="source-action">点击查看 →</span>
+                                      </div>
+                                    ))}
+
+                                    {totalPages > 1 && (
+                                      <div className="sources-pagination">
+                                        <Button
+                                          size="small"
+                                          disabled={currentPage === 1}
+                                          onClick={() => {
+                                            setSourcesPageMap(prev => ({
+                                              ...prev,
+                                              [index]: currentPage - 1
+                                            }));
+                                          }}
+                                        >
+                                          上一页
+                                        </Button>
+
+                                        <span>第 {currentPage} / {totalPages} 页</span>
+
+                                        <Button
+                                          size="small"
+                                          disabled={currentPage === totalPages}
+                                          onClick={() => {
+                                            setSourcesPageMap(prev => ({
+                                              ...prev,
+                                              [index]: currentPage + 1
+                                            }));
+                                          }}
+                                        >
+                                          下一页
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </>
+                                );
+                              })()}
+                            </div>
+                          )}
+
+                          {msg.confidence && (
+                            <div className="confidence">
+                              🎯 置信度：{(msg.confidence * 100).toFixed(0)}%
+                            </div>
+                          )}
+                        </div>
+                      ) : msg.role === 'assistant' ? (
+                        <Markdown>{msg.content}</Markdown>
+                      ) : (
+                        msg.content
+                      )}
+                    </div>
                   </div>
-                ) : msg.role === 'assistant' ? (
-                  <Markdown>{msg.content}</Markdown>
-                ) : (
-                  msg.content
-                )}
-              </div>
+                </>
+              )}
             </div>
           ))}
 
           {loading && (
-            <div className="message assistant">
-              <RobotOutlined />
-              <div className="message-content">
-                <Spin size="small" /> 正在思考中...
+            <div className="message-row assistant">
+              <div className="message-avatar assistant">
+                <Spin size="small" />
+              </div>
+              <div className="message-bubble assistant">
+                <div className="message-content loading">
+                  正在思考中...
+                </div>
               </div>
             </div>
           )}
@@ -1201,103 +1166,55 @@ function Chat({ user }) {
           <div ref={messagesEndRef} />
         </div>
 
+        {/* 回到底部按钮 */}
         {showScrollButton && (
           <Button
             type="primary"
             shape="circle"
-            icon={<VerticalAlignBottomOutlined />}
-            onClick={scrollToBottom}
-            className="scroll-to-bottom-button"
-          >
-            回到底部
-          </Button>
-        )}
-
-        <div className="chat-input">
-          <Input
             size="large"
-            placeholder="输入您的问题...（试试：你好 / 查询成绩 / 大学生活建议）"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onPressEnter={handleSend}
-            disabled={loading}
-            suffix={
-              <Button
-                type="primary"
-                icon={<SendOutlined />}
-                onClick={handleSend}
-                loading={loading}
-              >
-                发送
-              </Button>
-            }
+            icon={<VerticalAlignBottomOutlined style={{ fontSize: '20px' }} />}
+            onClick={() => scrollToBottom(true)}
+            className="scroll-to-bottom-btn"
+            title="回到底部"
           />
-        </div>
-      </Card>
-
-      <Card
-        title="对话历史"
-        className="chat-history-panel"
-        style={{
-          position: 'fixed',
-          right: historyVisible ? '20px' : '-400px',
-          top: '20px',
-          width: '350px',
-          maxHeight: 'calc(100vh - 40px)',
-          overflowY: 'auto',
-          transition: 'right 0.3s ease',
-          zIndex: 1000,
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)'
-        }}
-      >
-        <Button
-          type="text"
-          onClick={() => setHistoryVisible(false)}
-          style={{ position: 'absolute', right: '10px', top: '10px', fontSize: '18px' }}
-        >
-          ×
-        </Button>
-        {chatHistory.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <p style={{ color: '#999' }}>暂无历史记录</p>
-            <p style={{ color: '#999', fontSize: '12px', marginTop: '10px' }}>
-              开始对话后，记录会保存在这里
-            </p>
-          </div>
-        ) : (
-          chatHistory.map((item) => (
-            <div
-              key={item.chat_id}
-              className="history-item"
-              onClick={() => {
-                setMessages([
-                  { role: 'user', content: item.user_question },
-                  { role: 'assistant', content: item.ai_answer_preview || item.ai_answer }
-                ]);
-                setHistoryVisible(false);
-                message.success('已加载历史对话');
-              }}
-            >
-              <div className="history-item-time">
-                {new Date(item.created_at).toLocaleString('zh-CN', {
-                  year: 'numeric',
-                  month: '2-digit',
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </div>
-              <div className="history-item-question">
-                {item.user_question}
-              </div>
-              <div className="history-item-intent">
-                {item.intent === 'chat' ? '💬 闲聊' :
-                 item.intent === 'download' ? '📥 下载' : '📊 查询'}
-              </div>
-            </div>
-          ))
         )}
-      </Card>
+
+        {/* 输入区域 */}
+        <div className="chat-input-area">
+          <div className="input-container">
+            <Input.TextArea
+              ref={inputRef}
+              value={input}
+              onChange={(e) => {
+                setInput(e.target.value);
+                setMultiline(e.target.value.split('\n').length > 1 || e.target.value.length > 50);
+              }}
+              onPressEnter={(e) => {
+                if (!e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder="输入您的问题...（Enter发送，Shift+Enter换行）"
+              autoSize={{ minRows: 1, maxRows: 6 }}
+              className="chat-input"
+              disabled={loading}
+            />
+            <Button
+              type="primary"
+              icon={<SendOutlined />}
+              onClick={handleSend}
+              loading={loading}
+              className="send-button"
+            >
+              发送
+            </Button>
+          </div>
+          <div className="input-hint">
+            💡 提示：按 Enter 发送，Shift + Enter 换行
+          </div>
+        </div>
+      </div>
 
       {/* 学生手册查看器 */}
       <HandbookViewer
