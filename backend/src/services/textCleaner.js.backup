@@ -1,0 +1,264 @@
+/**
+ * 文本清理服务 - 用于清理RAG返回的文档内容
+ * @author 内师智能体系统 (￣▽￣)ﾉ
+ *
+ * 功能：
+ * - 移除孤立的标点符号行
+ * - 标准化标点符号
+ * - 清理多余空格
+ * - 修正换行问题
+ * - 段落重组
+ */
+
+class TextCleaner {
+  constructor() {
+    // 孤立标点符号列表（单独成行的标点）
+    this.isolatedPunctuation = /^[。，、；：,.;:!?！？，,、\s]+$/;
+
+    // 需要标准化的标点映射
+    this.punctuationMap = {
+      ',': '，',
+      ';': '；',
+      ':': '：',
+      '\\.': '。',
+      '\\?': '？',
+      '!': '！',
+      '\\(': '（',
+      '\\)': '）'
+    };
+  }
+
+  /**
+   * 主清理方法 - 清理文本内容
+   * @param {string} text - 原始文本
+   * @returns {string} 清理后的文本
+   */
+  clean(text) {
+    if (!text || typeof text !== 'string') {
+      return text;
+    }
+
+    let cleaned = text;
+
+    // 按顺序应用清理规则
+    cleaned = this.removeIsolatedPunctuation(cleaned);
+    cleaned = this.normalizeLineBreaks(cleaned);
+    cleaned = this.normalizePunctuation(cleaned);
+    cleaned = this.removeExtraSpaces(cleaned);
+    cleaned = this.removeDuplicatePunctuation(cleaned);  // ✨ 新增：清理重复标点
+    cleaned = this.fixBrokenSentences(cleaned);
+    cleaned = this.removeEmptyLines(cleaned);
+    cleaned = this.reorganizeParagraphs(cleaned);
+
+    return cleaned;
+  }
+
+  /**
+   * 移除孤立的标点符号行
+   * 例如：单独一行的"。", ", "
+   */
+  removeIsolatedPunctuation(text) {
+    return text
+      .split('\n')
+      .filter(line => !this.isolatedPunctuation.test(line.trim()))
+      .join('\n');
+  }
+
+  /**
+   * 标准化换行符
+   */
+  normalizeLineBreaks(text) {
+    // 统一换行符为\n
+    return text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  }
+
+  /**
+   * 标准化标点符号
+   * 将英文标点转换为中文标点
+   */
+  normalizePunctuation(text) {
+    let normalized = text;
+
+    // 应用标点映射
+    for (const [from, to] of Object.entries(this.punctuationMap)) {
+      const regex = new RegExp(from, 'g');
+      normalized = normalized.replace(regex, to);
+    }
+
+    return normalized;
+  }
+
+  /**
+   * 移除多余空格
+   */
+  removeExtraSpaces(text) {
+    let cleaned = text;
+
+    // 移除标点符号前后的空格（中文标点不需要空格）
+    cleaned = cleaned.replace(/\s+([，。；：！？、（）])/g, '$1');
+    cleaned = cleaned.replace(/([，。；：！？、（）])\s+/g, '$1');
+
+    // 移除行首行尾空格
+    cleaned = cleaned.split('\n').map(line => line.trim()).join('\n');
+
+    // 压缩多个空格为单个空格
+    cleaned = cleaned.replace(/[ \t]+/g, ' ');
+
+    return cleaned;
+  }
+
+  /**
+   * 清理重复的标点符号
+   * 例如："，，，" -> "，"，"。。。" -> "。"
+   */
+  removeDuplicatePunctuation(text) {
+    let cleaned = text;
+
+    // 移除重复的中文标点符号
+    const punctuationList = ['，。；：！？、'];
+    punctuationList.forEach(punct => {
+      const regex = new RegExp(`\\${punct}{2,}`, 'g');
+      cleaned = cleaned.replace(regex, punct);
+    });
+
+    // 修复标点符号组合问题
+    cleaned = cleaned.replace(/[，。；：！？、]+[，。；：！？、]+/g, (match) => {
+      // 如果是多个标点符号组合，保留最后一个
+      return match.slice(-1);
+    });
+
+    // 修复括号内的标点问题：（、）、（，）、（。） -> （）
+    cleaned = cleaned.replace(/\（[、。，]+\）/g, '（');
+
+    return cleaned;
+  }
+
+  /**
+   * 修复被换行符打断的句子
+   * 例如："各年级\n各专业" -> "各年级各专业"
+   */
+  fixBrokenSentences(text) {
+    let fixed = text;
+
+    // 如果一行以小写字母或数字结尾，下一行以小写字母或数字开头，则合并
+    const lines = fixed.split('\n');
+    const mergedLines = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const currentLine = lines[i];
+      const nextLine = lines[i + 1];
+
+      if (nextLine && this.shouldMergeLines(currentLine, nextLine)) {
+        // 合并这两行
+        mergedLines.push(currentLine + nextLine);
+        i++; // 跳过下一行
+      } else {
+        mergedLines.push(currentLine);
+      }
+    }
+
+    return mergedLines.join('\n');
+  }
+
+  /**
+   * 判断两行是否应该合并
+   */
+  shouldMergeLines(line1, line2) {
+    if (!line1 || !line2) return false;
+
+    const trimmed1 = line1.trim();
+    const trimmed2 = line2.trim();
+
+    // 如果第一行以标点符号结尾，不合并
+    if (/[。，；：！？]$/.test(trimmed1)) {
+      return false;
+    }
+
+    // 如果第二行以大写字母或特殊标记开头，不合并
+    if (/^[第条条款一二三四五六七八九十]/.test(trimmed2)) {
+      return false;
+    }
+
+    // 如果第一行很短（少于20字）且不是完整句子，可能需要合并
+    if (trimmed1.length < 20 && !/[。，；：！？]$/.test(trimmed1)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * 移除多余的空行（保留段落间的一个空行）
+   */
+  removeEmptyLines(text) {
+    // 压缩多个连续空行为单个空行
+    return text.replace(/\n{3,}/g, '\n\n');
+  }
+
+  /**
+   * 重组段落
+   * 确保段落之间有适当的间距
+   */
+  reorganizeParagraphs(text) {
+    const paragraphs = text.split('\n\n');
+    const reorganized = paragraphs.map(para => {
+      // 移除段落内的换行，保持段落为一行
+      return para.replace(/\n/g, '');
+    });
+
+    return reorganized.join('\n\n');
+  }
+
+  /**
+   * 高级清理 - 针对特定格式的文档
+   * @param {string} text - 原始文本
+   * @returns {string} 深度清理后的文本
+   */
+  deepClean(text) {
+    if (!text || typeof text !== 'string') {
+      return text;
+    }
+
+    let cleaned = text;
+
+    // 先进行基础清理
+    cleaned = this.clean(cleaned);
+
+    // 针对PDF解析产生的问题进行特殊处理
+    cleaned = this.fixPdfExtractionIssues(cleaned);
+
+    return cleaned;
+  }
+
+  /**
+   * 修复PDF提取产生的问题
+   */
+  fixPdfExtractionIssues(text) {
+    let fixed = text;
+
+    // 修复常见的PDF提取问题
+    // 1. 修复断词：例如"办公\n室" -> "办公室"
+    fixed = fixed.replace(/办公\n室/g, '办公室');
+    fixed = fixed.replace(/教学科研\n工作/g, '教学科研工作');
+    fixed = fixed.replace(/升、跳、留、降\n级/g, '升、跳、留、降级');
+    fixed = fixed.replace(/留、降\n级/g, '留、降级');
+
+    // 2. 修复被拆分的数字
+    fixed = fixed.replace(/(\d+)\n(\d+)/g, '$1$2');
+
+    // 3. 修复被拆分的括号内容
+    fixed = fixed.replace(/（\n([^）]+)\n）/g, '（$1）');
+    fixed = fixed.replace(/\(\n([^)]+)\n\)/g, '($1)');
+
+    // 4. 修复被拆分的引号内容
+    fixed = fixed.replace(/"\n([^"]+)\n"/g, '"$1"');
+    fixed = fixed.replace(/"\n([^"]+)"/g, '"$1"');
+    fixed = fixed.replace(/"\n/g, '"');
+    fixed = fixed.replace(/\n"/g, '"');
+
+    return fixed;
+  }
+}
+
+// 导出单例
+module.exports = new TextCleaner();

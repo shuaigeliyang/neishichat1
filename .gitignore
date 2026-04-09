@@ -24,9 +24,15 @@ wheels/
 *.egg
 
 # 数据文件（保留必要的数据，只排除过大的索引文件）
-retrieval_index.json  # 58MB，太大，需要重新生成
+# retrieval_index.json - 已提交到git（67MB）
 # document_chunks.json - 保留（RAG系统依赖）
 # student_handbook_full.json - 保留（API依赖）
+
+# ✨ 额外排除的缓存和大文件
+backend/embedding_cache.json  # embedding缓存，应该动态生成
+backend/document_chunks.json  # 与根目录重复，只保留根目录的
+embedding_cache.json          # 根目录缓存
+neishichat_reference/         # 参考资料目录，上传时不需要
 
 # Excel 数据文件（排除用户数据，保留示例数据）
 # *.xlsx
@@ -65,6 +71,19 @@ stop.bat
 restart.bat
 startup.bat
 启动内网穿透.bat
+test-*.js
+*_backup*
+*_backup.*
+student_handbook_full.json_*
+"~$"  # Word临时文件
+相关文档/*.docx  # Word文档，大文件不上传
+相关文档/~$*  # Word临时文件
+databaseRagService.js  # 已废弃的数据库RAG服务
+databaseSearchService.js  # 已废弃的数据库搜索服务
+textCleaner.js  # 已废弃的文本清理服务
+quick-index-build.js  # 临时构建脚本
+efficient-rebuild.js  # 临时重建脚本
+import-documents.js  # 临时导入脚本
 
 # ngrok 工具
 ngrok-v3-stable-windows-amd64/

@@ -61,6 +61,7 @@ app.get('/health', (req, res) => {
 
 // API路由
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/guest', require('./routes/guest')); // 访客聊天路由（新增！）
 app.use('/api/students', require('./routes/students'));
 app.use('/api/teachers', require('./routes/teachers'));
 app.use('/api/courses', require('./routes/courses'));

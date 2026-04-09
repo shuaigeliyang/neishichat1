@@ -7,7 +7,7 @@ const DocumentProcessor = require('./services/documentProcessor');
 const RAGService = require('./services/ragService');
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config();
+require('dotenv').config({ path: __dirname + '/.env' });
 
 async function rebuildIndex() {
   console.log('✓ 开始完整重建RAG索引...\n');

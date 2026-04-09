@@ -8,6 +8,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Layout, Spin } from 'antd';
 import Login from './pages/Login';
 import Chat from './pages/Chat';
+import SchoolPortal from './pages/SchoolPortal';
 import StudentDashboard from './pages/StudentDashboard';
 import TeacherDashboard from './pages/TeacherDashboard';
 import AdminDashboard from './pages/AdminDashboard';
@@ -53,11 +54,15 @@ function App() {
       <Content style={{ padding: '0', background: 'transparent' }}>
         <Routes>
           <Route
-            path="/login"
-            element={!user ? <Login onLogin={handleLogin} /> : <Navigate to="/" />}
+            path="/"
+            element={<SchoolPortal />}
           />
           <Route
-            path="/"
+            path="/login"
+            element={<Navigate to="/" replace />}
+          />
+          <Route
+            path="/dashboard"
             element={user ? (
               user.type === 'student' ? (
                 <StudentDashboard user={user} onLogout={handleLogout} />
@@ -67,12 +72,16 @@ function App() {
                 <AdminDashboard user={user} onLogout={handleLogout} />
               )
             ) : (
-              <Navigate to="/login" />
+              <Navigate to="/" replace />
             )}
           />
           <Route
             path="/chat"
-            element={user ? <Chat user={user} /> : <Navigate to="/login" />}
+            element={user ? <Chat user={user} /> : <Navigate to="/" replace />}
+          />
+          <Route
+            path="*"
+            element={<Navigate to="/" replace />}
           />
         </Routes>
       </Content>
