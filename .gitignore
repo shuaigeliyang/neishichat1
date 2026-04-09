@@ -71,7 +71,8 @@ stop.bat
 restart.bat
 startup.bat
 启动内网穿透.bat
-test-*.js
+# test-questions.js ✨ 保留！这是重要的准确性测试文件
+test-temp-*.js  # 只排除临时测试文件
 *_backup*
 *_backup.*
 student_handbook_full.json_*

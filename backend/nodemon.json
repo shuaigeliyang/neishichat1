@@ -1,0 +1,23 @@
+{
+  "watch": [
+    "src/**/*.js",
+    "services/**/*.js"
+  ],
+  "ignore": [
+    "node_modules/**",
+    "logs/**",
+    "*.json",
+    "*.md",
+    "test*.js",
+    "**/*.test.js",
+    "frontend/**",
+    "neishichat_reference/**",
+    "相关文档/**"
+  ],
+  "ext": "js",
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "verbose": true,
+  "delay": "2000"
+}

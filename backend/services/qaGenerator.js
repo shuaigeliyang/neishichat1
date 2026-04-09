@@ -143,7 +143,7 @@ ${context}
     buildContext(retrievedDocs, includeCitations) {
         return retrievedDocs.map((doc, index) => {
             const citation = includeCitations
-                ? `\n[来源：${doc.chunk.chapter_title}，第${doc.chunk.page_num}页]`
+                ? `\n[来源：第${doc.chunk.page_num}页]`
                 : '';
 
             return `文档片段${index + 1}（相关度：${(doc.score * 100).toFixed(0)}%）：
@@ -156,7 +156,7 @@ ${doc.chunk.text}${citation}`;
      */
     extractSources(retrievedDocs) {
         return retrievedDocs.map(doc => ({
-            chapter: doc.chunk.chapter_title,
+            chapter: `第${doc.chunk.page_num}页`,
             page: doc.chunk.page_num,
             score: doc.score,
             snippet: doc.chunk.text.substring(0, 100) + '...'
@@ -173,7 +173,8 @@ ${doc.chunk.text}${citation}`;
         if (!formatted.includes('来源') && !formatted.includes('引用')) {
             formatted += '\n\n---\n\n**参考资料**：\n';
             sources.forEach((source, index) => {
-                formatted += `${index + 1}. ${source.chapter}（第${source.page}页）\n`;
+                // ✨ 修复：直接使用chapter，不再重复添加页码
+                formatted += `${index + 1}. ${source.chapter}\n`;
             });
         }
 

@@ -358,7 +358,7 @@ router.post('/answer', authenticate, async (req, res) => {
         // 调用问答服务，增加检索数量以获得更多来源
         const result = await ragService.answer(normalizedQuestion, {
             ...options,
-            topK: options.topK || 10,  // 增加到10，这样去重后仍有足够来源
+            topK: options.topK || 15,  // ✨ 增加到15，确保所有提到的页码都能包含
             minScore: options.minScore || 0.3  // 默认从0.5降低到0.3
         });
 
@@ -370,7 +370,8 @@ router.post('/answer', authenticate, async (req, res) => {
             const sourceMap = new Map();
 
             result.sources.forEach(source => {
-                const key = `${source.chapter}_${source.page}`;
+                // ✨ 修复：只使用页码作为去重key，因为chapter可能包含文本
+                const key = source.page || source.page_num;
                 const existing = sourceMap.get(key);
 
                 // 如果不存在，或当前source评分更高，则保留

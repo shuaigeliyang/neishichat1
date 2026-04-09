@@ -126,7 +126,8 @@ class RetrievalEngine {
 
         console.log(`✓ 找到${finalResults.length}个相关文档块`);
         finalResults.forEach((item, index) => {
-            console.log(`  ${index + 1}. [${item.chunk.chapter_title}] 相似度：${item.score.toFixed(3)}`);
+            const pageTitle = item.chunk.text ? item.chunk.text.substring(0, 30) + '...' : 'N/A';
+            console.log(`  ${index + 1}. [第${item.chunk.page_num}页] ${pageTitle} 相似度：${item.score.toFixed(3)}`);
         });
 
         return finalResults;
@@ -141,8 +142,7 @@ class RetrievalEngine {
             const documents = results.map(item => ({
                 text: item.chunk.text,
                 metadata: {
-                    chapter: item.chunk.chapter_title,
-                    page: item.chunk.page_number
+                    page: item.chunk.page_num
                 }
             }));
 
