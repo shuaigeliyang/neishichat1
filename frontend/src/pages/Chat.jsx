@@ -540,13 +540,13 @@ function Chat({ user }) {
   };
 
   /**
-   * 处理文档问答（基于学生手册）
+   * 处理文档问答（基于多政策文档）
    */
   const handleDocumentQuery = async (question) => {
-    console.log('📚 [RAG] 开始处理文档问答:', question);
+    console.log('📚 [多文档RAG] 开始处理文档问答:', question);
     try {
       const response = await axios.post(
-        '/api/rag/answer',
+        '/api/rag-v2/answer',  // ✨ 切换到多文档API
         { question: question },
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );
@@ -557,7 +557,7 @@ function Chat({ user }) {
         const notFoundKeywords = [
           '没有找到', '未找到', '抱歉', '对不起',
           '建议您检查问题表述', '查阅学生手册纸质版',
-          '根据学生手册，没有找到'
+          '我在已索引的政策文档中没有找到'
         ];
 
         const isNotFound = ragData.answer && notFoundKeywords.some(keyword =>
@@ -565,13 +565,13 @@ function Chat({ user }) {
         );
 
         if (isNotFound || (ragData.sources && ragData.sources.length === 0)) {
-          console.log('📚 [RAG] 未找到相关文档，降级到普通聊天');
+          console.log('📚 [多文档RAG] 未找到相关文档，降级到普通聊天');
 
-          message.info('📚 学生手册中没有找到完全匹配的信息，正在使用AI助手为您解答...');
+          message.info('📚 已索引的政策文档中没有找到完全匹配的信息，正在使用AI助手为您解答...');
 
           setMessages(prev => [...prev, {
             role: 'system',
-            content: '📚 学生手册中没有找到完全匹配的信息，正在使用AI助手为您解答...',
+            content: '📚 已索引的政策文档中没有找到完全匹配的信息，正在使用AI助手为您解答...',
             timestamp: new Date().toISOString()
           }]);
 
@@ -581,11 +581,28 @@ function Chat({ user }) {
 
         let ragContent = ragData.answer;
 
+        // ✨ 处理多文档来源格式
+        const sources = ragData.sources || [];
+        const formattedSources = [];
+
+        sources.forEach(docGroup => {
+          if (docGroup.chunks && docGroup.chunks.length > 0) {
+            docGroup.chunks.forEach(chunk => {
+              formattedSources.push({
+                chapter: chunk.chapter,
+                page: chunk.page,
+                score: chunk.score,
+                documentName: docGroup.documentName  // ✨ 新增：文档名称
+              });
+            });
+          }
+        });
+
         setMessages(prev => [...prev, {
           role: 'assistant',
           content: ragContent,
           isRAGAnswer: true,
-          sources: ragData.sources || [],
+          sources: formattedSources,  // ✨ 使用格式化后的来源
           confidence: ragData.confidence
         }]);
         return;
@@ -1089,7 +1106,7 @@ function Chat({ user }) {
                                       >
                                         <BookOutlined />
                                         <span className="source-text">
-                                          {source.chapter || '未知章节'}（第{source.page}页）
+                                          {source.documentName || '未知文档'} - {source.chapter || '未知章节'}（第{source.page}页）
                                         </span>
                                         <span className="source-action">点击查看 →</span>
                                       </div>

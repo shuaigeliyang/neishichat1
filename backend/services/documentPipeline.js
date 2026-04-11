@@ -78,20 +78,35 @@ class DocumentPipeline {
 
             // 7. 智能分块
             console.log('\n--- 步骤3: 智能分块 ---');
-            const chunks = await this.chunkContent(contentData, targetDir);
+            const chunks = await this.chunkContent(contentData);
             console.log(`✓ 生成了 ${chunks.length} 个 chunks`);
 
-            // 8. 向量化并添加到索引
-            console.log('\n--- 步骤4: 向量化并建立索引 ---');
+            // 8. 向量化
+            console.log('\n--- 步骤4: 向量化 ---');
+            const chunksWithEmbeddings = await this.indexManager.embeddingService.embedChunks(chunks);
+            console.log(`✓ 向量化完成，生成 ${chunksWithEmbeddings.length} 个向量`);
+
+            // 9. 保存向量缓存到文档目录
+            console.log('\n--- 步骤5: 保存向量缓存 ---');
+            const cachePath = path.join(targetDir, 'embedding_cache.json');
+            await this.indexManager.embeddingService.saveCache(cachePath);
+            console.log(`✓ 缓存已保存: ${cachePath}`);
+
+            // 10. 保存检索索引（旧系统兼容）
+            console.log('\n--- 步骤6: 保存检索索引 ---');
+            await this.saveRetrievalIndex(targetDir, chunksWithEmbeddings, contentData);
+
+            // 11. 添加到统一索引
+            console.log('\n--- 步骤7: 添加到统一索引 ---');
             await this.indexManager.initialize(); // 重新加载索引
             const indexedCount = await this.indexManager.addDocument(
                 documentId,
                 docName,
-                chunks
+                chunksWithEmbeddings
             );
             console.log(`✓ 已添加 ${indexedCount} 个 chunks 到统一索引`);
 
-            // 9. 更新状态为已索引
+            // 12. 更新状态为已索引
             const statistics = {
                 totalPages: contentData.total_pages || contentData.pages?.length || 0,
                 totalChunks: chunks.length,
@@ -165,7 +180,7 @@ class DocumentPipeline {
     /**
      * 对内容进行分块
      */
-    async chunkContent(contentData, targetDir) {
+    async chunkContent(contentData) {
         const chunks = [];
         let chunkId = 0;
         let currentChapter = null;
@@ -238,11 +253,7 @@ class DocumentPipeline {
             }
         }
 
-        // 保存chunks到文件（用于后续处理）
-        const chunksPath = path.join(targetDir, 'document_chunks.json');
-        await fs.writeFile(chunksPath, JSON.stringify(chunks, null, 2), 'utf-8');
-        console.log(`  ✓ Chunks已保存: ${chunksPath}`);
-
+        console.log(`  ✓ 生成了 ${chunks.length} 个 chunks（内存中）`);
         return chunks;
     }
 
@@ -269,6 +280,40 @@ class DocumentPipeline {
         return text.trim()
             .replace(/\s+/g, ' ')
             .substring(0, 200);
+    }
+
+    /**
+     * 保存检索索引（兼容旧系统）
+     */
+    async saveRetrievalIndex(targetDir, chunksWithEmbeddings, contentData) {
+        const retrievalIndex = {
+            metadata: {
+                total_chunks: chunksWithEmbeddings.length,
+                total_pages: contentData.total_pages || contentData.pages?.length || 0,
+                source_file: path.join(targetDir, 'student_handbook_full.json'),
+                chunk_config: {
+                    chunk_size: 1000,
+                    overlap: 200
+                },
+                generated_at: new Date().toISOString(),
+                embedding_model: this.embeddingMode === 'local' ? 'bge-small-zh-v1.5' : 'embedding-3',
+                vector_dimension: this.embeddingMode === 'local' ? 512 : 2048
+            },
+            chunks: chunksWithEmbeddings.map(chunk => ({
+                chunk_id: chunk.id,
+                page_num: chunk.page_num,
+                text: chunk.text,
+                char_count: chunk.text.length,
+                full_context: chunk.text,
+                embedding: chunk.embedding
+            }))
+        };
+
+        const indexPath = path.join(targetDir, 'retrieval_index.json');
+        await fs.writeFile(indexPath, JSON.stringify(retrievalIndex, null, 2), 'utf-8');
+        console.log(`  ✓ 检索索引已保存: ${indexPath}`);
+        console.log(`    - chunks: ${retrievalIndex.metadata.total_chunks}`);
+        console.log(`    - 维度: ${retrievalIndex.metadata.vector_dimension}`);
     }
 
     /**

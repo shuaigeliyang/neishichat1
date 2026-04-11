@@ -112,14 +112,10 @@ class UnifiedIndexManager {
     /**
      * 添加文档到统一索引
      */
-    async addDocument(documentId, documentName, chunks) {
+    async addDocument(documentId, documentName, chunksWithEmbeddings) {
         console.log(`\n✓ 添加文档到统一索引: ${documentName}`);
 
-        // 1. 为chunks生成向量
-        console.log(`  - 生成 ${chunks.length} 个 chunks 的向量...`);
-        const chunksWithEmbeddings = await this.embeddingService.embedChunks(chunks);
-
-        // 2. 添加documentId和documentName到每个chunk
+        // 1. 添加documentId和documentName到每个chunk
         const enrichedChunks = chunksWithEmbeddings.map((chunk, idx) => ({
             chunkId: this.getNextChunkId(),
             documentId: documentId,
@@ -130,10 +126,10 @@ class UnifiedIndexManager {
             embedding: chunk.embedding
         }));
 
-        // 3. 添加到统一索引
+        // 2. 添加到统一索引
         this.indexData.chunks.push(...enrichedChunks);
 
-        // 4. 更新文档列表
+        // 3. 更新文档列表
         const existingDocIndex = this.indexData.documents.findIndex(d => d.documentId === documentId);
         if (existingDocIndex >= 0) {
             // 更新现有文档
@@ -152,11 +148,16 @@ class UnifiedIndexManager {
             this.indexData.metadata.totalDocuments++;
         }
 
-        // 5. 更新元数据
+        // 4. 更新元数据
         this.indexData.metadata.totalChunks = this.indexData.chunks.length;
 
-        // 6. 保存索引
+        // 5. 保存索引
         await this.saveIndex();
+
+        // 6. 保存向量缓存到文档库（全局缓存）
+        const cachePath = path.join(path.dirname(this.indexPath), 'embedding_cache.json');
+        await this.embeddingService.saveCache(cachePath);
+        console.log(`  ✓ 全局缓存已保存: ${cachePath}`);
 
         console.log(`  ✓ 已添加 ${enrichedChunks.length} 个 chunks`);
         return enrichedChunks.length;
