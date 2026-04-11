@@ -29,8 +29,9 @@ import DocumentRegistry from '../services/documentRegistry.js';
 const router = Router();
 const registry = new DocumentRegistry();
 
-// 上传目录 - 直接硬编码绝对路径
-const UPLOAD_DIR = 'E:/外包/教育系统智能体/相关文档';
+// ✨ 修复：使用相对路径替代硬编码绝对路径
+// 从后台管理系统/backend/src/routes 往回4层到达项目根目录，再进入相关文档目录
+const UPLOAD_DIR = path.resolve(__dirname, '../../../../相关文档');
 
 // 确保上传目录存在
 import('fs').then(fs => {

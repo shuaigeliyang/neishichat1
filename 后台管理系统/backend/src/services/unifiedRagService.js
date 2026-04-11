@@ -42,21 +42,35 @@ class UnifiedRAGService {
 
     /**
      * 问答
+     * @param {string} question - 用户问题
+     * @param {Object} options - 配置选项
+     * @param {number} options.topK - 检索返回的文档数量
+     * @param {number} options.minScore - 最小相似度阈值
+     * @param {string[]} options.documentIds - 可选：指定要检索的文档ID列表
      */
     async ask(question, options = {}) {
         if (!this.initialized) {
             await this.initialize();
         }
 
-        const { topK = 5, minScore = 0.3 } = options;
+        const { topK = 5, minScore = 0.3, documentIds = null } = options;  // ✨ 新增：documentIds参数
 
         console.log(`\n========== 问题：${question} ==========`);
+
+        // ✨ 新增：文档过滤日志
+        if (documentIds && documentIds.length > 0) {
+            console.log(`🎯 指定文档检索：${documentIds.join(', ')}`);
+        }
 
         // 1. 生成问题向量
         const questionEmbedding = await this.generateEmbedding(question);
 
-        // 2. 检索相关chunks
-        const results = await unifiedIndexManager.retrieve(questionEmbedding, { topK, minScore });
+        // 2. 检索相关chunks（✨ 新增：传递documentIds参数）
+        const results = await unifiedIndexManager.retrieve(questionEmbedding, {
+            topK,
+            minScore,
+            documentIds  // ✨ 新增：文档过滤参数
+        });
 
         console.log(`检索到 ${results.length} 个相关chunks`);
 

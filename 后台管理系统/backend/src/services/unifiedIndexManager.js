@@ -388,12 +388,29 @@ class UnifiedIndexManager {
 
     /**
      * 检索相关chunks
+     * @param {Array} queryEmbedding - 查询向量
+     * @param {Object} options - 检索选项
+     * @param {number} options.topK - 返回结果数量
+     * @param {number} options.minScore - 最小相似度阈值
+     * @param {string[]} options.documentIds - 可选：指定要检索的文档ID列表
      */
     async retrieve(queryEmbedding, options = {}) {
-        const { topK = 5, minScore = 0.3 } = options;
+        const { topK = 5, minScore = 0.3, documentIds = null } = options;
+
+        // ✨ 新增：文档过滤日志
+        if (documentIds && documentIds.length > 0) {
+            console.log(`🎯 文档过滤：仅检索指定文档 (${documentIds.length}个)`);
+        }
 
         const scores = [];
-        for (const chunk of this.index.chunks) {
+        // ✨ 新增：按documentIds过滤chunks
+        const searchChunks = documentIds && documentIds.length > 0
+            ? this.index.chunks.filter(c => documentIds.includes(c.documentId))
+            : this.index.chunks;
+
+        console.log(`📊 过滤后chunks数量：${searchChunks.length}/${this.index.chunks.length}`);
+
+        for (const chunk of searchChunks) {
             let embedding = chunk.embedding;
 
             // 尝试从缓存获取

@@ -259,10 +259,13 @@ router.post('/answer', authenticate, async (req, res) => {
         console.log('📚 [多文档RAG] 收到问答请求');
         console.log('========================================');
 
-        const { question, options = {} } = req.body;
+        const { question, documentIds, options = {} } = req.body;  // ✨ 新增：接收documentIds参数
 
         console.log('📝 原始问题：', question);
         console.log('📋 请求选项：', options);
+        if (documentIds && documentIds.length > 0) {
+            console.log('🎯 指定文档：', documentIds);
+        }
 
         if (!question) {
             console.log('❌ 错误：问题为空');
@@ -287,11 +290,12 @@ router.post('/answer', authenticate, async (req, res) => {
 
         console.log('🚀 开始调用多文档RAG服务...');
 
-        // 调用多文档问答服务
+        // 调用多文档问答服务（✨ 新增：传递documentIds参数）
         const result = await ragService.ask(normalizedQuestion, {
             topK: options.topK || 15,
             minScore: options.minScore || 0.3,
-            useReranking: options.useReranking !== false
+            useReranking: options.useReranking !== false,
+            documentIds  // ✨ 新增：文档过滤参数
         });
 
         // 格式化来源信息（按文档分组）

@@ -35,8 +35,9 @@ class RAGService {
             indexPath: options.indexPath || path.join(projectRoot, '文档库', 'indexes', 'retrieval_index.json'),
             // 向量缓存
             cachePath: options.cachePath || path.join(projectRoot, '文档库', 'indexes', 'embedding_cache.json'),
-            // 不再使用旧 chunksPath（旧的学生手册文件）
-            chunksPath: options.chunksPath || path.join(projectRoot, '文档提取', '2025年本科学生手册-定', 'student_handbook_full.json'),
+            // ✨ 修复：不再硬编码旧 chunksPath，改为由调用者传入或使用统一索引
+            // 如果需要从原始chunks创建索引，必须在options中显式传入chunksPath
+            chunksPath: options.chunksPath,  // 移除默认值，避免硬编码
             handbookPath: projectRoot,
             topK: options.topK || 5,
             minScore: options.minScore || 0.2,  // 从0.5降到0.2，避免过滤掉相关文档
@@ -91,7 +92,13 @@ class RAGService {
 
             // 2. 如果没有索引，创建新索引
             if (!this.retrievalEngine.indexed) {
+                // ✨ 修复：如果没有提供chunksPath，则无法创建新索引
+                if (!this.options.chunksPath) {
+                    throw new Error('未找到索引且未提供chunksPath参数。请确保索引已存在，或提供chunksPath以创建新索引。');
+                }
+
                 console.log('✓ 未找到索引，开始创建新索引...\n');
+                console.log(`📂 从chunksPath加载: ${this.options.chunksPath}`);
 
                 // 加载文档块
                 await this.retrievalEngine.loadChunks(this.options.chunksPath);
@@ -124,6 +131,13 @@ class RAGService {
 
     /**
      * 问答接口
+     * @param {string} question - 用户问题
+     * @param {Object} options - 配置选项
+     * @param {number} options.topK - 检索返回的文档数量
+     * @param {number} options.minScore - 最小相似度阈值
+     * @param {number} options.maxTokens - 最大生成token数
+     * @param {boolean} options.useReranking - 是否使用重排序
+     * @param {string[]} options.documentIds - 可选：指定要检索的文档ID列表
      */
     async answer(question, options = {}) {
         if (!this.initialized) {
@@ -137,11 +151,12 @@ class RAGService {
             console.log(`【问题】${question}`);
             console.log(`${'='.repeat(80)}\n`);
 
-            // 1. 检索相关文档
+            // 1. 检索相关文档（✨ 新增：支持documentIds参数）
             const retrievedDocs = await this.retrievalEngine.retrieve(question, {
                 topK: options.topK || this.options.topK,
                 minScore: options.minScore || this.options.minScore,
-                useReranking: options.useReranking !== false
+                useReranking: options.useReranking !== false,
+                documentIds: options.documentIds  // ✨ 新增：文档过滤参数
             });
 
             // 2. 检查是否找到相关文档
@@ -221,6 +236,11 @@ class RAGService {
 
     /**
      * 流式问答（用于实时显示）
+     * @param {string} question - 用户问题
+     * @param {Object} options - 配置选项
+     * @param {number} options.topK - 检索返回的文档数量
+     * @param {number} options.minScore - 最小相似度阈值
+     * @param {string[]} options.documentIds - 可选：指定要检索的文档ID列表
      */
     async *answerStream(question, options = {}) {
         if (!this.initialized) {
@@ -228,10 +248,11 @@ class RAGService {
         }
 
         try {
-            // 1. 检索相关文档
+            // 1. 检索相关文档（✨ 新增：支持documentIds参数）
             const retrievedDocs = await this.retrievalEngine.retrieve(question, {
                 topK: options.topK || this.options.topK,
-                minScore: options.minScore || this.options.minScore
+                minScore: options.minScore || this.options.minScore,
+                documentIds: options.documentIds  // ✨ 新增：文档过滤参数
             });
 
             if (retrievedDocs.length === 0) {

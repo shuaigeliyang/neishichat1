@@ -88,12 +88,19 @@ class RetrievalEngine {
 
     /**
      * 检索相关文档
+     * @param {string} question - 检索问题
+     * @param {Object} options - 检索选项
+     * @param {number} options.topK - 返回结果数量
+     * @param {number} options.minScore - 最小相似度阈值
+     * @param {boolean} options.useReranking - 是否使用重排序
+     * @param {string[]} options.documentIds - 可选：指定要检索的文档ID列表（用于区分不同文档）
      */
     async retrieve(question, options = {}) {
         const {
             topK = 5,
             minScore = 0.2,  // 从0.5降到0.2，避免过滤掉相关文档
-            useReranking = true
+            useReranking = true,
+            documentIds = null  // ✨ 新增：支持按文档ID过滤
         } = options;
 
         if (!this.indexed) {
@@ -102,13 +109,27 @@ class RetrievalEngine {
 
         console.log(`\n✓ 检索问题：${question}`);
 
+        // ✨ 新增：文档过滤日志
+        if (documentIds && documentIds.length > 0) {
+            console.log(`🎯 文档过滤：仅检索指定文档 (${documentIds.length}个)`);
+        }
+
         // 1. 将问题向量化
         const questionEmbedding = await this.embeddingService.getEmbedding(question);
 
-        // 2. 计算相似度（✨ 修改：传入minScore参数，让findMostSimilar内部也使用这个阈值）
+        // 2. ✨ 新增：按documentIds过滤chunks
+        let searchChunks = this.chunks;
+        if (documentIds && documentIds.length > 0) {
+            searchChunks = this.chunks.filter(chunk =>
+                documentIds.includes(chunk.documentId)
+            );
+            console.log(`📊 过滤后chunks数量：${searchChunks.length}/${this.chunks.length}`);
+        }
+
+        // 3. 计算相似度（✨ 修改：传入minScore参数，让findMostSimilar内部也使用这个阈值）
         const results = await this.embeddingService.findMostSimilar(
             questionEmbedding,
-            this.chunks,
+            searchChunks,  // ✨ 修改：使用过滤后的chunks
             topK * 2,  // 多取一些，用于重排序
             minScore    // ✨ 新增：传入minScore参数
         );

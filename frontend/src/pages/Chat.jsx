@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Card, Input, Button, message, Spin, Badge, Dropdown, Modal, Divider } from 'antd';
+import { Card, Input, Button, message, Spin, Badge, Dropdown, Modal, Divider, Select } from 'antd';
 import {
   SendOutlined,
   UserOutlined,
@@ -47,6 +47,10 @@ function Chat({ user }) {
   const SOURCES_PER_PAGE = 5;
   const [multiline, setMultiline] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
+
+  // ✨ 新增：文档选择相关状态
+  const [availableDocuments, setAvailableDocuments] = useState([]);
+  const [selectedDocumentId, setSelectedDocumentId] = useState('all');  // 'all' 表示全部文档
 
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
@@ -128,7 +132,28 @@ function Chat({ user }) {
   useEffect(() => {
     console.log('🚀 Chat组件加载，用户信息:', user);
     fetchChatHistory();
+
+    // ✨ 新增：获取已索引文档列表
+    fetchAvailableDocuments();
   }, []);
+
+  // ✨ 新增：获取可用的文档列表
+  const fetchAvailableDocuments = async () => {
+    try {
+      const response = await axios.get('/api/rag/documents', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      if (response.data.success && response.data.data) {
+        const docs = response.data.data.documents || [];
+        setAvailableDocuments(docs);
+        console.log('📚 已索引文档:', docs);
+      }
+    } catch (error) {
+      console.error('❌ 获取文档列表失败:', error);
+      // 静默失败，不影响聊天功能
+    }
+  };
 
   // 智能自动滚动
   useEffect(() => {
@@ -545,9 +570,19 @@ function Chat({ user }) {
   const handleDocumentQuery = async (question) => {
     console.log('📚 [多文档RAG] 开始处理文档问答:', question);
     try {
+      // ✨ 新增：准备documentIds参数
+      let documentIds = null;
+      if (selectedDocumentId !== 'all') {
+        documentIds = [selectedDocumentId];
+        console.log('🎯 限定文档:', selectedDocumentId);
+      }
+
       const response = await axios.post(
         '/api/rag-v2/answer',  // ✨ 切换到多文档API
-        { question: question },
+        {
+          question: question,
+          documentIds  // ✨ 新增：传递文档过滤参数
+        },
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );
 
@@ -1198,6 +1233,34 @@ function Chat({ user }) {
 
         {/* 输入区域 */}
         <div className="chat-input-area">
+          {/* ✨ 新增：文档选择器 */}
+          {availableDocuments.length > 0 && (
+            <div className="document-selector" style={{ marginBottom: '12px', padding: '8px 12px', background: '#f5f5f5', borderRadius: '8px' }}>
+              <BookOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
+              <span style={{ marginRight: '12px', fontWeight: 500 }}>选择文档：</span>
+              <Select
+                value={selectedDocumentId}
+                onChange={(value) => {
+                  setSelectedDocumentId(value);
+                  message.info(value === 'all' ? '已切换到全部文档' : `已切换到：${availableDocuments.find(d => d.documentId === value)?.displayName || value}`);
+                }}
+                style={{ width: 300 }}
+                options={[
+                  { value: 'all', label: '📚 全部文档' },
+                  ...availableDocuments.map(doc => ({
+                    value: doc.documentId,
+                    label: `📄 ${doc.displayName || doc.name}`
+                  }))
+                ]}
+              />
+              {selectedDocumentId !== 'all' && (
+                <span style={{ marginLeft: '12px', fontSize: '12px', color: '#999' }}>
+                  仅检索：{availableDocuments.find(d => d.documentId === selectedDocumentId)?.displayName || selectedDocumentId}
+                </span>
+              )}
+            </div>
+          )}
+
           <div className="input-container">
             <Input.TextArea
               ref={inputRef}
