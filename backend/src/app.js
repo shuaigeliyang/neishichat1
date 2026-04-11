@@ -72,8 +72,10 @@ app.use('/api/chat', require('./routes/chat'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/export', require('./routes/export'));
 app.use('/api/intelligent', require('./routes/intelligent')); // 智能查询路由（新）
-app.use('/api/rag', require('./routes/rag')); // RAG文档问答路由（新增！）
+app.use('/api/rag', require('./routes/rag')); // RAG文档问答路由（单文档版本）
+app.use('/api/rag-v2', require('./routes/ragV2')); // RAG文档问答路由（多文档版本 ✨新增）
 app.use('/api/handbook', require('./routes/handbook')); // 学生手册查询路由（新增！）
+app.use('/api/documents', require('./routes/documents')); // 文档管理路由（多政策系统新增！）
 
 // 404处理
 app.use(notFoundHandler);

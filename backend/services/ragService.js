@@ -2,10 +2,13 @@
  * RAG文档问答服务
  * 设计师：内师智能体系统 (￣▽￣)ﾉ
  * 功能：整合所有RAG模块，提供完整的文档问答能力
+ *
+ * ✨ v2.0: 支持文档注册表，统一从"文档库"目录读取索引
  */
 
 const RetrievalEngine = require('./retrievalEngine');
 const QAGenerator = require('./qaGenerator');
+const fs = require('fs').promises;
 const path = require('path');
 
 class RAGService {
@@ -22,14 +25,35 @@ class RAGService {
         this.initialized = false;
 
         // 配置选项
+        // ✨ 使用文档提取目录
+        const basePath = path.resolve(__dirname, '../..');
+        const handbookPath = path.join(basePath, '文档提取', '2025年本科学生手册-定');
+
         this.options = {
-            chunksPath: options.chunksPath || path.join(__dirname, '../../document_chunks.json'),
-            indexPath: options.indexPath || path.join(__dirname, '../../retrieval_index.json'),
-            cachePath: options.cachePath || path.join(__dirname, '../../embedding_cache.json'),
+            chunksPath: options.chunksPath || path.join(handbookPath, 'student_handbook_full.json'),
+            indexPath: options.indexPath || path.join(handbookPath, 'retrieval_index.json'),
+            cachePath: options.cachePath || path.join(handbookPath, 'embedding_cache.json'),
+            handbookPath: handbookPath, // 文档提取目录路径
             topK: options.topK || 5,
             minScore: options.minScore || 0.5,
             ...options
         };
+    }
+
+    /**
+     * ✨ 获取实际可用的索引路径
+     * 从相关文档目录读取索引
+     */
+    async getAvailableIndexPath() {
+        try {
+            await fs.access(this.options.indexPath);
+            console.log(`✓ 发现索引: ${this.options.indexPath}`);
+            return this.options.indexPath;
+        } catch {
+            console.log('⚠️ 未找到索引文件');
+        }
+
+        return this.options.indexPath;
     }
 
     /**
@@ -39,8 +63,12 @@ class RAGService {
         console.log('✓ 初始化RAG服务...\n');
 
         try {
+            // ✨ 获取可用的索引路径（优先文档库，回退到旧位置）
+            const indexPath = await this.getAvailableIndexPath();
+            this.options.indexPath = indexPath;
+
             // 1. 尝试加载已有索引
-            await this.retrievalEngine.loadIndex(this.options.indexPath);
+            await this.retrievalEngine.loadIndex(indexPath);
 
             // 2. 如果没有索引，创建新索引
             if (!this.retrievalEngine.indexed) {
