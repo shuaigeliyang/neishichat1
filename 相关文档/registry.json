@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "createdAt": "2026-04-11T07:10:09.488Z",
-  "updatedAt": "2026-04-11T07:35:20.460Z",
+  "updatedAt": "2026-04-11T09:35:13.548Z",
   "config": {
     "indexName": "retrieval_index",
     "embeddingModel": "embedding-3",
@@ -67,177 +67,69 @@
       "autoDetected": true
     },
     {
-      "documentId": "doc_1775891974583_2dda3872",
-      "name": "基于Web的宠物领养系统的设计与实现20260318",
-      "displayName": "基于Web的宠物领养系统的设计与实现20260318",
+      "documentId": "doc_1775900105128_7fb98a3c",
+      "name": "基于Web的宠物领养系统的设计与实现20260329",
+      "displayName": "基于Web的宠物领养系统的设计与实现20260329",
       "description": "",
       "status": "indexed",
       "priority": 1,
       "tags": [],
       "sourceFiles": [
         {
-          "fileName": "2383ce2c-7e0f-4ab3-ba0f-b8d8e169f7e5.docx",
-          "originalName": "åºäºWebçå® ç©é¢å»ç³»ç»çè®¾è®¡ä¸å®ç°20260318.docx",
+          "fileName": "7da05d61-f52d-4d3f-96e2-0735f0467822.docx",
+          "originalName": "åºäºWebçå® ç©é¢å»ç³»ç»çè®¾è®¡ä¸å®ç°20260329.docx",
           "fileType": ".docx",
-          "fileSize": 6051785,
-          "uploadedAt": "2026-04-11T07:19:34.582Z"
+          "fileSize": 6722195,
+          "uploadedAt": "2026-04-11T09:35:05.127Z"
         }
       ],
-      "directory": "doc_doc_1775891974583_2dda3872",
+      "directory": "doc_doc_1775900105128_7fb98a3c",
       "statistics": {
-        "totalPages": 264,
+        "totalPages": 243,
         "totalChunks": 16,
         "indexedChunks": 16,
-        "fileSize": 6051785
+        "fileSize": 6722195
       },
       "processingHistory": [
         {
           "step": "extract",
           "status": "processing",
-          "timestamp": "2026-04-11T07:23:50.857Z",
+          "timestamp": "2026-04-11T09:35:09.088Z",
           "details": "正在提取文档内容"
         },
         {
           "step": "extract",
           "status": "completed",
-          "timestamp": "2026-04-11T07:23:51.111Z",
-          "details": "提取264页内容"
+          "timestamp": "2026-04-11T09:35:09.298Z",
+          "details": "提取243页内容"
         },
         {
           "step": "chunk",
           "status": "processing",
-          "timestamp": "2026-04-11T07:23:51.112Z",
+          "timestamp": "2026-04-11T09:35:09.301Z",
           "details": "正在进行智能分块"
         },
         {
           "step": "chunk",
           "status": "completed",
-          "timestamp": "2026-04-11T07:23:51.183Z",
+          "timestamp": "2026-04-11T09:35:09.367Z",
           "details": "生成16个文档块 (general)"
         },
         {
           "step": "embed",
           "status": "processing",
-          "timestamp": "2026-04-11T07:23:51.185Z",
-          "details": "正在生成向量"
-        },
-        {
-          "step": "process",
-          "status": "failed",
-          "timestamp": "2026-04-11T07:23:51.187Z",
-          "details": "this.apiKeyManager.getAvailableApiKey is not a function"
-        },
-        {
-          "step": "extract",
-          "status": "processing",
-          "timestamp": "2026-04-11T07:28:39.652Z",
-          "details": "正在提取文档内容"
-        },
-        {
-          "step": "extract",
-          "status": "completed",
-          "timestamp": "2026-04-11T07:28:39.992Z",
-          "details": "提取264页内容"
-        },
-        {
-          "step": "chunk",
-          "status": "processing",
-          "timestamp": "2026-04-11T07:28:40.002Z",
-          "details": "正在进行智能分块"
-        },
-        {
-          "step": "chunk",
-          "status": "completed",
-          "timestamp": "2026-04-11T07:28:40.102Z",
-          "details": "生成16个文档块 (general)"
-        },
-        {
-          "step": "embed",
-          "status": "processing",
-          "timestamp": "2026-04-11T07:28:40.109Z",
+          "timestamp": "2026-04-11T09:35:09.369Z",
           "details": "正在生成向量"
         },
         {
           "step": "register",
           "status": "completed",
-          "timestamp": "2026-04-11T07:28:45.341Z",
-          "details": "文档已成功索引"
-        },
-        {
-          "step": "extract",
-          "status": "processing",
-          "timestamp": "2026-04-11T07:33:51.719Z",
-          "details": "正在提取文档内容"
-        },
-        {
-          "step": "extract",
-          "status": "completed",
-          "timestamp": "2026-04-11T07:33:51.919Z",
-          "details": "提取264页内容"
-        },
-        {
-          "step": "chunk",
-          "status": "processing",
-          "timestamp": "2026-04-11T07:33:51.921Z",
-          "details": "正在进行智能分块"
-        },
-        {
-          "step": "chunk",
-          "status": "completed",
-          "timestamp": "2026-04-11T07:33:51.992Z",
-          "details": "生成16个文档块 (general)"
-        },
-        {
-          "step": "embed",
-          "status": "processing",
-          "timestamp": "2026-04-11T07:33:51.994Z",
-          "details": "正在生成向量"
-        },
-        {
-          "step": "process",
-          "status": "failed",
-          "timestamp": "2026-04-11T07:33:56.454Z",
-          "details": "Cannot read properties of undefined (reading 'find')"
-        },
-        {
-          "step": "extract",
-          "status": "processing",
-          "timestamp": "2026-04-11T07:35:15.996Z",
-          "details": "正在提取文档内容"
-        },
-        {
-          "step": "extract",
-          "status": "completed",
-          "timestamp": "2026-04-11T07:35:16.197Z",
-          "details": "提取264页内容"
-        },
-        {
-          "step": "chunk",
-          "status": "processing",
-          "timestamp": "2026-04-11T07:35:16.199Z",
-          "details": "正在进行智能分块"
-        },
-        {
-          "step": "chunk",
-          "status": "completed",
-          "timestamp": "2026-04-11T07:35:16.261Z",
-          "details": "生成16个文档块 (general)"
-        },
-        {
-          "step": "embed",
-          "status": "processing",
-          "timestamp": "2026-04-11T07:35:16.263Z",
-          "details": "正在生成向量"
-        },
-        {
-          "step": "register",
-          "status": "completed",
-          "timestamp": "2026-04-11T07:35:20.460Z",
-          "details": "文档已成功索引"
+          "timestamp": "2026-04-11T09:35:13.548Z",
+          "details": "文档已成功索引到统一索引"
         }
       ],
-      "indexedAt": "2026-04-11T07:28:45.341Z",
-      "updatedAt": "2026-04-11T07:35:20.460Z"
+      "indexedAt": "2026-04-11T09:35:13.548Z",
+      "updatedAt": "2026-04-11T09:35:13.548Z"
     }
   ]
 }

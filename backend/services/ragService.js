@@ -41,18 +41,30 @@ class RAGService {
 
     /**
      * ✨ 获取实际可用的索引路径
-     * 从相关文档目录读取索引
+     * 优先从统一索引位置读取（Single Source of Truth）
      */
     async getAvailableIndexPath() {
+        const basePath = path.resolve(__dirname, '../..');
+
+        // 优先：统一索引位置
+        const unifiedIndexPath = path.join(basePath, '文档库', 'indexes', 'retrieval_index.json');
+        try {
+            await fs.access(unifiedIndexPath);
+            console.log(`✓ 发现统一索引: ${unifiedIndexPath}`);
+            return unifiedIndexPath;
+        } catch { /* 未找到，继续尝试 */ }
+
+        // 回退：根目录旧索引（兼容旧数据）
         try {
             await fs.access(this.options.indexPath);
-            console.log(`✓ 发现索引: ${this.options.indexPath}`);
+            console.log(`⚠️ 使用旧索引（请迁移到统一索引）: ${this.options.indexPath}`);
             return this.options.indexPath;
         } catch {
             console.log('⚠️ 未找到索引文件');
         }
 
-        return this.options.indexPath;
+        // 最终回退：返回统一索引路径（会创建新的）
+        return unifiedIndexPath;
     }
 
     /**

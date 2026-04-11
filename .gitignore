@@ -34,6 +34,9 @@ backend/embedding_cache.json  # embedding缓存，应该动态生成
 backend/document_chunks.json  # 与根目录重复，只保留根目录的
 embedding_cache.json          # 根目录缓存
 neishichat_reference/         # 参考资料目录，上传时不需要
+# 索引备份文件
+retrieval_index.json.old*
+文档库/indexes/retrieval_index.json.backup*
 
 # Excel 数据文件（排除用户数据，保留示例数据）
 # *.xlsx

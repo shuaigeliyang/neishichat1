@@ -15,6 +15,7 @@ import DocumentRegistry from './documentRegistry.js';
 import IndexManager from './indexManager.js';
 import ApiKeyManager from './apiKeyManager.js';
 import eventBus from './eventBus.js';
+import unifiedIndexManager from './unifiedIndexManager.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -229,25 +230,27 @@ class IncrementalPipeline {
                 }
             );
 
-            // ========== 步骤4: 添加到索引 ==========
-            onProgress({ step: 'register', status: 'processing', message: '正在注册到索引...', taskId });
+            // ========== 步骤4: 添加到统一索引（Single Source of Truth） ==========
+            onProgress({ step: 'register', status: 'processing', message: '正在注册到统一索引...', taskId });
             await this.indexManager.updateProgress(taskId, {
-                currentStep: '注册到索引...',
+                currentStep: '注册到统一索引...',
                 completedSteps: 6
             });
 
-            await this.indexManager.addDocumentToIndex(
+            // 使用统一索引管理器——所有服务都从这里读取！
+            // chunksWithEmbeddings 已包含 embedding，直接传入避免重复 API 调用
+            await unifiedIndexManager.addDocument(
                 documentId,
                 chunksWithEmbeddings,
                 document,
-                taskId
+                true // skipRegenerateEmbeddings=true：使用已有的embedding
             );
 
             // ========== 完成 ==========
             await this.registry.updateDocumentStatus(documentId, 'indexed', {
                 step: 'register',
                 status: 'completed',
-                details: '文档已成功索引',
+                details: '文档已成功索引到统一索引',
                 statistics: {
                     indexedChunks: chunksWithEmbeddings.length
                 }
@@ -267,10 +270,10 @@ class IncrementalPipeline {
             console.log(`\n✅ 文档处理完成: ${document.displayName}`);
             console.log(`   - 页数: ${totalPages}`);
             console.log(`   - 分块: ${chunksWithEmbeddings.length}`);
-            console.log(`   - 索引: ${this.indexManager.getIndexFilePath()}`);
+            console.log(`   - 索引: ${(await import('./projectConfig.js')).default.getIndexPath ? '(统一索引)' : '?'}`);
 
-            // 📢 发布文档索引事件 - RAG服务会自动感知并重新加载索引
-            eventBus.notifyIndexed(documentId, document, chunksWithEmbeddings);
+            // 注意：eventBus.notifyIndexed() 已在 unifiedIndexManager.addDocument() 内部调用
+            // UnifiedIndexManager 订阅该事件后会重新加载索引内存缓存
 
             return {
                 success: true,
@@ -366,27 +369,34 @@ class IncrementalPipeline {
     }
 
     /**
-     * 删除文档（从注册表和索引中移除，保留源文件）
+     * 删除文档（从注册表和所有索引中移除，保留源文件）
      */
     async deleteDocument(documentId) {
         // 获取文档信息用于事件
         const docInfo = await this.registry.getDocument(documentId);
 
-        // 1. 从索引中移除
+        // 1. 从统一索引中移除（Single Source of Truth）
         try {
-            await this.indexManager.removeDocumentFromIndex(documentId);
-            console.log(`✓ 文档已从索引删除: ${documentId}`);
-
-            // 📢 发布文档删除事件 - RAG服务会自动感知
-            eventBus.notifyDeleted(documentId);
+            await unifiedIndexManager.removeDocument(documentId);
+            console.log(`✓ 文档已从统一索引删除: ${documentId}`);
+            // eventBus.notifyDeleted() 已在 unifiedIndexManager.removeDocument() 内部调用
         } catch (error) {
-            console.log(`⚠️ 文档不在索引中: ${documentId}`);
+            console.log(`⚠️ 文档不在统一索引中: ${documentId}`);
+            // 即使不在统一索引中，也发布删除事件确保一致性
+            eventBus.notifyDeleted(documentId);
         }
 
-        // 2. 从注册表中移除
+        // 2. 从旧索引中移除（向后兼容，防止残留数据）
+        try {
+            await this.indexManager.removeDocumentFromIndex(documentId);
+        } catch (error) {
+            // 忽略，旧索引可能本来就没有这个文档
+        }
+
+        // 3. 从注册表中移除
         const document = await this.registry.deleteDocument(documentId);
 
-        // 3. 删除处理结果目录（保留source目录）
+        // 4. 删除处理结果目录（保留source目录）
         const docDir = path.join(this.documentsRoot, document.directory);
         const extractedDir = path.join(docDir, 'extracted');
         const chunksDir = path.join(docDir, 'chunks');
@@ -428,7 +438,14 @@ class IncrementalPipeline {
             }
         }
 
-        // 3. 从索引中移除旧数据（如果存在）
+        // 3. 从统一索引中移除旧数据（如果存在）
+        try {
+            await unifiedIndexManager.removeDocument(documentId);
+        } catch (e) {
+            // 忽略，文档可能本来就不在统一索引中
+        }
+
+        // 3b. 同时从旧索引中移除（向后兼容）
         try {
             await this.indexManager.removeDocumentFromIndex(documentId);
         } catch (e) {

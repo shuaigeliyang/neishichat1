@@ -83,5 +83,95 @@
       "pages": 264,
       "chunks": 16
     }
+  },
+  "task_53ab5844-00de-4677-874e-79b68b176662": {
+    "taskId": "task_53ab5844-00de-4677-874e-79b68b176662",
+    "status": "completed",
+    "progress": 100,
+    "currentStep": "完成",
+    "totalSteps": 6,
+    "completedSteps": 6,
+    "startTime": "2026-04-11T08:37:02.207Z",
+    "error": null,
+    "endTime": "2026-04-11T08:37:04.036Z",
+    "result": {
+      "pages": 57,
+      "chunks": 1
+    }
+  },
+  "task_10976387-2a3b-483f-b5ce-f240a7d0cc07": {
+    "taskId": "task_10976387-2a3b-483f-b5ce-f240a7d0cc07",
+    "status": "completed",
+    "progress": 100,
+    "currentStep": "完成",
+    "totalSteps": 6,
+    "completedSteps": 6,
+    "startTime": "2026-04-11T08:52:38.665Z",
+    "error": null,
+    "endTime": "2026-04-11T08:52:40.459Z",
+    "result": {
+      "pages": 109,
+      "chunks": 3
+    }
+  },
+  "task_8f1065e8-11fd-4c52-b27d-7bd8e0efd3c1": {
+    "taskId": "task_8f1065e8-11fd-4c52-b27d-7bd8e0efd3c1",
+    "status": "completed",
+    "progress": 100,
+    "currentStep": "完成",
+    "totalSteps": 6,
+    "completedSteps": 6,
+    "startTime": "2026-04-11T09:08:02.860Z",
+    "error": null,
+    "endTime": "2026-04-11T09:08:04.633Z",
+    "result": {
+      "pages": 109,
+      "chunks": 3
+    }
+  },
+  "task_a350f309-5d0c-4c50-8d45-a9e534b5230b": {
+    "taskId": "task_a350f309-5d0c-4c50-8d45-a9e534b5230b",
+    "status": "completed",
+    "progress": 100,
+    "currentStep": "完成",
+    "totalSteps": 6,
+    "completedSteps": 6,
+    "startTime": "2026-04-11T09:24:59.842Z",
+    "error": null,
+    "endTime": "2026-04-11T09:25:01.788Z",
+    "result": {
+      "pages": 109,
+      "chunks": 3
+    }
+  },
+  "task_8b42a6c8-86c5-41b1-89db-40be2a8b02ed": {
+    "taskId": "task_8b42a6c8-86c5-41b1-89db-40be2a8b02ed",
+    "status": "completed",
+    "progress": 100,
+    "currentStep": "完成",
+    "totalSteps": 6,
+    "completedSteps": 6,
+    "startTime": "2026-04-11T09:30:03.773Z",
+    "error": null,
+    "endTime": "2026-04-11T09:30:05.206Z",
+    "result": {
+      "pages": 109,
+      "chunks": 3
+    }
+  },
+  "task_97b041ca-cb6e-4bc8-93b7-866725d0128a": {
+    "taskId": "task_97b041ca-cb6e-4bc8-93b7-866725d0128a",
+    "status": "completed",
+    "progress": 100,
+    "currentStep": "完成",
+    "totalSteps": 6,
+    "completedSteps": 6,
+    "startTime": "2026-04-11T09:35:09.079Z",
+    "error": null,
+    "endTime": "2026-04-11T09:35:13.552Z",
+    "result": {
+      "pages": 243,
+      "chunks": 16
+    }
   }
 }

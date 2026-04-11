@@ -8,25 +8,21 @@ echo   停止所有服务
 echo ========================================
 echo.
 
-:: 停止后端
-echo [1/2] 停止后端服务...
-taskkill /F /FI "WINDOWTITLE eq 后台后端-3005*" 2>nul
-if %errorlevel% equ 0 (
-    echo        后端已停止
-) else (
-    echo        后端未运行
+:: 停止占用 3005 端口的进程（后台后端）
+echo [1/2] 停止后端服务 (端口 3005)...
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":3005.*LISTENING"') do (
+    powershell -Command "Stop-Process -Id %%a -Force -ErrorAction SilentlyContinue"
 )
+echo        后端已停止（或未运行）
 
 echo.
 
-:: 停止前端
-echo [2/2] 停止前端服务...
-taskkill /F /FI "WINDOWTITLE eq 后台前端-5176*" 2>nul
-if %errorlevel% equ 0 (
-    echo        前端已停止
-) else (
-    echo        前端未运行
+:: 停止占用 5176 端口的进程（后台前端）
+echo [2/2] 停止前端服务 (端口 5176)...
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":5176.*LISTENING"') do (
+    powershell -Command "Stop-Process -Id %%a -Force -ErrorAction SilentlyContinue"
 )
+echo        前端已停止（或未运行）
 
 echo.
 echo ========================================

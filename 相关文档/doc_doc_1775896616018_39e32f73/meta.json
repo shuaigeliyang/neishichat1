@@ -1,0 +1,28 @@
+{
+  "documentId": "doc_1775896616018_39e32f73",
+  "name": "TCPIPЭ�����",
+  "displayName": "TCPIPЭ�����",
+  "description": "���������ʵ�鱨��",
+  "status": "pending",
+  "priority": 1,
+  "tags": [],
+  "sourceFiles": [
+    {
+      "fileName": "b21e9c5d-b0e6-4d90-9033-c3954077643f.docx",
+      "originalName": "ÊµÑéÈýtcpipÐ­Òé·ÖÎö.docx",
+      "fileType": ".docx",
+      "fileSize": 999170,
+      "uploadedAt": "2026-04-11T08:36:56.012Z"
+    }
+  ],
+  "directory": "doc_doc_1775896616018_39e32f73",
+  "statistics": {
+    "totalPages": 0,
+    "totalChunks": 0,
+    "indexedChunks": 0,
+    "fileSize": 999170
+  },
+  "processingHistory": [],
+  "indexedAt": null,
+  "updatedAt": "2026-04-11T08:36:56.019Z"
+}

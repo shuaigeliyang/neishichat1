@@ -1,0 +1,28 @@
+{
+  "documentId": "doc_1775899795256_2f74db02",
+  "name": "ÊµÑé¶þvlan»®·ÖÓëÂ·ÓÉ",
+  "displayName": "ÊµÑé¶þvlan»®·ÖÓëÂ·ÓÉ",
+  "description": "",
+  "status": "pending",
+  "priority": 1,
+  "tags": [],
+  "sourceFiles": [
+    {
+      "fileName": "dad87a5d-fd7c-4625-965f-fc4301677dea.docx",
+      "originalName": "ÊµÑé¶þvlan»®·ÖÓëÂ·ÓÉ.docx",
+      "fileType": ".docx",
+      "fileSize": 476861,
+      "uploadedAt": "2026-04-11T09:29:55.255Z"
+    }
+  ],
+  "directory": "doc_doc_1775899795256_2f74db02",
+  "statistics": {
+    "totalPages": 0,
+    "totalChunks": 0,
+    "indexedChunks": 0,
+    "fileSize": 476861
+  },
+  "processingHistory": [],
+  "indexedAt": null,
+  "updatedAt": "2026-04-11T09:29:55.256Z"
+}

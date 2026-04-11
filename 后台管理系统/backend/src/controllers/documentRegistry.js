@@ -11,6 +11,7 @@ import path from 'path';
 import DocumentRegistry from '../services/documentRegistry.js';
 import IncrementalPipeline from '../services/incrementalPipeline.js';
 import IndexManager from '../services/indexManager.js';
+import unifiedIndexManager from '../services/unifiedIndexManager.js';
 
 const registry = new DocumentRegistry();
 const pipeline = new IncrementalPipeline();
@@ -351,10 +352,15 @@ export async function getStatistics(req, res) {
 
 /**
  * 获取文档的分块内容
- * 优先从文档提取目录读取，其次从主索引读取
+ * 从统一索引读取，通过文档名匹配（兼容注册表ID与统一索引ID不一致的情况）
  */
 export async function getDocumentChunks(req, res) {
     try {
+        // 确保统一索引已初始化
+        if (!unifiedIndexManager.index) {
+            await unifiedIndexManager.initialize();
+        }
+
         const { documentId } = req.params;
 
         const document = await registry.getDocument(documentId);
@@ -362,83 +368,65 @@ export async function getDocumentChunks(req, res) {
             return res.status(404).json({ success: false, error: '文档不存在' });
         }
 
-        // 使用文档名称（不是displayName）来查找提取目录
-        const docName = document.name || document.displayName;
+        // 优先用注册表中的 documentId 查找
+        // 如果找不到（ID不一致），则按文档名查找统一索引中的对应文档
+        let unifiedDocId = documentId;
+        let docInIndex = unifiedIndexManager.index.documents.find(d => d.documentId === documentId);
 
-        // 方法1: 从文档提取目录读取 (优先)
-        const extractIndexPath = path.join(
-            indexManager.extractDir,
-            docName,
-            'retrieval_index.json'
-        );
-
-        let chunks = [];
-
-        try {
-            const extractData = await fs.readFile(extractIndexPath, 'utf-8');
-            const extractIndex = JSON.parse(extractData);
-            chunks = extractIndex.chunks || [];
-
-            if (chunks.length > 0) {
-                console.log(`✓ 从提取目录读取到 ${chunks.length} 个chunks: ${extractIndexPath}`);
-                return res.json({
-                    success: true,
-                    data: {
-                        documentId,
-                        documentName: docName,
-                        totalChunks: chunks.length,
-                        source: 'extracted',
-                        chunks: chunks.map((chunk, idx) => ({
-                            chunkId: idx + 1,
-                            text: chunk.text || chunk.content || chunk.full_context || JSON.stringify(chunk),
-                            preview: ((chunk.text || chunk.content || chunk.full_context || '').substring(0, 200) + '...').replace(/\n/g, ' '),
-                            metadata: chunk.metadata || {}
-                        }))
-                    }
-                });
+        // ID不一致时，按文档名匹配
+        if (!docInIndex) {
+            const docName = document.displayName || document.name;
+            const normalizedName = docName.replace(/\s+/g, '').toLowerCase();
+            docInIndex = unifiedIndexManager.index.documents.find(d => {
+                const idxName = (d.displayName || d.name || '').replace(/\s+/g, '').toLowerCase();
+                return idxName === normalizedName;
+            });
+            if (docInIndex) {
+                unifiedDocId = docInIndex.documentId;
+                console.log(`⚠ 文档ID映射: 注册表[${documentId}] → 统一索引[${unifiedDocId}]`);
             }
-        } catch (e) {
-            console.log(`⚠ 提取目录无chunks: ${e.message}`);
         }
 
-        // 方法2: 从主索引读取
-        try {
-            const index = await indexManager.loadIndex();
-            chunks = index.chunks.filter(c => c.documentId === documentId);
-
-            if (chunks.length > 0) {
-                console.log(`✓ 从主索引读取到 ${chunks.length} 个chunks`);
-                return res.json({
-                    success: true,
-                    data: {
-                        documentId,
-                        documentName: docName,
-                        totalChunks: chunks.length,
-                        source: 'index',
-                        chunks: chunks.map(chunk => ({
-                            chunkId: chunk.chunkId,
-                            text: chunk.text || chunk.content || chunk.full_context || JSON.stringify(chunk),
-                            preview: ((chunk.text || chunk.content || chunk.full_context || '').substring(0, 200) + '...').replace(/\n/g, ' '),
-                            metadata: chunk.metadata || {}
-                        }))
-                    }
-                });
-            }
-        } catch (e) {
-            console.log(`⚠ 主索引读取失败: ${e.message}`);
+        if (!docInIndex) {
+            return res.json({
+                success: true,
+                data: {
+                    documentId,
+                    documentName: document.displayName || document.name,
+                    chunks: [],
+                    message: '文档尚未索引，请先处理'
+                }
+            });
         }
 
-        // 无chunks数据
+        // 从统一索引读取 chunks
+        const chunks = unifiedIndexManager.index.chunks
+            .filter(c => c.documentId === unifiedDocId)
+            .map(chunk => ({
+                chunkId: chunk.chunkId,
+                text: chunk.text || chunk.full_context || '',
+                preview: ((chunk.text || chunk.full_context || '').substring(0, 200) + '...').replace(/\n/g, ' '),
+                metadata: {
+                    page: chunk.page_num || chunk.metadata?.page,
+                    charCount: chunk.char_count
+                }
+            }));
+
+        console.log(`✓ 从统一索引读取到 ${chunks.length} 个chunks: ${unifiedDocId}`);
+
         return res.json({
             success: true,
             data: {
-                documentId,
-                documentName: docName,
-                chunks: [],
-                message: '暂无分块数据，请先处理文档'
+                documentId: unifiedDocId,
+                originalDocumentId: documentId,
+                documentName: document.displayName || document.name,
+                totalChunks: chunks.length,
+                source: 'unified_index',
+                chunks
             }
         });
     } catch (error) {
+        console.error('获取chunks失败:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 }

@@ -56,19 +56,33 @@ class UnifiedIndexManager {
 
         // 当索引被更新时，重新加载
         eventBus.on(EventTypes.INDEX_UPDATED, async (event) => {
-            console.log('📢 [IndexManager] 收到索引更新事件，重新加载...');
+            console.log('📢 [UnifiedIndexManager] 收到索引更新事件，重新加载...');
             await this.loadIndex();
             await this.loadCache();
         });
 
         eventBus.on(EventTypes.INDEX_REBUILT, async (event) => {
-            console.log('📢 [IndexManager] 收到索引重建事件，重新加载...');
+            console.log('📢 [UnifiedIndexManager] 收到索引重建事件，重新加载...');
             await this.loadIndex();
             await this.loadCache();
         });
 
         eventBus.on(EventTypes.INDEX_CLEARED, async (event) => {
-            console.log('📢 [IndexManager] 收到索引清空事件，重新加载...');
+            console.log('📢 [UnifiedIndexManager] 收到索引清空事件，重新加载...');
+            await this.loadIndex();
+            await this.loadCache();
+        });
+
+        // 当有新文档被索引时，也重新加载（修复：原来缺失了这个订阅！）
+        eventBus.on(EventTypes.DOCUMENT_INDEXED, async (event) => {
+            console.log(`📢 [UnifiedIndexManager] 收到文档索引事件: ${event.data?.documentId}，重新加载...`);
+            await this.loadIndex();
+            await this.loadCache();
+        });
+
+        // 当有文档被删除时，也重新加载
+        eventBus.on(EventTypes.DOCUMENT_DELETED, async (event) => {
+            console.log(`📢 [UnifiedIndexManager] 收到文档删除事件: ${event.data?.documentId}，重新加载...`);
             await this.loadIndex();
             await this.loadCache();
         });
@@ -232,8 +246,12 @@ class UnifiedIndexManager {
 
     /**
      * 添加文档到索引
+     * @param {string} documentId - 文档ID
+     * @param {Array} chunks - 已向量化的chunks（包含embedding字段）
+     * @param {Object} documentMeta - 文档元数据
+     * @param {boolean} skipRegenerateEmbeddings - 如果chunks已有embedding则跳过重新生成
      */
-    async addDocument(documentId, chunks, documentMeta) {
+    async addDocument(documentId, chunks, documentMeta, skipRegenerateEmbeddings = true) {
         // 检查文档是否已存在
         const existingIndex = this.index.documents.findIndex(d => d.documentId === documentId);
         if (existingIndex >= 0) {
@@ -272,12 +290,18 @@ class UnifiedIndexManager {
         this.index.documents.push(docEntry);
         this.index.chunks.push(...chunksWithId);
 
-        // 为新chunks生成embedding并加入缓存
+        // 为新chunks生成embedding并加入缓存（仅对缺少embedding的chunk）
         for (const chunk of chunksWithId) {
             if (!this.embeddingCache.has(String(chunk.chunkId))) {
-                const embedding = await this.generateEmbedding(chunk.text || chunk.full_context);
-                this.embeddingCache.set(String(chunk.chunkId), embedding);
-                chunk.embedding = embedding;
+                // 如果chunk已有embedding，直接使用；否则重新生成
+                if (!chunk.embedding && skipRegenerateEmbeddings) {
+                    // 只有在没有预生成embedding时才调用API
+                    const embedding = await this.generateEmbedding(chunk.text || chunk.full_context);
+                    chunk.embedding = embedding;
+                }
+                if (chunk.embedding) {
+                    this.embeddingCache.set(String(chunk.chunkId), chunk.embedding);
+                }
             }
         }
 
@@ -285,10 +309,10 @@ class UnifiedIndexManager {
         await this.saveIndex();
         await this.saveCache();
 
-        // 发布事件
+        // 发布事件（让其他服务感知索引变更）
         eventBus.notifyIndexed(documentId, documentMeta, chunksWithId);
 
-        console.log(`✓ 文档已添加到索引: ${documentMeta.displayName} (${chunksWithId.length} chunks)`);
+        console.log(`✓ 文档已添加到统一索引: ${documentMeta.displayName} (${chunksWithId.length} chunks)`);
         return this.index;
     }
 
