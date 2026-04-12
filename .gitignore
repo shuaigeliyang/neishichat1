@@ -25,9 +25,13 @@ wheels/
 *.egg
 
 # 数据文件（保留必要的数据，只排除过大的索引文件）
-# retrieval_index.json - 已提交到git（67MB）
-# document_chunks.json - 保留（RAG系统依赖）
 # student_handbook_full.json - 保留（API依赖）
+
+# ⭐ 索引文件：本地动态生成，不上传到Git
+# 其他同学部署后可以运行 build-index.js 脚本重新生成
+unified_index.json  # 统一索引文件（动态生成）
+retrieval_index.json  # 备用索引文件（动态生成）
+embedding_cache.json  # 向量缓存（动态生成）
 
 # ✨ 额外排除的缓存和大文件
 backend/embedding_cache.json  # embedding缓存，应该动态生成
