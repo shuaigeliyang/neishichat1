@@ -5,7 +5,8 @@
     "root": "E:/外包/教育系统智能体",
     "documentLibrary": "E:/外包/教育系统智能体/文档库",
     "indexDir": "E:/外包/教育系统智能体/文档库/indexes",
-    "retrievalIndex": "E:/外包/教育系统智能体/文档库/indexes/retrieval_index.json",
+    "retrievalIndex": "E:/外包/教育系统智能体/文档库/indexes/unified_index.json",
+    "retrievalIndexBackup": "E:/外包/教育系统智能体/文档库/indexes/retrieval_index.json",
     "embeddingCache": "E:/外包/教育系统智能体/文档库/indexes/embedding_cache.json",
     "registry": "E:/外包/教育系统智能体/文档库/registry.json",
     "documents": "E:/外包/教育系统智能体/文档库/documents"

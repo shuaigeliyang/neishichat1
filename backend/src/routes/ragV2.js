@@ -11,13 +11,16 @@
 
 const express = require('express');
 const router = express.Router();
+const path = require('path');
 const { authenticate } = require('../middlewares/auth');
 const MultiDocumentRAGService = require('../../services/multiDocumentRagService');
 
 // 创建多文档RAG服务实例
-const ragService = new MultiDocumentRAGService(process.env.ZHIPU_API_KEY, {
-    embeddingMode: process.env.EMBEDDING_MODE || 'api'
+const ragService = new MultiDocumentRAGService(null, {
+    indexPath: path.join(__dirname, '../../../文档库/indexes/unified_index.json')
 });
+
+console.log('📋 RAG服务已就绪 (使用新的多文档RAG服务)');
 
 /**
  * 同义词映射表 - 将口语化表达转换为正式用语
@@ -193,37 +196,24 @@ function normalizeQuestion(question) {
 
 /**
  * 格式化来源信息 - 按文档分组
+ * 注意：sources已经是按文档分组的，所以直接返回
  */
 function formatSources(sources) {
     if (!sources || sources.length === 0) return [];
 
-    // 按documentId分组
-    const grouped = {};
-
-    for (const source of sources) {
-        const docId = source.documentId || 'unknown';
-        const docName = source.documentName || '未知文档';
-
-        if (!grouped[docId]) {
-            grouped[docId] = {
-                documentId: docId,
-                documentName: docName,
-                chunks: []
+    // ✨ 修复：text返回完整文本，preview用于列表显示（截取前200字符）
+    return sources.map(doc => ({
+        documentId: doc.documentId,
+        documentName: doc.documentName || '未知文档',
+        chunks: (doc.chunks || []).map(chunk => {
+            const fullText = chunk.text || chunk.preview || '';
+            return {
+                page: chunk.page || chunk.page_num || 0,
+                score: chunk.score || 0,
+                text: fullText,  // ✨ 完整文本，用于点击查看
+                preview: fullText.substring(0, 200) + (fullText.length > 200 ? '...' : '')  // ✨ 预览，用于列表显示
             };
-        }
-
-        grouped[docId].chunks.push({
-            chapter: source.chapter || '',
-            page: source.page || source.page_num || 0,
-            score: source.score || 0,
-            text: source.text ? source.text.substring(0, 100) + '...' : ''
-        });
-    }
-
-    // 转换为数组并排序
-    return Object.values(grouped).map(doc => ({
-        documentName: doc.documentName,
-        chunks: doc.chunks.sort((a, b) => b.score - a.score)
+        }).sort((a, b) => b.score - a.score)
     }));
 }
 
@@ -291,9 +281,10 @@ router.post('/answer', authenticate, async (req, res) => {
         console.log('🚀 开始调用多文档RAG服务...');
 
         // 调用多文档问答服务（✨ 新增：传递documentIds参数）
+        // ✨ 优化：增加检索数量，降低阈值，确保内容完整
         const result = await ragService.ask(normalizedQuestion, {
-            topK: options.topK || 15,
-            minScore: options.minScore || 0.3,
+            topK: options.topK || 15,        // ✨ 增加到15条（确保内容完整）
+            minScore: options.minScore || 0.3,  // ✨ 降低阈值到0.3（包含更多相关内容）
             useReranking: options.useReranking !== false,
             documentIds  // ✨ 新增：文档过滤参数
         });
@@ -342,6 +333,14 @@ router.post('/answer', authenticate, async (req, res) => {
  */
 router.get('/documents', authenticate, async (req, res) => {
     try {
+        // ✨ 确保服务已初始化
+        if (!ragService.initialized) {
+            await ragService.initialize();
+        }
+
+        // ✨ 检查索引是否更新（后台系统处理文档后能感知）
+        await ragService.checkIndexUpdate();
+
         const documents = ragService.getIndexedDocuments();
 
         res.json({

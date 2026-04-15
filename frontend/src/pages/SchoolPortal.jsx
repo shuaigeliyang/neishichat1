@@ -22,6 +22,7 @@ import {
 } from '@ant-design/icons';
 import CircularIcon from '../components/CircularIcon';
 import FloatChat from '../components/FloatChat';
+import HistorySidebar from '../components/HistorySidebar';
 import axios from 'axios';
 import './SchoolPortal.css';
 
@@ -33,6 +34,8 @@ function SchoolPortal() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [loginModalVisible, setLoginModalVisible] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
+  const [historyVisible, setHistoryVisible] = useState(false);
+  const [selectedHistory, setSelectedHistory] = useState(null);
 
   // 检查登录状态
   useEffect(() => {
@@ -53,16 +56,34 @@ function SchoolPortal() {
   };
 
   const handleChatOpen = () => {
-    setChatVisible(true);
+    // 切换聊天界面状态
+    setChatVisible(!chatVisible);
+    // 同时关闭历史记录界面
+    setHistoryVisible(false);
   };
 
   const handleChatClose = () => {
     setChatVisible(false);
     setIsFullscreen(false);
+    setHistoryVisible(false);
   };
 
   const handleFullscreenToggle = () => {
     setIsFullscreen(!isFullscreen);
+  };
+
+  const handleHistoryOpen = () => {
+    setHistoryVisible(!historyVisible);
+  };
+
+  const handleHistoryClose = () => {
+    setHistoryVisible(false);
+  };
+
+  const handleSelectHistory = (history) => {
+    setSelectedHistory(history);
+    // 打开聊天界面并传递历史记录
+    setChatVisible(true);
   };
 
   const handleLoginClick = () => {
@@ -140,22 +161,22 @@ function SchoolPortal() {
 
   const features = [
     {
-      icon: <RobotOutlined style={{ fontSize: '48px', color: '#667eea' }} />,
+      icon: <RobotOutlined style={{ fontSize: '48px', color: '#FF66AB' }} />,
       title: '智能助手',
       description: '24小时在线，解答您的疑问'
     },
     {
-      icon: <BarChartOutlined style={{ fontSize: '48px', color: '#52c41a' }} />,
+      icon: <BarChartOutlined style={{ fontSize: '48px', color: '#FF66AB' }} />,
       title: '成绩查询',
       description: '快速查询学业成绩和学分'
     },
     {
-      icon: <FileTextOutlined style={{ fontSize: '48px', color: '#faad14' }} />,
+      icon: <FileTextOutlined style={{ fontSize: '48px', color: '#FF66AB' }} />,
       title: '表单下载',
       description: '各类申请表格一键下载'
     },
     {
-      icon: <SolutionOutlined style={{ fontSize: '48px', color: '#1890ff' }} />,
+      icon: <SolutionOutlined style={{ fontSize: '48px', color: '#FF66AB' }} />,
       title: '政策咨询',
       description: '学生手册和政策在线查询'
     }
@@ -178,7 +199,7 @@ function SchoolPortal() {
           {user ? (
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
               <div className="user-info">
-                <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#667eea' }} />
+                <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#FF66AB' }} />
                 <span className="user-name">{user.name}</span>
                 <span className="user-type">({user.type === 'student' ? '学生' : user.type === 'teacher' ? '教师' : '管理员'})</span>
               </div>
@@ -204,7 +225,7 @@ function SchoolPortal() {
           <Col xs={24} sm={12} lg={12}>
             <Card className="content-card" hoverable>
               <div className="card-icon">
-                <BankOutlined style={{ fontSize: '48px', color: '#667eea' }} />
+                <BankOutlined style={{ fontSize: '48px', color: '#FF66AB' }} />
               </div>
               <Title level={3}>学校简介</Title>
               <Paragraph className="card-content">
@@ -220,7 +241,7 @@ function SchoolPortal() {
           <Col xs={24} sm={12} lg={12}>
             <Card className="content-card" hoverable>
               <div className="card-icon">
-                <TrophyOutlined style={{ fontSize: '48px', color: '#faad14' }} />
+                <TrophyOutlined style={{ fontSize: '48px', color: '#FF99CC' }} />
               </div>
               <Title level={3}>办学特色</Title>
               <ul className="card-content">
@@ -237,7 +258,7 @@ function SchoolPortal() {
           <Col xs={24} sm={12} lg={12}>
             <Card className="content-card" hoverable>
               <div className="card-icon">
-                <BookOutlined style={{ fontSize: '48px', color: '#52c41a' }} />
+                <BookOutlined style={{ fontSize: '48px', color: '#B06DD6' }} />
               </div>
               <Title level={3}>专业设置</Title>
               <Paragraph className="card-content">
@@ -252,7 +273,7 @@ function SchoolPortal() {
           <Col xs={24} sm={12} lg={12}>
             <Card className="content-card" hoverable>
               <div className="card-icon">
-                <TeamOutlined style={{ fontSize: '48px', color: '#1890ff' }} />
+                <TeamOutlined style={{ fontSize: '48px', color: '#9B4DCA' }} />
               </div>
               <Title level={3}>校园文化</Title>
               <ul className="card-content">
@@ -308,21 +329,33 @@ function SchoolPortal() {
         onFullscreenToggle={handleFullscreenToggle}
         user={user}
         onLoginRequest={handleLoginRequest}
+        selectedHistory={selectedHistory}
+        onHistoryOpen={handleHistoryOpen}
+      />
+
+      {/* 历史记录侧边栏 */}
+      <HistorySidebar
+        visible={historyVisible}
+        onClose={handleHistoryClose}
+        onSelectHistory={handleSelectHistory}
+        user={user}
       />
 
       {/* 登录弹窗 */}
       <Modal
         title={
-          <div style={{ textAlign: 'center' }}>
-            <Title level={3} style={{ margin: 0 }}>🔐 用户登录</Title>
-            <Text type="secondary">内江师范学院智能校园系统</Text>
+          <div style={{ textAlign: 'center', padding: '20px 0' }}>
+            <Title level={3} style={{ margin: 0, color: '#333' }}>🔐 用户登录</Title>
+            <Text style={{ color: '#666' }}>内江师范学院智能校园系统</Text>
           </div>
         }
         open={loginModalVisible}
         onCancel={handleLoginCancel}
         footer={null}
-        width={400}
+        width={420}
         centered
+        style={{ top: '0%' }}
+        className="white-login-modal"
       >
         <Form
           name="login"
@@ -330,15 +363,18 @@ function SchoolPortal() {
           autoComplete="off"
           size="large"
           layout="vertical"
+          style={{ padding: '20px 0' }}
         >
           <Form.Item
             label="用户名/学号/工号"
             name="username"
             rules={[{ required: true, message: '请输入用户名/学号/工号' }]}
+            style={{ marginBottom: '24px' }}
           >
             <Input
-              prefix={<UserOutlined />}
+              prefix={<UserOutlined style={{ color: '#666' }} />}
               placeholder="用户名/学号/工号"
+              style={{ height: '48px', backgroundColor: '#fff', borderColor: '#d9d9d9', color: '#333' }}
             />
           </Form.Item>
 
@@ -346,31 +382,34 @@ function SchoolPortal() {
             label="密码"
             name="password"
             rules={[{ required: true, message: '请输入密码' }]}
+            style={{ marginBottom: '32px' }}
           >
             <Input.Password
-              prefix={<UserOutlined />}
+              prefix={<UserOutlined style={{ color: '#666' }} />}
               placeholder="密码"
+              style={{ height: '48px', backgroundColor: '#fff', borderColor: '#d9d9d9', color: '#333' }}
             />
           </Form.Item>
 
-          <Form.Item>
+          <Form.Item style={{ marginBottom: '32px' }}>
             <Button
               type="primary"
               htmlType="submit"
               loading={loginLoading}
               block
               size="large"
+              style={{ height: '48px', fontSize: '16px', backgroundColor: '#1890ff', borderColor: '#1890ff' }}
             >
               登录
             </Button>
           </Form.Item>
 
-          <div style={{ textAlign: 'center', marginTop: '10px' }}>
-            <Text type="secondary" style={{ fontSize: '12px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <Text style={{ fontSize: '12px', color: '#666' }}>
               测试账号：学生 S2201001 / 教师 T01001 / 管理员 admin
             </Text>
             <br />
-            <Text type="secondary" style={{ fontSize: '12px' }}>
+            <Text style={{ fontSize: '12px', marginTop: '8px', display: 'inline-block', color: '#666' }}>
               默认密码：123456
             </Text>
           </div>

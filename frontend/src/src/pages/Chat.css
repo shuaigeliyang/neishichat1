@@ -1,0 +1,804 @@
+/* ==================== 聊天页面 - osu! 风格 ==================== */
+/* @author 哈雷酱大小姐 (￣▽￣)ﾉ */
+
+.chat-page {
+  display: flex;
+  height: 100vh;
+  background: var(--osu-dark);
+  overflow: hidden;
+  position: relative;
+}
+
+.chat-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    ellipse at 20% 30%,
+    rgba(255, 102, 171, 0.08) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+}
+
+/* ==================== 侧边栏 ==================== */
+.chat-sidebar {
+  width: 320px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1000;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 2px 0 30px rgba(31, 36, 48, 0.10);
+}
+
+.chat-sidebar.visible {
+  transform: translateX(0);
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--gradient-glow);
+}
+
+.sidebar-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.close-sidebar-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+  color: var(--text-secondary);
+}
+
+.close-sidebar-btn:hover {
+  background: rgba(255, 102, 171, 0.1);
+  color: var(--osu-pink);
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.sidebar-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: var(--osu-pink);
+  border-radius: 3px;
+}
+
+.empty-history {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+
+.empty-history p {
+  margin: 10px 0;
+}
+
+.empty-history .hint {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.history-item {
+  padding: 12px;
+  margin-bottom: 8px;
+  background: var(--osu-dark-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.history-item:hover {
+  background: var(--osu-dark-hover);
+  border-color: var(--osu-pink);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-glow);
+}
+
+.history-item-question {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.history-item-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.history-item-meta .time {
+  color: var(--text-muted);
+}
+
+.history-item-meta .intent {
+  color: var(--osu-pink);
+  background: rgba(255, 102, 171, 0.1);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* ==================== 主聊天区域 ==================== */
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--osu-dark-secondary);
+  margin: 20px;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--border-color);
+}
+
+/* ==================== 头部 ==================== */
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: var(--osu-dark-tertiary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.back-btn,
+.menu-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+  color: var(--text-secondary);
+}
+
+.back-btn:hover,
+.menu-btn:hover {
+  background: rgba(255, 102, 171, 0.1);
+  color: var(--osu-pink);
+}
+
+.header-title h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header-title p {
+  margin: 4px 0 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ==================== 消息区域 ==================== */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  background: var(--osu-dark);
+  scroll-behavior: smooth;
+}
+
+.chat-messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: var(--osu-dark);
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: var(--osu-pink);
+  border-radius: 4px;
+}
+
+/* ==================== 欢迎界面 ==================== */
+.chat-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.welcome-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  animation: osu-float 3s ease-in-out infinite;
+}
+
+.chat-welcome h3 {
+  font-size: 24px;
+  margin: 0 0 8px 0;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.chat-welcome > p {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin: 0 0 30px 0;
+}
+
+.welcome-features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  max-width: 500px;
+  margin: 0 auto 30px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--osu-dark-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: all 0.2s;
+}
+
+.feature-item:hover {
+  background: var(--osu-dark-hover);
+  border-color: var(--osu-pink);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+.feature-icon {
+  font-size: 24px;
+}
+
+.welcome-examples {
+  max-width: 600px;
+}
+
+.examples-title {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.example-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.example-chip {
+  padding: 8px 16px;
+  background: var(--osu-dark-tertiary);
+  border: 1px solid var(--osu-pink);
+  border-radius: 20px;
+  font-size: 14px;
+  color: var(--osu-pink);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.example-chip:hover {
+  background: var(--gradient-primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+/* ==================== 消息行 ==================== */
+.message-row {
+  display: flex;
+  margin-bottom: 24px;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.message-row.user {
+  flex-direction: row-reverse;
+}
+
+.message-avatar {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.message-avatar.user {
+  background: var(--gradient-primary);
+  color: white;
+}
+
+.message-avatar.assistant {
+  background: var(--osu-dark-tertiary);
+  color: var(--osu-pink);
+  border: 2px solid var(--osu-pink);
+}
+
+.message-bubble {
+  max-width: 70%;
+  position: relative;
+}
+
+.message-bubble.user {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.message-bubble.user .message-content {
+  background: var(--gradient-primary);
+  color: white;
+  border-radius: 18px 18px 4px 18px;
+  padding: 12px 16px;
+  box-shadow: 0 2px 12px rgba(255, 102, 171, 0.3);
+}
+
+.message-bubble.assistant {
+  position: relative;
+}
+
+.message-bubble.assistant .message-content {
+  background: var(--osu-dark-tertiary);
+  color: var(--text-primary);
+  border-radius: 18px 18px 18px 4px;
+  padding: 12px 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card);
+}
+
+.message-action-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  font-size: 16px;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: all 0.2s;
+}
+
+.message-bubble.assistant:hover .message-action-btn {
+  opacity: 1;
+}
+
+.message-action-btn:hover {
+  color: var(--osu-pink);
+  background: rgba(255, 102, 171, 0.1);
+}
+
+.message-content {
+  word-wrap: break-word;
+  line-height: 1.6;
+}
+
+.message-content.loading {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ==================== Markdown样式 ==================== */
+.message-content h1,
+.message-content h2,
+.message-content h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.message-content h1 { font-size: 1.5em; }
+.message-content h2 { font-size: 1.3em; }
+.message-content h3 { font-size: 1.1em; }
+
+.message-content ul,
+.message-content ol {
+  padding-left: 20px;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+}
+
+.message-content p {
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+}
+
+.message-content strong {
+  font-weight: 600;
+  color: var(--osu-pink);
+}
+
+.message-content code {
+  background: rgba(255, 102, 171, 0.1);
+  color: var(--osu-pink);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+.message-content pre {
+  background: var(--osu-dark);
+  padding: 12px;
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  margin: 10px 0;
+  border: 1px solid var(--border-color);
+}
+
+.message-content pre code {
+  background: none;
+  padding: 0;
+  color: var(--text-primary);
+}
+
+.message-content blockquote {
+  border-left: 4px solid var(--osu-pink);
+  padding-left: 12px;
+  margin: 10px 0;
+  color: var(--text-secondary);
+}
+
+/* ==================== 按钮样式 ==================== */
+.action-button {
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: all 0.2s;
+  box-shadow: 0 2px 12px rgba(255, 102, 171, 0.3);
+}
+
+.action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow-lg);
+}
+
+/* ==================== 查询结果样式 ==================== */
+.query-result {
+  width: 100%;
+}
+
+.suggestions {
+  margin-top: 16px;
+}
+
+.suggestions-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.suggestion-chip {
+  padding: 8px 12px;
+  background: var(--osu-dark);
+  border: 1px solid var(--osu-pink);
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--osu-pink);
+  transition: all 0.2s;
+}
+
+.suggestion-chip:hover {
+  background: rgba(255, 102, 171, 0.1);
+  transform: translateX(4px);
+}
+
+.explanation {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--osu-dark);
+  border-left: 3px solid var(--osu-pink);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ==================== RAG结果样式 ==================== */
+.rag-result {
+  width: 100%;
+}
+
+.rag-sources {
+  margin-top: 16px;
+}
+
+.sources-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.sources-count {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.source-item {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 12px 14px;
+  background: rgba(255, 102, 171, 0.05);
+  border: 1px solid rgba(255, 102, 171, 0.2);
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-primary);
+  transition: all 0.2s;
+}
+
+.source-item:hover {
+  background: rgba(255, 102, 171, 0.1);
+  border-color: var(--osu-pink);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-glow);
+}
+
+.source-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.source-title {
+  flex: 1;
+  font-weight: 600;
+  color: var(--osu-pink);
+}
+
+.source-page {
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: rgba(255, 102, 171, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.source-preview {
+  width: 100%;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.source-text {
+  flex: 1;
+}
+
+.source-action {
+  font-size: 12px;
+  color: var(--osu-pink);
+  margin-left: auto;
+}
+
+.sources-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 8px;
+  background: var(--osu-dark);
+  border-radius: var(--radius-md);
+}
+
+.sources-pagination span {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.confidence {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 102, 171, 0.1);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  color: var(--osu-pink);
+  text-align: center;
+}
+
+/* ==================== 回到底部按钮 ==================== */
+.scroll-to-bottom-btn {
+  position: absolute;
+  bottom: 180px;
+  left: 40px;
+  z-index: 100;
+  width: 56px;
+  height: 56px;
+  background: var(--gradient-primary);
+  border: none;
+  box-shadow: var(--shadow-glow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scroll-to-bottom-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow-lg);
+}
+
+/* ==================== 输入区域 ==================== */
+.chat-input-area {
+  padding: 20px 24px;
+  background: var(--osu-dark-secondary);
+  border-top: 1px solid var(--border-color);
+}
+
+.input-container {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.chat-input {
+  flex: 1;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--border-color);
+  padding: 12px 16px;
+  font-size: 14px;
+  resize: none;
+  transition: all 0.2s;
+  background: var(--osu-dark-tertiary);
+  color: var(--text-primary);
+}
+
+.chat-input:focus {
+  border-color: var(--osu-pink);
+  box-shadow: 0 0 0 2px rgba(255, 102, 171, 0.1);
+}
+
+.chat-input::placeholder {
+  color: var(--text-muted);
+}
+
+.send-button {
+  height: auto;
+  border-radius: var(--radius-lg);
+  background: var(--gradient-primary);
+  border: none;
+  padding: 12px 24px;
+  font-weight: 500;
+  box-shadow: 0 2px 12px rgba(255, 102, 171, 0.3);
+}
+
+.send-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow-lg);
+}
+
+.input-hint {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+/* ==================== 响应式设计 ==================== */
+@media (max-width: 768px) {
+  .chat-sidebar {
+    width: 100%;
+  }
+
+  .chat-main {
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .chat-header {
+    padding: 16px;
+  }
+
+  .chat-messages {
+    padding: 16px;
+  }
+
+  .message-bubble {
+    max-width: 85%;
+  }
+
+  .welcome-features {
+    grid-template-columns: 1fr;
+  }
+
+  .chat-input-area {
+    padding: 16px;
+  }
+
+  .input-container {
+    flex-direction: column;
+  }
+
+  .send-button {
+    width: 100%;
+  }
+
+  .scroll-to-bottom-btn {
+    bottom: 140px;
+    left: 20px;
+    width: 48px;
+    height: 48px;
+  }
+}

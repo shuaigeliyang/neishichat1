@@ -21,7 +21,9 @@ import {
   ReloadOutlined,
   SmileOutlined,
   LoadingOutlined,
-  ThunderboltOutlined
+  ThunderboltOutlined,
+  FullscreenOutlined,
+  FullscreenExitOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -32,7 +34,7 @@ import FormList from '../components/FormList';
 import { detectIntent, getIntentDescription } from '../utils/intentDetector';
 import './Chat.css';
 
-function Chat({ user }) {
+function Chat({ user, isFullscreen = false, onFullscreenToggle = () => {}, onChatClose = () => {}, selectedHistory, onHistoryOpen = () => {} }) {
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -43,6 +45,8 @@ function Chat({ user }) {
   const [isAutoScrollEnabled, setIsAutoScrollEnabled] = useState(true);
   const [handbookModalVisible, setHandbookModalVisible] = useState(false);
   const [selectedPageNum, setSelectedPageNum] = useState(null);
+  const [selectedSourceContent, setSelectedSourceContent] = useState(null);  // 预加载的来源内容
+  const [selectedDocumentName, setSelectedDocumentName] = useState(null);  // 当前文档名称
   const [sourcesPageMap, setSourcesPageMap] = useState({});
   const SOURCES_PER_PAGE = 5;
   const [multiline, setMultiline] = useState(false);
@@ -56,12 +60,17 @@ function Chat({ user }) {
   const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
 
+  // 当组件挂载时，确保历史记录界面是关闭的
+  useEffect(() => {
+    setSidebarVisible(false);
+  }, []);
+
   /**
    * 获取AI表情图标 - 根据对话内容动态显示
    */
   const getAIIcon = (msg) => {
     if (msg.role === 'system') {
-      return <LoadingOutlined style={{ color: '#faad14' }} />;
+      return <LoadingOutlined style={{ color: '#FF99CC' }} />;
     }
 
     const content = msg.content || '';
@@ -71,20 +80,20 @@ function Chat({ user }) {
       return <SmileOutlined style={{ color: '#52c41a' }} />;
     }
     if (content.includes('💡') || content.includes('建议') || content.includes('提示')) {
-      return <BulbOutlined style={{ color: '#faad14' }} />;
+      return <BulbOutlined style={{ color: '#FF99CC' }} />;
     }
     if (content.includes('⚡') || content.includes('快速') || content.includes('立即')) {
-      return <ThunderboltOutlined style={{ color: '#1890ff' }} />;
+      return <ThunderboltOutlined style={{ color: '#FF66AB' }} />;
     }
     if (content.includes('❌') || content.includes('错误') || content.includes('失败')) {
       return <RobotOutlined style={{ color: '#ff4d4f' }} />;
     }
     if (content.includes('📊') || content.includes('查询') || content.includes('数据')) {
-      return <ThunderboltOutlined style={{ color: '#722ed1' }} />;
+      return <ThunderboltOutlined style={{ color: '#9B4DCA' }} />;
     }
 
     // 默认表情
-    return <RobotOutlined style={{ color: '#667eea' }} />;
+    return <RobotOutlined style={{ color: '#FF66AB' }} />;
   };
 
   /**
@@ -140,7 +149,7 @@ function Chat({ user }) {
   // ✨ 新增：获取可用的文档列表
   const fetchAvailableDocuments = async () => {
     try {
-      const response = await axios.get('/api/rag/documents', {
+      const response = await axios.get('/api/rag-v2/documents', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
 
@@ -624,10 +633,11 @@ function Chat({ user }) {
           if (docGroup.chunks && docGroup.chunks.length > 0) {
             docGroup.chunks.forEach(chunk => {
               formattedSources.push({
-                chapter: chunk.chapter,
                 page: chunk.page,
                 score: chunk.score,
-                documentName: docGroup.documentName  // ✨ 新增：文档名称
+                text: chunk.text,      // 完整文本，用于点击查看
+                preview: chunk.preview,  // 预览文本，用于列表显示
+                documentName: docGroup.documentName
               });
             });
           }
@@ -841,466 +851,430 @@ function Chat({ user }) {
     return content;
   };
 
+  // 当收到选中的历史记录时，加载到消息列表
+  useEffect(() => {
+    if (selectedHistory) {
+      setMessages(selectedHistory);
+    }
+  }, [selectedHistory]);
+
   return (
     <div className="chat-page">
-      {/* 侧边栏 */}
-      <div className={`chat-sidebar ${sidebarVisible ? 'visible' : ''}`}>
-        <div className="sidebar-header">
-          <h3>📜 历史记录</h3>
+
+      {/* 头部 */}
+      <div className="chat-header">
+        <div className="header-left">
+          <Badge count={chatHistory.length} showZero={false}>
+            <Button
+              icon={<HistoryOutlined />}
+              onClick={onHistoryOpen}
+            >
+              历史记录
+            </Button>
+          </Badge>
+          <div className="header-title">
+            <h2>🤖 内江师院智能助手</h2>
+            <p>欢迎，{user.name}！</p>
+          </div>
           <Button
             type="text"
-            icon={<CloseOutlined />}
-            onClick={() => setSidebarVisible(false)}
-            className="close-sidebar-btn"
+            icon={isFullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
+            onClick={onFullscreenToggle}
+            className="fullscreen-btn"
+            title={isFullscreen ? '退出全屏' : '全屏显示'}
           />
-        </div>
-
-        <div className="sidebar-content">
-          {chatHistory.length === 0 ? (
-            <div className="empty-history">
-              <p>暂无历史记录</p>
-              <p className="hint">开始对话后，记录会保存在这里</p>
-            </div>
-          ) : (
-            chatHistory.map((item) => (
-              <div
-                key={item.chat_id}
-                className="history-item"
-                onClick={() => {
-                  setMessages([
-                    { role: 'user', content: item.user_question },
-                    { role: 'assistant', content: item.ai_answer_preview || item.ai_answer }
-                  ]);
-                  setSidebarVisible(false);
-                  message.success('已加载历史对话');
-                }}
-              >
-                <div className="history-item-question">
-                  {item.user_question}
-                </div>
-                <div className="history-item-meta">
-                  <span className="time">
-                    {new Date(item.created_at).toLocaleString('zh-CN', {
-                      month: '2-digit',
-                      day: '2-digit',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </span>
-                  <span className="intent">
-                    {item.intent === 'chat' ? '💬 闲聊' :
-                     item.intent === 'download' ? '📥 下载' : '📊 查询'}
-                  </span>
-                </div>
-              </div>
-            ))
-          )}
         </div>
       </div>
 
-      {/* 主聊天区域 */}
-      <div className="chat-main">
-        {/* 头部 */}
-        <div className="chat-header">
-          <div className="header-left">
-            <Button
-              type="text"
-              icon={<ArrowLeftOutlined />}
-              onClick={() => navigate(-1)}
-              className="back-btn"
-            />
-            <Button
-              type="text"
-              icon={<MenuOutlined />}
-              onClick={() => setSidebarVisible(true)}
-              className="menu-btn"
-            />
-            <div className="header-title">
-              <h2>🤖 智能助手</h2>
-              <p>欢迎，{user.name}！</p>
+      {/* 消息区域 */}
+      <div
+        ref={messagesContainerRef}
+        className="chat-messages"
+        onScroll={handleScroll}
+      >
+        {messages.length === 0 && (
+          <div className="chat-welcome">
+            <div className="welcome-icon">
+              🤖
+            </div>
+            <h3>👋 您好！我是小智</h3>
+            <p>您的智能学习助手，随时为您服务~</p>
+
+            <div className="welcome-features">
+              <div className="feature-item">
+                <span className="feature-icon">📊</span>
+                <span>查询成绩、课程、个人信息</span>
+              </div>
+              <div className="feature-item">
+                <span className="feature-icon">📥</span>
+                <span>下载各类表格和表单</span>
+              </div>
+              <div className="feature-item">
+                <span className="feature-icon">📚</span>
+                <span>查询学生手册和政策</span>
+              </div>
+              <div className="feature-item">
+                <span className="feature-icon">💬</span>
+                <span>聊天解闷，提供建议</span>
+              </div>
+            </div>
+
+            <div className="welcome-examples">
+              <p className="examples-title">💡 试试问我：</p>
+              <div className="example-chips">
+                <button onClick={() => setInput('你好')} className="example-chip">你好</button>
+                <button onClick={() => setInput('我的成绩')} className="example-chip">我的成绩</button>
+                <button onClick={() => setInput('课程表')} className="example-chip">课程表</button>
+                <button onClick={() => setInput('最近压力大')} className="example-chip">最近压力大</button>
+              </div>
             </div>
           </div>
-
-          <div className="header-right">
-            <Badge count={chatHistory.length} showZero={false}>
-              <Button
-                icon={<HistoryOutlined />}
-                onClick={() => setSidebarVisible(true)}
-              >
-                历史记录
-              </Button>
-            </Badge>
-          </div>
-        </div>
-
-        {/* 消息区域 */}
-        <div
-          ref={messagesContainerRef}
-          className="chat-messages"
-          onScroll={handleScroll}
-        >
-          {messages.length === 0 && (
-            <div className="chat-welcome">
-              <div className="welcome-icon">
-                🤖
-              </div>
-              <h3>👋 您好！我是小智</h3>
-              <p>您的智能学习助手，随时为您服务~</p>
-
-              <div className="welcome-features">
-                <div className="feature-item">
-                  <span className="feature-icon">📊</span>
-                  <span>查询成绩、课程、个人信息</span>
-                </div>
-                <div className="feature-item">
-                  <span className="feature-icon">📥</span>
-                  <span>下载各类表格和表单</span>
-                </div>
-                <div className="feature-item">
-                  <span className="feature-icon">📚</span>
-                  <span>查询学生手册和政策</span>
-                </div>
-                <div className="feature-item">
-                  <span className="feature-icon">💬</span>
-                  <span>聊天解闷，提供建议</span>
-                </div>
-              </div>
-
-              <div className="welcome-examples">
-                <p className="examples-title">💡 试试问我：</p>
-                <div className="example-chips">
-                  <button onClick={() => setInput('你好')} className="example-chip">你好</button>
-                  <button onClick={() => setInput('我的成绩')} className="example-chip">我的成绩</button>
-                  <button onClick={() => setInput('课程表')} className="example-chip">课程表</button>
-                  <button onClick={() => setInput('最近压力大')} className="example-chip">最近压力大</button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {messages.map((msg, index) => (
-            <div key={index} className={`message-row ${msg.role}`}>
-              {msg.role === 'user' ? (
-                <>
-                  <div className="message-bubble user">
-                    <div className="message-content">
-                      {msg.content}
-                    </div>
-                  </div>
-                  <div className="message-avatar user">
-                    <UserOutlined />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="message-avatar assistant">
-                    {getAIIcon(msg)}
-                  </div>
-                  <div className="message-bubble assistant">
-                    {/* 消息操作按钮 */}
-                    <Dropdown
-                      menu={{
-                        items: [
-                          {
-                            key: 'copy',
-                            icon: <CopyOutlined />,
-                            label: '复制',
-                            onClick: () => handleMessageAction('copy', index)
-                          },
-                          {
-                            key: 'regenerate',
-                            icon: <ReloadOutlined />,
-                            label: '重新生成',
-                            onClick: () => handleMessageAction('regenerate', index)
-                          },
-                          {
-                            key: 'delete',
-                            icon: <DeleteOutlined />,
-                            label: '删除',
-                            onClick: () => handleMessageAction('delete', index)
-                          }
-                        ]
-                      }}
-                      trigger={['click']}
-                    >
-                      <Button
-                        type="text"
-                        size="small"
-                        className="message-action-btn"
-                      >
-                        ⋯
-                      </Button>
-                    </Dropdown>
-
-                    <div className="message-content">
-                      {msg.isFormList ? (
-                        <FormList
-                          content={msg.content}
-                          forms={msg.forms || []}
-                          onCopyFormName={(text) => {
-                            setInput(text);
-                            message.success('✅ 已复制到输入框，点击发送即可生成表单！');
-                          }}
-                        />
-                      ) : msg.isFormDownload ? (
-                        <div>
-                          <Markdown>{msg.content}</Markdown>
-                          <button
-                            onClick={() => handleFormDownload(msg.downloadUrl, msg.fileName)}
-                            className="action-button"
-                          >
-                            📥 点击下载表单文件
-                          </button>
-                        </div>
-                      ) : msg.isDownload ? (
-                        <div>
-                          <p>{msg.content}</p>
-                          <button
-                            onClick={() => handleDownload(msg.downloadUrl, msg.downloadType)}
-                            className="action-button"
-                          >
-                            📥 点击下载 {msg.downloadType}
-                          </button>
-                        </div>
-                      ) : msg.isIntelligentQuery ? (
-                        <div className="query-result">
-                          <Markdown>{msg.content}</Markdown>
-
-                          {msg.queryData && msg.queryData.length > 0 && (
-                            <QueryResultTable
-                              data={msg.queryData}
-                              rowCount={msg.rowCount}
-                              downloadUrl={msg.downloadUrl}
-                            />
-                          )}
-
-                          {msg.downloadUrl && (!msg.queryData || msg.queryData.length === 0) && (
-                            <button
-                              onClick={() => handleDownload(msg.downloadUrl, '查询结果')}
-                              className="action-button"
-                            >
-                              📥 点击下载查询结果
-                            </button>
-                          )}
-
-                          {msg.suggestions && msg.suggestions.length > 0 && (
-                            <div className="suggestions">
-                              <Divider style={{ margin: '12px 0' }} />
-                              <div className="suggestions-title">
-                                <BulbOutlined style={{ color: '#faad14' }} />
-                                <span>后续查询建议：</span>
-                              </div>
-                              {msg.suggestions.map((suggestion, idx) => (
-                                <div
-                                  key={idx}
-                                  className="suggestion-chip"
-                                  onClick={() => setInput(suggestion)}
-                                >
-                                  💡 {suggestion}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          {msg.explanation && (
-                            <div className="explanation">
-                              <strong>💡 查询说明：</strong>{msg.explanation}
-                            </div>
-                          )}
-                        </div>
-                      ) : msg.isRAGAnswer ? (
-                        <div className="rag-result">
-                          <Markdown>{msg.content}</Markdown>
-
-                          {msg.sources && msg.sources.length > 0 && (
-                            <div className="rag-sources">
-                              <Divider style={{ margin: '12px 0' }} />
-                              <div className="sources-header">
-                                <BookOutlined style={{ color: '#1890ff' }} />
-                                <span>📖 参考来源：</span>
-                                <span className="sources-count">共 {msg.sources.length} 条</span>
-                              </div>
-
-                              {(() => {
-                                const currentPage = sourcesPageMap[index] || 1;
-                                const totalPages = Math.ceil(msg.sources.length / SOURCES_PER_PAGE);
-                                const startIndex = (currentPage - 1) * SOURCES_PER_PAGE;
-                                const endIndex = startIndex + SOURCES_PER_PAGE;
-                                const currentSources = msg.sources.slice(startIndex, endIndex);
-
-                                return (
-                                  <>
-                                    {currentSources.map((source, idx) => (
-                                      <div
-                                        key={idx}
-                                        onClick={() => {
-                                          setSelectedPageNum(source.page);
-                                          setHandbookModalVisible(true);
-                                        }}
-                                        className="source-item"
-                                      >
-                                        <BookOutlined />
-                                        <span className="source-text">
-                                          {source.documentName || '未知文档'} - {source.chapter || '未知章节'}（第{source.page}页）
-                                        </span>
-                                        <span className="source-action">点击查看 →</span>
-                                      </div>
-                                    ))}
-
-                                    {totalPages > 1 && (
-                                      <div className="sources-pagination">
-                                        <Button
-                                          size="small"
-                                          disabled={currentPage === 1}
-                                          onClick={() => {
-                                            setSourcesPageMap(prev => ({
-                                              ...prev,
-                                              [index]: currentPage - 1
-                                            }));
-                                          }}
-                                        >
-                                          上一页
-                                        </Button>
-
-                                        <span>第 {currentPage} / {totalPages} 页</span>
-
-                                        <Button
-                                          size="small"
-                                          disabled={currentPage === totalPages}
-                                          onClick={() => {
-                                            setSourcesPageMap(prev => ({
-                                              ...prev,
-                                              [index]: currentPage + 1
-                                            }));
-                                          }}
-                                        >
-                                          下一页
-                                        </Button>
-                                      </div>
-                                    )}
-                                  </>
-                                );
-                              })()}
-                            </div>
-                          )}
-
-                          {msg.confidence && (
-                            <div className="confidence">
-                              🎯 置信度：{(msg.confidence * 100).toFixed(0)}%
-                            </div>
-                          )}
-                        </div>
-                      ) : msg.role === 'assistant' ? (
-                        <Markdown>{msg.content}</Markdown>
-                      ) : (
-                        msg.content
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          ))}
-
-          {loading && (
-            <div className="message-row assistant">
-              <div className="message-avatar assistant">
-                <Spin size="small" />
-              </div>
-              <div className="message-bubble assistant">
-                <div className="message-content loading">
-                  正在思考中...
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* 回到底部按钮 */}
-        {showScrollButton && (
-          <Button
-            type="primary"
-            shape="circle"
-            size="large"
-            icon={<VerticalAlignBottomOutlined style={{ fontSize: '20px' }} />}
-            onClick={() => scrollToBottom(true)}
-            className="scroll-to-bottom-btn"
-            title="回到底部"
-          />
         )}
 
-        {/* 输入区域 */}
-        <div className="chat-input-area">
-          {/* ✨ 新增：文档选择器 */}
-          {availableDocuments.length > 0 && (
-            <div className="document-selector" style={{ marginBottom: '12px', padding: '8px 12px', background: '#f5f5f5', borderRadius: '8px' }}>
-              <BookOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
-              <span style={{ marginRight: '12px', fontWeight: 500 }}>选择文档：</span>
-              <Select
-                value={selectedDocumentId}
-                onChange={(value) => {
-                  setSelectedDocumentId(value);
-                  message.info(value === 'all' ? '已切换到全部文档' : `已切换到：${availableDocuments.find(d => d.documentId === value)?.displayName || value}`);
-                }}
-                style={{ width: 300 }}
-                options={[
-                  { value: 'all', label: '📚 全部文档' },
-                  ...availableDocuments.map(doc => ({
-                    value: doc.documentId,
-                    label: `📄 ${doc.displayName || doc.name}`
-                  }))
-                ]}
-              />
-              {selectedDocumentId !== 'all' && (
-                <span style={{ marginLeft: '12px', fontSize: '12px', color: '#999' }}>
-                  仅检索：{availableDocuments.find(d => d.documentId === selectedDocumentId)?.displayName || selectedDocumentId}
-                </span>
-              )}
-            </div>
-          )}
+        {messages.map((msg, index) => (
+          <div key={index} className={`message-row ${msg.role}`}>
+            {msg.role === 'user' ? (
+              <>
+                <div className="message-bubble user">
+                  <div className="message-content">
+                    {msg.content}
+                  </div>
+                </div>
+                <div className="message-avatar user">
+                  <UserOutlined />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="message-avatar assistant">
+                  {getAIIcon(msg)}
+                </div>
+                <div className="message-bubble assistant">
+                  {/* 消息操作按钮 */}
+                  <Dropdown
+                    menu={{
+                      items: [
+                        {
+                          key: 'copy',
+                          icon: <CopyOutlined />,
+                          label: '复制',
+                          onClick: () => handleMessageAction('copy', index)
+                        },
+                        {
+                          key: 'regenerate',
+                          icon: <ReloadOutlined />,
+                          label: '重新生成',
+                          onClick: () => handleMessageAction('regenerate', index)
+                        },
+                        {
+                          key: 'delete',
+                          icon: <DeleteOutlined />,
+                          label: '删除',
+                          onClick: () => handleMessageAction('delete', index)
+                        }
+                      ]
+                    }}
+                    trigger={['click']}
+                  >
+                    <Button
+                      type="text"
+                      size="small"
+                      className="message-action-btn"
+                    >
+                      ⋯
+                    </Button>
+                  </Dropdown>
 
-          <div className="input-container">
-            <Input.TextArea
-              ref={inputRef}
-              value={input}
-              onChange={(e) => {
-                setInput(e.target.value);
-                setMultiline(e.target.value.split('\n').length > 1 || e.target.value.length > 50);
+                  <div className="message-content">
+                    {msg.isFormList ? (
+                      <FormList
+                        content={msg.content}
+                        forms={msg.forms || []}
+                        onCopyFormName={(text) => {
+                          setInput(text);
+                          message.success('✅ 已复制到输入框，点击发送即可生成表单！');
+                        }}
+                      />
+                    ) : msg.isFormDownload ? (
+                      <div>
+                        <Markdown>{msg.content}</Markdown>
+                        <button
+                          onClick={() => handleFormDownload(msg.downloadUrl, msg.fileName)}
+                          className="action-button"
+                        >
+                          📥 点击下载表单文件
+                        </button>
+                      </div>
+                    ) : msg.isDownload ? (
+                      <div>
+                        <p>{msg.content}</p>
+                        <button
+                          onClick={() => handleDownload(msg.downloadUrl, msg.downloadType)}
+                          className="action-button"
+                        >
+                          📥 点击下载 {msg.downloadType}
+                        </button>
+                      </div>
+                    ) : msg.isIntelligentQuery ? (
+                      <div className="query-result">
+                        <Markdown>{msg.content}</Markdown>
+
+                        {msg.queryData && msg.queryData.length > 0 && (
+                          <QueryResultTable
+                            data={msg.queryData}
+                            rowCount={msg.rowCount}
+                            downloadUrl={msg.downloadUrl}
+                          />
+                        )}
+
+                        {msg.downloadUrl && (!msg.queryData || msg.queryData.length === 0) && (
+                          <button
+                            onClick={() => handleDownload(msg.downloadUrl, '查询结果')}
+                            className="action-button"
+                          >
+                            📥 点击下载查询结果
+                          </button>
+                        )}
+
+                        {msg.suggestions && msg.suggestions.length > 0 && (
+                          <div className="suggestions">
+                            <Divider style={{ margin: '12px 0' }} />
+                            <div className="suggestions-title">
+                              <BulbOutlined style={{ color: '#faad14' }} />
+                              <span>后续查询建议：</span>
+                            </div>
+                            {msg.suggestions.map((suggestion, idx) => (
+                              <div
+                                key={idx}
+                                className="suggestion-chip"
+                                onClick={() => setInput(suggestion)}
+                              >
+                                💡 {suggestion}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {msg.explanation && (
+                          <div className="explanation">
+                            <strong>💡 查询说明：</strong>{msg.explanation}
+                          </div>
+                        )}
+                      </div>
+                    ) : msg.isRAGAnswer ? (
+                      <div className="rag-result">
+                        {msg.confidence && (
+                          <div style={{ fontSize: '12px', color: '#999', marginBottom: '8px' }}>
+                            📊 检索置信度: {(msg.confidence * 100).toFixed(1)}%
+                          </div>
+                        )}
+                        <Markdown>{msg.content}</Markdown>
+
+                        {msg.sources && msg.sources.length > 0 && (
+                          <div className="rag-sources">
+                            <Divider style={{ margin: '12px 0' }} />
+                            <div className="sources-header">
+                              <BookOutlined style={{ color: '#FF66AB' }} />
+                              <span>📖 参考来源：</span>
+                              <span className="sources-count">共 {msg.sources.length} 条</span>
+                              {msg.confidence && (
+                                <span style={{ color: msg.confidence >= 0.5 ? '#52c41a' : '#faad14', marginLeft: '8px' }}>
+                                  ({msg.confidence >= 0.5 ? '✅ 高置信度' : '⚠️ 低置信度'})
+                                </span>
+                              )}
+                            </div>
+
+                            {(() => {
+                              const currentPage = sourcesPageMap[index] || 1;
+                              const totalPages = Math.ceil(msg.sources.length / SOURCES_PER_PAGE);
+                              const startIndex = (currentPage - 1) * SOURCES_PER_PAGE;
+                              const endIndex = startIndex + SOURCES_PER_PAGE;
+                              const currentSources = msg.sources.slice(startIndex, endIndex);
+
+                              return (
+                                <>
+                                  {currentSources.map((source, idx) => (
+                                    <div
+                                      key={idx}
+                                      onClick={() => {
+                                        setSelectedPageNum(source.page);
+                                        setSelectedSourceContent(source.text);  // 完整文本
+                                        setSelectedDocumentName(source.documentName);
+                                        setHandbookModalVisible(true);
+                                      }}
+                                      className="source-item"
+                                    >
+                                      <div className="source-header">
+                                        <BookOutlined />
+                                        <span className="source-title">
+                                          {source.documentName || '未知文档'}
+                                        </span>
+                                        <span className="source-page">第{source.page}页</span>
+                                      </div>
+                                      <div className="source-preview">
+                                        {source.preview || source.text?.substring(0, 200)}
+                                      </div>
+                                      <span className="source-action">点击查看完整内容 →</span>
+                                    </div>
+                                  ))}
+
+                                  {totalPages > 1 && (
+                                    <div className="sources-pagination">
+                                      <Button
+                                        size="small"
+                                        disabled={currentPage === 1}
+                                        onClick={() => {
+                                          setSourcesPageMap(prev => ({
+                                            ...prev,
+                                            [index]: currentPage - 1
+                                          }));
+                                        }}
+                                      >
+                                        上一页
+                                      </Button>
+
+                                      <span>第 {currentPage} / {totalPages} 页</span>
+
+                                      <Button
+                                        size="small"
+                                        disabled={currentPage === totalPages}
+                                        onClick={() => {
+                                          setSourcesPageMap(prev => ({
+                                            ...prev,
+                                            [index]: currentPage + 1
+                                          }));
+                                        }}
+                                      >
+                                        下一页
+                                      </Button>
+                                    </div>
+                                  )}
+                                </>
+                              );
+                            })()}
+                          </div>
+                        )}
+
+                        {msg.confidence && (
+                          <div className="confidence">
+                            🎯 置信度：{(msg.confidence * 100).toFixed(0)}%
+                          </div>
+                        )}
+                      </div>
+                    ) : msg.role === 'assistant' ? (
+                      <Markdown>{msg.content}</Markdown>
+                    ) : (
+                      msg.content
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        ))}
+
+        {loading && (
+          <div className="message-row assistant">
+            <div className="message-avatar assistant">
+              <Spin size="small" />
+            </div>
+            <div className="message-bubble assistant">
+              <div className="message-content loading">
+                正在思考中...
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* 回到底部按钮 */}
+      {showScrollButton && (
+        <Button
+          type="primary"
+          shape="circle"
+          size="large"
+          icon={<VerticalAlignBottomOutlined style={{ fontSize: '20px' }} />}
+          onClick={() => scrollToBottom(true)}
+          className="scroll-to-bottom-btn"
+          title="回到底部"
+        />
+      )}
+
+      {/* 输入区域 */}
+      <div className="chat-input-area">
+        {/* ✨ 新增：文档选择器 */}
+        {availableDocuments.length > 0 && (
+          <div className="document-selector" style={{ marginBottom: '12px', padding: '8px 12px', background: 'var(--osu-dark-tertiary)', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center' }}>
+            <BookOutlined style={{ marginRight: '8px', color: '#FF66AB' }} />
+            <span style={{ marginRight: '12px', fontWeight: 500, color: '#ffffff' }}>选择文档：</span>
+            <Select
+              value={selectedDocumentId}
+              onChange={(value) => {
+                setSelectedDocumentId(value);
+                message.info(value === 'all' ? '已切换到全部文档' : `已切换到：${availableDocuments.find(d => d.documentId === value)?.displayName || value}`);
               }}
-              onPressEnter={(e) => {
-                if (!e.shiftKey) {
-                  e.preventDefault();
-                  handleSend();
-                }
-              }}
-              placeholder="输入您的问题...（Enter发送，Shift+Enter换行）"
-              autoSize={{ minRows: 1, maxRows: 6 }}
-              className="chat-input"
-              disabled={loading}
+              style={{ width: 280 }}
+              options={[
+                { value: 'all', label: '📚 全部文档' },
+                ...availableDocuments.map(doc => ({
+                  value: doc.documentId,
+                  label: `📄 ${doc.displayName || doc.name}`
+                }))
+              ]}
             />
-            <Button
-              type="primary"
-              icon={<SendOutlined />}
-              onClick={handleSend}
-              loading={loading}
-              className="send-button"
-            >
-              发送
-            </Button>
+            {selectedDocumentId !== 'all' && (
+              <span style={{ marginLeft: '12px', fontSize: '12px', color: '#b8b8d0' }}>
+                仅检索：{availableDocuments.find(d => d.documentId === selectedDocumentId)?.displayName || selectedDocumentId}
+              </span>
+            )}
           </div>
-          <div className="input-hint">
-            💡 提示：按 Enter 发送，Shift + Enter 换行
-          </div>
+        )}
+
+        <div className="input-container">
+          <Input.TextArea
+            ref={inputRef}
+            value={input}
+            onChange={(e) => {
+              setInput(e.target.value);
+              setMultiline(e.target.value.split('\n').length > 1 || e.target.value.length > 50);
+            }}
+            onPressEnter={(e) => {
+              if (!e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+            placeholder="输入您的问题...（Enter发送，Shift+Enter换行）"
+            autoSize={{ minRows: 1, maxRows: 6 }}
+            className="chat-input"
+            disabled={loading}
+            style={{ fontSize: '13px' }}
+          />
+          <Button
+            type="primary"
+            icon={<SendOutlined />}
+            onClick={handleSend}
+            loading={loading}
+            className="send-button"
+          >
+            发送
+          </Button>
         </div>
       </div>
 
       {/* 学生手册查看器 */}
       <HandbookViewer
         visible={handbookModalVisible}
-        onClose={() => setHandbookModalVisible(false)}
+        onClose={() => {
+          setHandbookModalVisible(false);
+          setSelectedSourceContent(null);
+          setSelectedDocumentName(null);
+        }}
         pageNum={selectedPageNum}
+        preloadContent={selectedSourceContent}
+        documentName={selectedDocumentName}
       />
     </div>
   );

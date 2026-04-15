@@ -8,6 +8,7 @@ import { Router } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs/promises';
+import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 import {
     getDocuments,
@@ -25,6 +26,10 @@ import {
     getDocumentChunks
 } from '../controllers/documentRegistry.js';
 import DocumentRegistry from '../services/documentRegistry.js';
+
+// ✨ 修复：在ES Module中获取__dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const router = Router();
 const registry = new DocumentRegistry();

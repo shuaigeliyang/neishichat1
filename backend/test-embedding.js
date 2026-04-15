@@ -18,7 +18,7 @@ async function testEmbedding() {
     const response = await axios.post(
       apiUrl,
       {
-        model: 'embedding-2',
+        model: 'embedding-3',
         input: '测试文本'
       },
       {

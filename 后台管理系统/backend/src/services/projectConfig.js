@@ -49,15 +49,18 @@ class ProjectConfig {
                 root: path.resolve(__dirname, '../../../../'),
                 documentLibrary: path.resolve(__dirname, '../../../../文档库'),
                 indexDir: path.resolve(__dirname, '../../../../文档库/indexes'),
-                retrievalIndex: path.resolve(__dirname, '../../../../文档库/indexes/retrieval_index.json'),
+                // ✨ 修复：使用统一的索引文件，与前台系统同步
+                retrievalIndex: path.resolve(__dirname, '../../../../文档库/indexes/unified_index.json'),
+                // 同时保存到 retrieval_index.json 作为备份
+                retrievalIndexBackup: path.resolve(__dirname, '../../../../文档库/indexes/retrieval_index.json'),
                 embeddingCache: path.resolve(__dirname, '../../../../文档库/indexes/embedding_cache.json'),
                 registry: path.resolve(__dirname, '../../../../文档库/registry.json'),
                 documents: path.resolve(__dirname, '../../../../文档库/documents')
             },
             embedding: {
-                provider: 'ZHIPU',
-                model: 'embedding-3',
-                dimension: 2048
+                provider: 'LOCAL_PYTHON',
+                model: 'paraphrase-multilingual-MiniLM-L12-v2',
+                dimension: 384
             }
         };
     }

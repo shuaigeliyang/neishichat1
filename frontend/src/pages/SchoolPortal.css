@@ -1,26 +1,35 @@
 /**
  * 内江师范学院学校门户页面样式
- * @author 内师智能体系统 (￣▽￣)ﾉ
+ * @author 哈雷酱大小姐 (￣▽￣)ﾉ
+ *
+ * osu! 风格深色霓虹主题
  */
 
 .school-portal {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--osu-dark);
   padding: 20px;
   position: relative;
 }
 
 /* 顶部导航 */
 .portal-header {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--osu-dark-secondary);
   padding: 25px 40px;
-  border-radius: 15px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
   margin-bottom: 30px;
   backdrop-filter: blur(10px);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-normal);
+}
+
+.portal-header:hover {
+  border-color: var(--osu-pink);
+  box-shadow: var(--shadow-glow);
 }
 
 .school-logo-area {
@@ -36,20 +45,20 @@
 }
 
 .login-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   border: none;
   height: 40px;
   padding: 0 24px;
   font-size: 16px;
   font-weight: 600;
-  border-radius: 20px;
-  transition: all 0.3s ease;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+  box-shadow: 0 4px 15px rgba(255, 102, 171, 0.4);
 }
 
 .login-button:hover {
-  background: linear-gradient(135deg, #5568d3 0%, #6a4190 100%);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: var(--shadow-glow-lg);
 }
 
 .user-info {
@@ -57,34 +66,35 @@
   align-items: center;
   gap: 10px;
   padding: 8px 16px;
-  background: white;
-  border-radius: 25px;
+  background: var(--osu-dark-tertiary);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all var(--transition-normal);
+  border: 1px solid var(--border-color);
 }
 
 .user-info:hover {
-  background: #f5f5f5;
+  background: var(--osu-dark-hover);
+  border-color: var(--osu-pink);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-glow);
 }
 
 .user-name {
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
   font-size: 14px;
 }
 
 .user-type {
-  color: #999;
+  color: var(--text-muted);
   font-size: 12px;
 }
 
 .school-logo {
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -92,12 +102,13 @@
   font-size: 32px;
   color: white;
   font-weight: bold;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 20px rgba(255, 102, 171, 0.4);
+  animation: osu-glow-pulse 3s ease-in-out infinite;
 }
 
 .school-title h2 {
   margin: 0 !important;
-  color: #333;
+  color: var(--text-primary);
 }
 
 /* 主内容区 */
@@ -107,14 +118,30 @@
 
 .content-card {
   height: 100%;
-  border-radius: 15px !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-card);
+  transition: all var(--transition-normal);
+  background: var(--osu-dark-card) !important;
+  border: 1px solid var(--border-color) !important;
 }
 
 .content-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  border-color: var(--osu-pink) !important;
+  box-shadow: var(--shadow-glow);
+}
+
+.content-card .ant-card-head {
+  background: transparent;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.content-card .ant-card-head-title {
+  color: var(--text-primary);
+}
+
+.content-card .ant-card-body {
+  color: var(--text-secondary);
 }
 
 .card-icon {
@@ -122,7 +149,7 @@
 }
 
 .card-content {
-  color: #666;
+  color: var(--text-secondary);
   line-height: 1.8;
   margin-bottom: 0 !important;
 }
@@ -137,42 +164,57 @@
   padding: 8px 0;
   padding-left: 20px;
   position: relative;
+  color: var(--text-secondary);
 }
 
 .card-content li:before {
   content: "▸";
   position: absolute;
   left: 0;
-  color: #667eea;
+  color: var(--osu-pink);
   font-weight: bold;
 }
 
 /* 特色功能区 */
 .features-section {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--osu-dark-secondary);
   padding: 40px;
-  border-radius: 15px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
   backdrop-filter: blur(10px);
   margin-bottom: 30px;
+  border: 1px solid var(--border-color);
 }
 
 .section-title {
   text-align: center !important;
   margin-bottom: 30px !important;
-  color: #333;
+  color: var(--text-primary);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 32px;
+  font-weight: 800;
 }
 
 .feature-card {
   text-align: center;
-  border-radius: 12px !important;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  transition: transform 0.3s ease;
+  border-radius: var(--radius-lg) !important;
+  background: var(--osu-dark-card) !important;
+  transition: all var(--transition-normal);
   height: 100%;
+  border: 1px solid var(--border-color) !important;
 }
 
 .feature-card:hover {
   transform: scale(1.05);
+  border-color: var(--osu-pink) !important;
+  box-shadow: var(--shadow-glow);
+}
+
+.feature-card .ant-card-body {
+  padding: 24px;
 }
 
 .feature-icon {
@@ -181,26 +223,32 @@
 
 .feature-title {
   margin-bottom: 10px !important;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .feature-desc {
-  color: #666;
+  color: var(--text-secondary);
   display: block;
 }
 
 /* 底部信息 */
 .portal-footer {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--osu-dark-secondary);
   padding: 25px;
-  border-radius: 15px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
   backdrop-filter: blur(10px);
   text-align: center;
+  border: 1px solid var(--border-color);
 }
 
 .portal-footer p {
   margin: 5px 0;
+  color: var(--text-secondary);
+}
+
+.portal-footer strong {
+  color: var(--osu-pink);
 }
 
 /* 响应式设计 */
@@ -226,4 +274,69 @@
   .features-section {
     padding: 25px;
   }
+}
+
+/* 白色登录模态框 */
+.white-login-modal .ant-modal-content {
+  background: white !important;
+  border: 1px solid #e8e8e8 !important;
+  border-radius: 8px !important;
+}
+
+.white-login-modal .ant-modal-header {
+  background: white !important;
+  border-bottom: 1px solid #e8e8e8 !important;
+  border-radius: 8px 8px 0 0 !important;
+}
+
+.white-login-modal .ant-modal-title {
+  color: #333 !important;
+}
+
+.white-login-modal .ant-modal-close-x {
+  color: #999 !important;
+}
+
+.white-login-modal .ant-form-item-label > label {
+  color: #333 !important;
+}
+
+.white-login-modal .ant-form-item-explain-error {
+  color: #ff4d4f !important;
+}
+
+.white-login-modal .ant-btn-primary {
+  background: #1890ff !important;
+  border-color: #1890ff !important;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.white-login-modal .ant-btn-primary:hover {
+  background: #40a9ff !important;
+  border-color: #40a9ff !important;
+}
+
+.white-login-modal .ant-input,
+.white-login-modal .ant-input-affix-wrapper,
+.white-login-modal .ant-input-affix-wrapper .ant-input {
+  background: white !important;
+  border-color: #d9d9d9 !important;
+  color: #333 !important;
+}
+
+.white-login-modal .ant-input:focus,
+.white-login-modal .ant-input-affix-wrapper:focus,
+.white-login-modal .ant-input-affix-wrapper-focused {
+  border-color: #1890ff !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+}
+
+.white-login-modal .ant-input:hover,
+.white-login-modal .ant-input-affix-wrapper:hover {
+  border-color: #40a9ff !important;
+}
+
+.white-login-modal .ant-input::placeholder,
+.white-login-modal .ant-input-affix-wrapper::placeholder {
+  color: #999 !important;
 }

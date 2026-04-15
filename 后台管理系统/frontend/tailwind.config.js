@@ -51,6 +51,18 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // osu! 霓虹粉色系
+        osu: {
+          pink: '#FF66AB',
+          'pink-light': '#FF99CC',
+          'pink-dark': '#E64D9A',
+          purple: '#9B4DCA',
+          'purple-light': '#B06DD6',
+          'purple-dark': '#7A3DAA',
+          dark: '#1e1e2e',
+          'dark-card': '#252538',
+          'dark-input': '#2a2a40',
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -66,10 +78,28 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "glow-pulse": {
+          "0%, 100%": {
+            boxShadow: "0 0 20px rgba(255, 102, 171, 0.4)",
+          },
+          "50%": {
+            boxShadow: "0 0 40px rgba(255, 102, 171, 0.6), 0 0 60px rgba(255, 102, 171, 0.3)",
+          },
+        },
+        "float": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "glow-pulse": "glow-pulse 2s ease-in-out infinite",
+        "float": "float 3s ease-in-out infinite",
+      },
+      boxShadow: {
+        'glow': '0 8px 32px rgba(255, 102, 171, 0.25)',
+        'glow-lg': '0 12px 48px rgba(255, 102, 171, 0.35)',
       },
     },
   },

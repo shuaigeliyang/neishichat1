@@ -1,70 +1,66 @@
 /**
- * RAG服务测试脚本
- * 设计师：内师智能体系统 (￣▽￣)ﾉ
+ * 多文档RAG服务测试脚本
+ * 用法: node test-rag.js
  */
 
-const RAGService = require('./services/ragService');
-const dotenv = require('dotenv');
+const MultiDocumentRAGService = require('./services/multiDocumentRagService');
 
-// 加载环境变量
-dotenv.config();
+async function test() {
+    console.log('\n========================================');
+    console.log('  多文档RAG服务测试');
+    console.log('========================================\n');
 
-async function testRAG() {
-  console.log('╔════════════════════════════════════════════════════════════╗');
-  console.log('║        RAG服务测试 - 内师智能体系统出品 (￣▽￣)ﾉ             ║');
-  console.log('╚════════════════════════════════════════════════════════════╝\n');
+    // 创建服务实例
+    const ragService = new MultiDocumentRAGService(process.env.ZHIPU_API_KEY);
 
-  try {
-    // 创建RAG服务实例
-    console.log('📦 创建RAG服务实例...');
-    const ragService = new RAGService(process.env.ZHIPU_API_KEY);
-    console.log('✅ RAG服务实例创建成功\n');
-
-    // 初始化RAG服务
-    console.log('🚀 初始化RAG服务...');
-    await ragService.initialize();
-    console.log('✅ RAG服务初始化成功\n');
-
-    // 测试问答
-    const testQuestion = '挂科了会怎么样';
-    console.log(`❓ 测试问题：${testQuestion}\n`);
-
-    console.log('🔍 开始检索...');
-    const result = await ragService.answer(testQuestion, {
-      minScore: 0.3,
-      topK: 3
-    });
-
-    console.log('\n✅ 检索成功！\n');
-    console.log('═'.repeat(80));
-    console.log('📊 检索结果：');
-    console.log('═'.repeat(80));
-    console.log(`回答：${result.answer}\n`);
-    console.log(`置信度：${(result.confidence * 100).toFixed(1)}%`);
-    console.log(`返回文档数：${result.sources.length}`);
-    console.log(`耗时：${result.elapsed}ms\n`);
-
-    if (result.sources && result.sources.length > 0) {
-      console.log('📚 参考文档：');
-      result.sources.forEach((source, index) => {
-        console.log(`\n${index + 1}. ${source.chapter}（第${source.page}页）`);
-        console.log(`   相似度：${source.score?.toFixed(3) || 'N/A'}`);
-        console.log(`   Rerank方法：${source.rerankMethod || 'unknown'}`);
-      });
-    } else {
-      console.log('⚠️  未找到相关文档');
+    console.log('1. 初始化服务...');
+    try {
+        await ragService.initialize();
+        console.log('✅ 初始化成功\n');
+    } catch (error) {
+        console.error('❌ 初始化失败:', error.message);
+        process.exit(1);
     }
 
-    console.log('\n═'.repeat(80));
-    console.log('🎉 测试完成！\n');
+    console.log('2. 检查索引状态...');
+    const stats = ragService.getStatistics();
+    console.log('   统计信息:', JSON.stringify(stats, null, 2));
 
-  } catch (error) {
-    console.error('\n❌ 测试失败：');
-    console.error('错误信息：', error.message);
-    console.error('错误堆栈：', error.stack);
-    process.exit(1);
-  }
+    if (!stats || stats.totalChunks === 0) {
+        console.error('\n❌ 索引为空或未加载！');
+        process.exit(1);
+    }
+
+    console.log('\n3. 测试问答...');
+    const testQuestion = '我挂科了怎么办';
+
+    try {
+        const result = await ragService.ask(testQuestion, {
+            topK: 5,
+            minScore: 0.3
+        });
+
+        console.log('\n========================================');
+        console.log('  测试结果');
+        console.log('========================================');
+        console.log('\n问题:', testQuestion);
+        console.log('\n回答:\n', result.answer);
+        console.log('\n来源文档数:', result.sources?.length || 0);
+        console.log('检索到chunks:', result.retrievedChunks);
+
+        if (result.sources && result.sources.length > 0) {
+            console.log('\n来源详情:');
+            result.sources.forEach((source, i) => {
+                console.log('  ' + (i + 1) + '. ' + source.documentName + ' (' + (source.chunks?.length || 0) + ' chunks)');
+            });
+        }
+
+        console.log('\n✅ 测试完成！');
+    } catch (error) {
+        console.error('\n❌ 测试失败:', error.message);
+        console.error(error.stack);
+        process.exit(1);
+    }
 }
 
-// 运行测试
-testRAG();
+test();

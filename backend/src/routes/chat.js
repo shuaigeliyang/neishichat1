@@ -9,7 +9,7 @@ const router = express.Router();
 const { authenticate } = require('../middlewares/auth');
 const { success, error } = require('../utils/response');
 const { query } = require('../config/database');
-const { chat, detectIntent } = require('../services/zhipuAI');
+const { chat, detectIntent } = require('../services/anthropicAI');
 const contextService = require('../services/contextService');
 const queryPermissionValidator = require('../validators/queryPermissionValidator');
 const downloadPermissionValidator = require('../validators/downloadPermissionValidator');
@@ -229,11 +229,12 @@ router.post('/', authenticate, async (req, res) => {
     // ========== 步骤3：调用AI（传递上下文）==========
     const aiResponse = await chat(message, conversationHistory);
 
-    if (!aiResponse.success) {
+    // chat函数返回的是字符串，不是对象
+    const answer = typeof aiResponse === 'string' ? aiResponse : (aiResponse.answer || '');
+    if (!answer) {
       return error(res, 'AI服务暂时不可用', 500);
     }
 
-    let answer = aiResponse.answer;
     let queryResult = null;
     let finalIntent = 'chat';
 

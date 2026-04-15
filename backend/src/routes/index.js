@@ -5,21 +5,24 @@
  */
 
 const express = require('express');
-const UnifiedIndexManager = require('../../services/unifiedIndexManager');
+const path = require('path');
+const MultiDocumentRAGService = require('../../services/multiDocumentRagService');
 
 const router = express.Router();
 
-// 初始化服务（中间件）
-router.use(async (req, res, next) => {
-    if (!req.indexManager) {
-        const apiKey = process.env.ZHIPU_API_KEY;
-        req.indexManager = new UnifiedIndexManager(apiKey, {
-            embeddingMode: process.env.EMBEDDING_MODE || 'api'
-        });
-        await req.indexManager.initialize();
-    }
-    next();
+// 创建服务实例
+const ragService = new MultiDocumentRAGService(null, {
+    indexPath: path.join(__dirname, '../../../文档库/indexes/unified_index.json')
 });
+
+// 初始化服务
+let initialized = false;
+async function ensureInitialized() {
+    if (!initialized) {
+        await ragService.initialize();
+        initialized = true;
+    }
+}
 
 /**
  * GET /api/index/status
@@ -27,7 +30,8 @@ router.use(async (req, res, next) => {
  */
 router.get('/status', async (req, res) => {
     try {
-        const stats = req.indexManager.getStatistics();
+        await ensureInitialized();
+        const stats = ragService.getStatistics();
 
         res.json({
             success: true,

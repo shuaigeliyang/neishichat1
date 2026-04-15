@@ -20,7 +20,7 @@ import GuestChat from '../pages/GuestChat';
 import Chat from '../pages/Chat';
 import './FloatChat.css';
 
-function FloatChat({ visible, onClose, isFullscreen, onFullscreenToggle, user, onLoginRequest }) {
+function FloatChat({ visible, onClose, isFullscreen, onFullscreenToggle, user, onLoginRequest, selectedHistory, onHistoryOpen }) {
   const navigate = useNavigate();
 
   // 判断是否为访客模式
@@ -57,12 +57,12 @@ function FloatChat({ visible, onClose, isFullscreen, onFullscreenToggle, user, o
       onCancel={handleClose}
       footer={null}
       closable={false}
-      width={isFullscreen ? '100vw' : 375}
-      style={{ top: isFullscreen ? 0 : 20 }}
+      width={isFullscreen ? '94vw' : 475}
+      style={{ top: isFullscreen ? '3vh' : 10 }}
       bodyStyle={{
-        height: isFullscreen ? '100vh' : 667,
+        height: isFullscreen ? '94vh' : 725,
         padding: 0,
-        borderRadius: isFullscreen ? 0 : '15px',
+        borderRadius: isFullscreen ? '4px' : 10,
         overflow: 'hidden'
       }}
       className="float-chat-modal"
@@ -71,50 +71,22 @@ function FloatChat({ visible, onClose, isFullscreen, onFullscreenToggle, user, o
       maskStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
     >
       <div className={`float-chat-container ${isFullscreen ? 'fullscreen' : ''}`}>
-        {/* 聊天头部 */}
-        <div className="float-chat-header">
-          <div className="header-left">
-            <span className="chat-avatar">🤖</span>
-            <div className="chat-title">
-              <h3>内江师院智能助手</h3>
-              <p>{isGuestMode ? '访客模式' : `欢迎，${user.name}`}</p>
-            </div>
-          </div>
-
-          <div className="header-right">
-            <Button
-              type="text"
-              icon={isFullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
-              onClick={handleFullscreenToggle}
-              className="header-btn"
-              title={isFullscreen ? '退出全屏' : '全屏显示'}
-            />
-            {isGuestMode && (
-              <Button
-                type="primary"
-                size="small"
-                icon={<LoginOutlined />}
-                onClick={handleLogin}
-                className="login-btn"
-              >
-                登录
-              </Button>
-            )}
-            <Button
-              type="text"
-              icon={<CloseOutlined />}
-              onClick={handleClose}
-              className="header-btn close-btn"
-            />
-          </div>
-        </div>
-
         {/* 聊天内容区 */}
         <div className="float-chat-content">
           {isGuestMode ? (
-            <GuestChat onLoginRequest={handleLogin} />
+            <GuestChat 
+              onLoginRequest={handleLogin} 
+              isFullscreen={isFullscreen} 
+              onFullscreenToggle={handleFullscreenToggle} 
+            />
           ) : (
-            <Chat user={user} />
+            <Chat 
+              user={user} 
+              isFullscreen={isFullscreen} 
+              onFullscreenToggle={handleFullscreenToggle} 
+              selectedHistory={selectedHistory}
+              onHistoryOpen={onHistoryOpen}
+            />
           )}
         </div>
 

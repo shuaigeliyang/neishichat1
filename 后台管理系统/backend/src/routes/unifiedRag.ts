@@ -17,7 +17,7 @@ let ragService: any = null;
 
 async function getRAGService() {
     if (!ragService) {
-        ragService = new UnifiedRAGService(process.env.ZHIPUAI_API_KEY);
+        ragService = new UnifiedRAGService(process.env.ANTHROPIC_API_KEY);
         await ragService.initialize();
     }
     return ragService;

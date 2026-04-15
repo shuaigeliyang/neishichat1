@@ -16,6 +16,7 @@ import IndexManager from './indexManager.js';
 import ApiKeyManager from './apiKeyManager.js';
 import eventBus from './eventBus.js';
 import unifiedIndexManager from './unifiedIndexManager.js';
+import PythonEmbeddingClient from './pythonEmbeddingClient.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,6 +26,9 @@ class IncrementalPipeline {
         this.registry = new DocumentRegistry();
         this.indexManager = new IndexManager();
         this.apiKeyManager = new ApiKeyManager();
+
+        // 本地Python Embedding客户端（本小姐的终极武器！）
+        this.pythonEmbeddingClient = new PythonEmbeddingClient();
 
         // 路径配置 - 使用相对路径，便于迁移
         // 相对于后台管理系统backend/src/services目录
@@ -38,9 +42,6 @@ class IncrementalPipeline {
 
         // 指定Python环境 - 使用项目虚拟环境
         this.pythonPath = path.join(this.basePath, '.venv', 'Scripts', 'python.exe');
-
-        // 智谱AI API配置
-        this.ZHIPUAI_EMBEDDING_URL = 'https://open.bigmodel.cn/api/paas/v4/embeddings';
     }
 
     /**
@@ -205,20 +206,10 @@ class IncrementalPipeline {
                 completedSteps: 5
             });
 
-            // 获取API密钥：优先使用传入的密钥，否则从环境变量读取
-            let apiKeyToUse = apiKey;
-            if (!apiKeyToUse) {
-                apiKeyToUse = process.env.ZHIPUAI_API_KEY;
-            }
-
-            if (!apiKeyToUse) {
-                throw new Error('未找到API密钥，请设置环境变量 ZHIPUAI_API_KEY 或在请求中提供');
-            }
-
-            // 向量化
+            // 向量化（使用本地Python服务，不需要API密钥）
             const chunksWithEmbeddings = await this.generateEmbeddings(
                 chunks,
-                apiKeyToUse,
+                null, // 不再需要API密钥
                 (current, total) => {
                     const progress = Math.floor((current / total) * 100);
                     onProgress({
@@ -230,12 +221,18 @@ class IncrementalPipeline {
                 }
             );
 
-            // ========== 步骤4: 添加到统一索引（Single Source of Truth） ==========
+            // ========== 步骤4: 初始化统一索引管理器并添加到统一索引 ==========
             onProgress({ step: 'register', status: 'processing', message: '正在注册到统一索引...', taskId });
             await this.indexManager.updateProgress(taskId, {
                 currentStep: '注册到统一索引...',
                 completedSteps: 6
             });
+
+            // ✨ 关键修复：确保统一索引管理器已初始化
+            if (!unifiedIndexManager.initialized) {
+                console.log('📂 初始化统一索引管理器...');
+                await unifiedIndexManager.initialize();
+            }
 
             // 使用统一索引管理器——所有服务都从这里读取！
             // chunksWithEmbeddings 已包含 embedding，直接传入避免重复 API 调用
@@ -314,53 +311,31 @@ class IncrementalPipeline {
     }
 
     /**
-     * 批量生成向量
+     * 批量生成向量（使用本地Python服务）
      */
     async generateEmbeddings(chunks, apiKey, onProgress) {
         const chunksWithEmbeddings = [];
-        let retryCount = 0;
-        const maxRetries = 3;
 
         for (let i = 0; i < chunks.length; i++) {
             const chunk = chunks[i];
 
-            while (retryCount < maxRetries) {
-                try {
-                    const response = await axios.post(
-                        this.ZHIPUAI_EMBEDDING_URL,
-                        {
-                            model: 'embedding-3',
-                            input: chunk.full_context || chunk.text,
-                            encoding_format: 'float'
-                        },
-                        {
-                            headers: {
-                                'Authorization': `Bearer ${apiKey}`,
-                                'Content-Type': 'application/json'
-                            },
-                            timeout: 30000
-                        }
-                    );
+            try {
+                // 使用本地Python服务生成embedding（完全免费，无限流！）
+                const embedding = await this.pythonEmbeddingClient.getEmbedding(
+                    chunk.full_context || chunk.text
+                );
 
-                    const embedding = response.data.data[0].embedding;
+                chunksWithEmbeddings.push({
+                    ...chunk,
+                    embedding: embedding
+                });
 
-                    chunksWithEmbeddings.push({
-                        ...chunk,
-                        embedding: embedding
-                    });
-
+                if (onProgress) {
                     onProgress(i + 1, chunks.length);
-                    retryCount = 0; // 重置重试计数
-                    break;
-
-                } catch (error) {
-                    retryCount++;
-                    if (retryCount >= maxRetries) {
-                        throw new Error(`向量生成失败 (chunk ${i}): ${error.message}`);
-                    }
-                    console.log(`⚠️ 向量生成失败，重试中... (${retryCount}/${maxRetries})`);
-                    await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
                 }
+
+            } catch (error) {
+                throw new Error(`向量生成失败 (chunk ${i}): ${error.message}`);
             }
         }
 

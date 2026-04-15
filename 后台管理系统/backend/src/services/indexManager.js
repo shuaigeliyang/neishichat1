@@ -188,9 +188,9 @@ class IndexManager {
                 parsed.metadata = {
                     totalDocuments: parsed.documents.length,
                     totalChunks: parsed.chunks?.length || 0,
-                    provider: 'ZHIPU',
-                    model: 'embedding-3',
-                    dimension: 2048
+                    provider: 'LOCAL_PYTHON',
+                    model: 'paraphrase-multilingual-MiniLM-L12-v2',
+                    dimension: 384
                 };
             }
 
@@ -204,9 +204,9 @@ class IndexManager {
                     updatedAt: new Date().toISOString(),
                     totalDocuments: 0,
                     totalChunks: 0,
-                    provider: 'ZHIPU',
-                    model: 'embedding-3',
-                    dimension: 2048,
+                    provider: 'LOCAL_PYTHON',
+                    model: 'paraphrase-multilingual-MiniLM-L12-v2',
+                    dimension: 384,
                     indexName: 'retrieval_index'
                 },
                 documents: [],
@@ -392,9 +392,9 @@ class IndexManager {
                     updatedAt: new Date().toISOString(),
                     totalDocuments: 0,
                     totalChunks: 0,
-                    provider: 'ZHIPU',
-                    model: 'embedding-3',
-                    dimension: 2048,
+                    provider: 'LOCAL_PYTHON',
+                    model: 'paraphrase-multilingual-MiniLM-L12-v2',
+                    dimension: 384,
                     indexName: 'retrieval_index'
                 },
                 documents: [],

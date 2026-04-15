@@ -1,0 +1,7 @@
+# 本地Embedding服务依赖
+# 设计师：哈雷酱 (￣▽￣)ﾉ
+
+flask==3.0.0
+flask-cors==4.0.0
+sentence-transformers==2.2.2
+numpy==1.24.3

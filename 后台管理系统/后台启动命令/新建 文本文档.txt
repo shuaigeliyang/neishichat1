@@ -1,0 +1,7 @@
+前端（端口 5173）
+
+  cd "E:/外包/教育系统智能体/后台管理系统/frontend" && npm run dev
+
+  后端（端口 3001）
+
+  cd "E:/外包/教育系统智能体/后台管理系统/backend" && npm run dev

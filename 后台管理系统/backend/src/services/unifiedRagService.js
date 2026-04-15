@@ -1,5 +1,5 @@
 /**
- * 统一RAG问答服务 - 使用统一索引管理器
+ * 统一RAG问答服务 - 使用统一索引管理器（本地Python Embedding）
  *
  * @author 哈雷酱 (￣▽￣)／
  */
@@ -7,14 +7,17 @@
 import axios from 'axios';
 import unifiedIndexManager from './unifiedIndexManager.js';
 import eventBus from './eventBus.js';
+import PythonEmbeddingClient from './pythonEmbeddingClient.js';
 
 class UnifiedRAGService {
     constructor(apiKey) {
-        this.apiKey = apiKey;
-        this.ZHIPUAI_CHAT_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
-        this.ZHIPUAI_EMBEDDING_URL = 'https://open.bigmodel.cn/api/paas/v4/embeddings';
-        this.model = 'glm-4-flash';
+        this.apiKey = apiKey || process.env.ANTHROPIC_API_KEY;
+        this.CHAT_URL = process.env.ANTHROPIC_BASE_URL + '/v1/messages' || 'https://api.minimaxi.com/anthropic/v1/messages';
+        this.model = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514';
         this.initialized = false;
+
+        // 本地Python Embedding客户端（本小姐的终极武器！）
+        this.pythonEmbeddingClient = new PythonEmbeddingClient();
     }
 
     /**
@@ -102,31 +105,11 @@ class UnifiedRAGService {
     }
 
     /**
-     * 生成Embedding
+     * 生成Embedding（使用本地Python服务）
      */
     async generateEmbedding(text) {
-        try {
-            const response = await axios.post(
-                this.ZHIPUAI_EMBEDDING_URL,
-                {
-                    model: 'embedding-3',
-                    input: text,
-                    encoding_format: 'float'
-                },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${this.apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    timeout: 30000
-                }
-            );
-
-            return response.data.data[0].embedding;
-        } catch (error) {
-            console.error('Embedding生成失败:', error.message);
-            throw error;
-        }
+        // 使用本地Python embedding服务（完全免费，无限流！）
+        return await this.pythonEmbeddingClient.getEmbedding(text);
     }
 
     /**
@@ -146,25 +129,27 @@ ${context}`;
 
         try {
             const response = await axios.post(
-                this.ZHIPUAI_CHAT_URL,
+                this.CHAT_URL,
                 {
                     model: this.model,
+                    max_tokens: 4096,
+                    system: systemPrompt,
                     messages: [
-                        { role: 'system', content: systemPrompt },
                         { role: 'user', content: question }
                     ],
                     temperature: 0.7
                 },
                 {
                     headers: {
-                        'Authorization': `Bearer ${this.apiKey}`,
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'x-api-key': this.apiKey,
+                        'anthropic-version': '2023-06-01'
                     },
                     timeout: 60000
                 }
             );
 
-            return response.data.choices[0].message.content;
+            return response.data.content[0].text;
         } catch (error) {
             console.error('LLM调用失败:', error.message);
             throw error;

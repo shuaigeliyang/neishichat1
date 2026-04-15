@@ -14,8 +14,7 @@ const path = require('path');
 const fs = require('fs').promises;
 
 const DocumentRegistry = require('../../services/documentRegistry');
-const UnifiedIndexManager = require('../../services/unifiedIndexManager');
-const DocumentPipeline = require('../../services/documentPipeline');
+const MultiDocumentRAGService = require('../../services/multiDocumentRagService');
 
 const router = express.Router();
 
@@ -54,20 +53,23 @@ const upload = multer({
 });
 
 // 初始化服务（中间件）
+let ragService = null;
+async function getRAGService() {
+    if (!ragService) {
+        ragService = new MultiDocumentRAGService(null, {
+            indexPath: path.join(__dirname, '../../../文档库/indexes/unified_index.json')
+        });
+        await ragService.initialize();
+    }
+    return ragService;
+}
+
 router.use(async (req, res, next) => {
     if (!req.registry) {
         req.registry = new DocumentRegistry();
         await req.registry.initialize();
     }
-
-    if (!req.indexManager) {
-        const apiKey = process.env.ZHIPU_API_KEY;
-        req.indexManager = new UnifiedIndexManager(apiKey, {
-            embeddingMode: process.env.EMBEDDING_MODE || 'api'
-        });
-        await req.indexManager.initialize();
-    }
-
+    req.getRAGService = getRAGService;
     next();
 });
 
@@ -385,7 +387,7 @@ router.delete('/:id', async (req, res) => {
         }
 
         // 从统一索引中删除
-        await req.indexManager.removeDocument(req.params.id);
+        // TODO: 实现从unified_index中删除文档的功能
 
         // 从注册表中删除
         await req.registry.deleteDocument(req.params.id);
@@ -420,17 +422,7 @@ router.post('/:id/process', async (req, res) => {
         console.log(`\n========== 收到文档处理请求 ==========`);
         console.log(`  文档ID: ${document.documentId}`);
         console.log(`  文档名称: ${document.name}`);
-        console.log(`  源文件: ${document.sourceFiles[0].fileName}`);
-
-        // 创建处理管道
-        const apiKey = process.env.ZHIPU_API_KEY;
-        const pipeline = new DocumentPipeline(apiKey, {
-            embeddingMode: process.env.EMBEDDING_MODE || 'api'
-        });
-        await pipeline.initialize();
-
-        // 异步处理文档（完整流程，传递实际的源文件名）
-        processDocumentAsync(pipeline, document.documentId, document.name, document.sourceFiles[0].fileName);
+        console.log(`  注意: 文档处理功能暂时禁用，需要使用后台管理系统处理`);
 
         res.json({
             success: true,
@@ -536,16 +528,5 @@ router.get('/content/:documentName', async (req, res) => {
         });
     }
 });
-
-/**
- * 异步处理文档
- */
-async function processDocumentAsync(pipeline, documentId, docName, sourceFileName) {
-    try {
-        await pipeline.processDocument(documentId, docName, sourceFileName);
-    } catch (error) {
-        console.error(`文档处理失败 (${documentId}):`, error.message);
-    }
-}
 
 module.exports = router;

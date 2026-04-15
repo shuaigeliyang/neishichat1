@@ -1,0 +1,28 @@
+{
+  "documentId": "doc_1776148868613_8c1eb506",
+  "name": "实验三-20241022008-李洋",
+  "displayName": "实验三-20241022008-李洋",
+  "description": "",
+  "status": "pending",
+  "priority": 1,
+  "tags": [],
+  "sourceFiles": [
+    {
+      "fileName": "cd79ef40-a308-44a9-91cb-707a77736999.docx",
+      "originalName": "å®éªä¸-20241022008-ææ´.docx",
+      "fileType": ".docx",
+      "fileSize": 183728,
+      "uploadedAt": "2026-04-14T06:41:08.612Z"
+    }
+  ],
+  "directory": "doc_doc_1776148868613_8c1eb506",
+  "statistics": {
+    "totalPages": 0,
+    "totalChunks": 0,
+    "indexedChunks": 0,
+    "fileSize": 183728
+  },
+  "processingHistory": [],
+  "indexedAt": null,
+  "updatedAt": "2026-04-14T06:41:08.613Z"
+}

@@ -79,6 +79,7 @@ interface DocumentChunk {
 }
 
 interface ProcessedDocument {
+  documentId: string  // ✨ 新增
   name: string
   path: string
   files: {
@@ -156,7 +157,15 @@ export default function PolicyDocuments() {
 
       if (result.success) {
         setDocuments(result.data.documents || [])
-        setStatistics(result.data.statistics)
+        // ✨ 修复：转换字段名以匹配前端期望
+        setStatistics({
+          totalDocuments: result.data.statistics?.total || 0,
+          indexedDocuments: result.data.statistics?.indexed || 0,
+          pendingDocuments: result.data.statistics?.pending || 0,
+          errorDocuments: result.data.statistics?.error || 0,
+          totalChunks: result.data.statistics?.totalChunks || 0,
+          indexedChunks: result.data.statistics?.indexedChunks || 0
+        })
       } else {
         setDocumentsError(result.error || '获取文档列表失败')
       }
@@ -195,6 +204,7 @@ export default function PolicyDocuments() {
         const indexedDocs = result.data.documents
           .filter((doc: any) => doc.status === 'indexed')
           .map((doc: any) => ({
+            documentId: doc.documentId,  // ✨ 新增：传递documentId
             name: doc.name || doc.displayName,
             path: doc.directory || '',
             files: {
@@ -217,17 +227,59 @@ export default function PolicyDocuments() {
   }
 
   // 查看文件内容
-  const handleViewFileContent = async (documentName: string, fileType: 'student_handbook_full' | 'document_chunks' | 'embedding_cache') => {
+  const handleViewFileContent = async (documentId: string, documentName: string, fileType: 'student_handbook_full' | 'document_chunks' | 'embedding_cache') => {
     try {
-      const response = await fetch(`http://localhost:3005/api/documents/content/${encodeURIComponent(documentName)}?type=${fileType}`)
+      // ✨ 修复：使用正确的API路径 /api/documents/:documentId/chunks
+      const response = await fetch(`http://localhost:3005/api/documents/${documentId}/chunks`)
       const result = await response.json()
 
       if (result.success) {
-        setSelectedFileContent({
-          type: fileType,
-          content: result.data,
-          documentName: documentName
-        })
+        const chunks = result.data.chunks || []
+
+        // ✨ 根据文件类型设置不同的content格式
+        if (fileType === 'document_chunks') {
+          // document_chunks: 需要转换格式以匹配前端期望
+          const transformedChunks = chunks.map((c: any, index: number) => ({
+            id: index + 1,
+            page_num: c.metadata?.page || c.page || 1,
+            chapter_title: c.metadata?.chapter || c.chapter || '',
+            text: c.text,
+            preview: c.preview || c.text?.substring(0, 150)
+          }))
+
+          setSelectedFileContent({
+            type: fileType,
+            content: transformedChunks,  // 直接返回数组，前端会用到 .length, .slice(), .reduce()
+            documentName: documentName
+          })
+        } else if (fileType === 'embedding_cache') {
+          // embedding_cache: 包含embedding的数据
+          const transformedCache = chunks.map((c: any, index: number) => ({
+            id: index + 1,
+            page_num: c.metadata?.page || c.page || 1,
+            text: c.text,
+            hasEmbedding: !!c.embedding,
+            embeddingLength: c.embedding?.length || 0
+          }))
+
+          setSelectedFileContent({
+            type: fileType,
+            content: transformedCache,
+            documentName: documentName
+          })
+        } else {
+          // student_handbook_full: 页面格式
+          setSelectedFileContent({
+            type: fileType,
+            content: {
+              chunks: chunks,
+              total_pages: result.data.totalChunks || chunks.length,
+              totalCharacters: chunks.reduce((sum: number, c: any) => sum + (c.text?.length || 0), 0)
+            },
+            documentName: documentName
+          })
+        }
+
         setFileContentDialogOpen(true)
       } else {
         alert('读取文件失败：' + result.error)
@@ -782,7 +834,7 @@ export default function PolicyDocuments() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => handleViewFileContent(doc.name, 'student_handbook_full')}
+                                onClick={() => handleViewFileContent(doc.documentId, doc.name, 'student_handbook_full')}
                               >
                                 <Eye className="h-4 w-4 mr-1" />
                                 查看
@@ -809,7 +861,7 @@ export default function PolicyDocuments() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => handleViewFileContent(doc.name, 'document_chunks')}
+                                onClick={() => handleViewFileContent(doc.documentId, doc.name, 'document_chunks')}
                               >
                                 <Eye className="h-4 w-4 mr-1" />
                                 查看
@@ -836,7 +888,7 @@ export default function PolicyDocuments() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => handleViewFileContent(doc.name, 'embedding_cache')}
+                                onClick={() => handleViewFileContent(doc.documentId, doc.name, 'embedding_cache')}
                               >
                                 <Eye className="h-4 w-4 mr-1" />
                                 查看
@@ -1147,41 +1199,41 @@ export default function PolicyDocuments() {
               <div className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-3">
                   <div className="p-3 border rounded-lg">
-                    <p className="text-sm text-muted-foreground">总页数</p>
-                    <p className="text-2xl font-bold">{selectedFileContent.content.total_pages || selectedFileContent.content.pages?.length || 0}</p>
+                    <p className="text-sm text-muted-foreground">总chunks数</p>
+                    <p className="text-2xl font-bold">{selectedFileContent.content.totalChunks || selectedFileContent.content.chunks?.length || 0}</p>
                   </div>
                   <div className="p-3 border rounded-lg">
                     <p className="text-sm text-muted-foreground">总字符数</p>
                     <p className="text-2xl font-bold">
-                      {selectedFileContent.content.pages?.reduce((sum: number, page: any) => sum + (page.text?.length || 0), 0).toLocaleString() || 0}
+                      {selectedFileContent.content.totalCharacters?.toLocaleString() || 0}
                     </p>
                   </div>
                   <div className="p-3 border rounded-lg">
-                    <p className="text-sm text-muted-foreground">提取时间</p>
-                    <p className="text-sm font-medium">{new Date().toLocaleString('zh-CN')}</p>
+                    <p className="text-sm text-muted-foreground">来源</p>
+                    <p className="text-sm font-medium">统一索引</p>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">页面内容预览</h3>
+                  <h3 className="text-lg font-semibold mb-3">Chunks预览</h3>
                   <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {selectedFileContent.content.pages?.slice(0, 10).map((page: any, index: number) => (
+                    {selectedFileContent.content.chunks?.slice(0, 10).map((chunk: any, index: number) => (
                       <div key={index} className="p-3 border rounded-lg">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium">第 {page.page_num} 页</span>
+                          <span className="font-medium">Chunk #{index + 1}</span>
                           <span className="text-xs text-muted-foreground">
-                            {page.text?.length || 0} 字符
+                            第{chunk.metadata?.page || chunk.page || 1}页 | {chunk.text?.length || 0}字符
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground line-clamp-2">
-                          {page.text?.substring(0, 200) || '(空页面)'}...
+                          {chunk.preview || chunk.text?.substring(0, 200)}...
                         </p>
                       </div>
-                    )) || <div className="text-center text-muted-foreground">暂无页面数据</div>}
+                    )) || <div className="text-center text-muted-foreground">暂无数据</div>}
                   </div>
-                  {selectedFileContent.content.pages?.length > 10 && (
+                  {selectedFileContent.content.chunks?.length > 10 && (
                     <p className="text-center text-sm text-muted-foreground mt-2">
-                      还有 {selectedFileContent.content.pages.length - 10} 页未显示...
+                      还有 {selectedFileContent.content.chunks.length - 10} 个chunks未显示...
                     </p>
                   )}
                 </div>
@@ -1237,42 +1289,43 @@ export default function PolicyDocuments() {
                 <div className="grid gap-4 md:grid-cols-3">
                   <div className="p-3 border rounded-lg">
                     <p className="text-sm text-muted-foreground">缓存向量数</p>
-                    <p className="text-2xl font-bold">{Object.keys(selectedFileContent.content || {}).length}</p>
+                    <p className="text-2xl font-bold">{Array.isArray(selectedFileContent.content) ? selectedFileContent.content.length : 0}</p>
                   </div>
                   <div className="p-3 border rounded-lg">
                     <p className="text-sm text-muted-foreground">向量维度</p>
                     <p className="text-2xl font-bold">
-                      {Object.values(selectedFileContent.content || {})[0]?.embedding?.length || 0}
+                      {Array.isArray(selectedFileContent.content) && selectedFileContent.content[0]?.embeddingLength || 0}
                     </p>
                   </div>
                   <div className="p-3 border rounded-lg">
                     <p className="text-sm text-muted-foreground">模型</p>
-                    <p className="text-sm font-medium">智谱AI Embedding</p>
+                    <p className="text-sm font-medium">本地Python Embedding</p>
                   </div>
                 </div>
 
                 <div>
                   <h3 className="text-lg font-semibold mb-3">缓存条目预览</h3>
                   <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {Object.entries(selectedFileContent.content || {}).slice(0, 15).map(([key, value]: [string, any], index: number) => (
+                    {Array.isArray(selectedFileContent.content) ? selectedFileContent.content.slice(0, 15).map((item: any, index: number) => (
                       <div key={index} className="p-3 border rounded-lg">
                         <div className="flex items-start justify-between mb-2">
                           <span className="font-medium text-sm truncate flex-1">
-                            {key.substring(0, 100)}...
+                            {item.text?.substring(0, 80)}...
                           </span>
                           <span className="text-xs text-muted-foreground ml-2">
-                            {value.embedding?.length || 0} 维
+                            {item.embeddingLength || 0} 维
                           </span>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          缓存时间: {value.timestamp ? new Date(value.timestamp).toLocaleString('zh-CN') : '未知'}
-                        </p>
+                        <div className="flex gap-2 text-xs text-muted-foreground">
+                          <span>第{item.page_num || 1}页</span>
+                          {item.hasEmbedding && <span className="text-green-500">已向量化</span>}
+                        </div>
                       </div>
-                    )) || <div className="text-center text-muted-foreground">暂无缓存数据</div>}
+                    )) : <div className="text-center text-muted-foreground">暂无缓存数据</div>}
                   </div>
-                  {Object.keys(selectedFileContent.content || {}).length > 15 && (
+                  {Array.isArray(selectedFileContent.content) && selectedFileContent.content.length > 15 && (
                     <p className="text-center text-sm text-muted-foreground mt-2">
-                      还有 {Object.keys(selectedFileContent.content || {}).length - 15} 个缓存条目未显示...
+                      还有 {selectedFileContent.content.length - 15} 个缓存条目未显示...
                     </p>
                   )}
                 </div>

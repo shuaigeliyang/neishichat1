@@ -1,0 +1,252 @@
+/**
+ * 访客聊天页面样式
+ * @author 内师智能体系统 (￣▽￣)ﾉ
+ */
+
+.guest-chat {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #f5f5f5;
+}
+
+/* 消息区域 */
+.guest-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.guest-message-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.guest-message-row.user {
+  flex-direction: row-reverse;
+}
+
+.guest-message-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 18px;
+}
+
+.guest-message-avatar.user {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.guest-message-avatar.assistant {
+  background: white;
+  border: 2px solid #667eea;
+}
+
+.guest-message-bubble {
+  max-width: 75%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  position: relative;
+}
+
+.guest-message-bubble.user {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.guest-message-bubble.assistant {
+  background: white;
+  border: 1px solid #e8e8e8;
+  border-bottom-left-radius: 4px;
+}
+
+.guest-message-bubble .message-content {
+  word-wrap: break-word;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.guest-message-bubble.user .message-content {
+  color: white;
+}
+
+.guest-message-bubble.assistant .message-content {
+  color: #333;
+}
+
+.guest-message-bubble .message-content.loading {
+  color: #999;
+  font-style: italic;
+}
+
+/* Markdown样式 */
+.guest-message-bubble.assistant .message-content h1,
+.guest-message-bubble.assistant .message-content h2,
+.guest-message-bubble.assistant .message-content h3,
+.guest-message-bubble.assistant .message-content h4,
+.guest-message-bubble.assistant .message-content h5,
+.guest-message-bubble.assistant .message-content h6 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.guest-message-bubble.assistant .message-content h1 {
+  font-size: 20px;
+}
+
+.guest-message-bubble.assistant .message-content h2 {
+  font-size: 18px;
+}
+
+.guest-message-bubble.assistant .message-content h3 {
+  font-size: 16px;
+}
+
+.guest-message-bubble.assistant .message-content p {
+  margin: 8px 0;
+}
+
+.guest-message-bubble.assistant .message-content ul,
+.guest-message-bubble.assistant .message-content ol {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.guest-message-bubble.assistant .message-content li {
+  margin: 4px 0;
+}
+
+.guest-message-bubble.assistant .message-content strong {
+  font-weight: 600;
+  color: #333;
+}
+
+.guest-message-bubble.assistant .message-content code {
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+}
+
+.guest-message-bubble.assistant .message-content pre {
+  background: #f5f5f5;
+  padding: 10px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.guest-message-bubble.assistant .message-content pre code {
+  background: none;
+  padding: 0;
+}
+
+/* 输入区域 */
+.guest-input-area {
+  display: flex;
+  gap: 10px;
+  padding: 15px 20px;
+  background: white;
+  border-top: 1px solid #e8e8e8;
+}
+
+.guest-input {
+  flex: 1;
+  border-radius: 20px !important;
+  resize: none;
+}
+
+.guest-input:focus,
+.guest-input:hover {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+}
+
+.guest-send-btn {
+  height: auto;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  padding: 0 20px;
+  white-space: nowrap;
+}
+
+.guest-send-btn:hover {
+  background: linear-gradient(135deg, #5568d3 0%, #6a4190 100%);
+}
+
+/* 底部提示 */
+.guest-footer-tip {
+  padding: 10px 20px;
+  background: #fff7e6;
+  border-top: 1px solid #ffd591;
+  font-size: 12px;
+  color: #d46b08;
+  text-align: center;
+}
+
+/* 滚动条样式 */
+.guest-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.guest-messages::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.guest-messages::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.guest-messages::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+  .guest-messages {
+    padding: 15px;
+    gap: 12px;
+  }
+
+  .guest-message-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+
+  .guest-message-bubble {
+    max-width: 80%;
+    padding: 10px 14px;
+  }
+
+  .guest-message-bubble .message-content {
+    font-size: 13px;
+  }
+
+  .guest-input-area {
+    padding: 12px 15px;
+  }
+
+  .guest-send-btn {
+    padding: 0 15px;
+    font-size: 14px;
+  }
+
+  .guest-footer-tip {
+    font-size: 11px;
+    padding: 8px 15px;
+  }
+}

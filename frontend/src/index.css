@@ -1,7 +1,11 @@
 /**
  * 全局样式
  * @author 哈雷酱大小姐 (￣▽￣)ﾉ
+ *
+ * osu! 风格深色霓虹主题
  */
+
+@import url('./styles/osu-theme.css');
 
 * {
   margin: 0;
@@ -14,8 +18,9 @@ body {
     'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--osu-dark);
   min-height: 100vh;
+  color: var(--text-primary);
 }
 
 code {
@@ -24,4 +29,101 @@ code {
 
 #root {
   min-height: 100vh;
+}
+
+/* osu! 风格背景效果 */
+.osu-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--osu-dark);
+  z-index: -1;
+  overflow: hidden;
+}
+
+.osu-background::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    ellipse at 30% 20%,
+    rgba(255, 102, 171, 0.15) 0%,
+    transparent 50%
+  );
+  animation: osu-float 20s ease-in-out infinite;
+}
+
+.osu-background::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    ellipse at 70% 80%,
+    rgba(155, 77, 202, 0.1) 0%,
+    transparent 50%
+  );
+  animation: osu-float 25s ease-in-out infinite reverse;
+}
+
+/* 加载中样式 */
+.loading-container {
+  text-align: center;
+  padding: 100px;
+  color: var(--text-primary);
+}
+
+/* 全局滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--osu-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--osu-pink);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--osu-pink-light);
+}
+
+/* 修复Ant Design Layout背景 */
+.ant-layout {
+  background: var(--osu-dark) !important;
+}
+
+.ant-layout-content {
+  background: transparent !important;
+}
+
+/* 修复Layout组件内部背景 */
+.ant-layout-header {
+  background: var(--osu-dark-secondary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.ant-layout-sider {
+  background: var(--osu-dark-secondary) !important;
+}
+
+/* 全局链接颜色 */
+a {
+  color: var(--osu-pink);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--osu-pink-light);
 }

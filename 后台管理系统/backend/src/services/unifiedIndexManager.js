@@ -22,8 +22,22 @@ class UnifiedIndexManager {
         this.embeddingCache = new Map();
         this.embeddingCacheMetadata = new Map(); // 缓存元数据
 
-        // 配置
-        this.ZHIPUAI_EMBEDDING_URL = 'https://open.bigmodel.cn/api/paas/v4/embeddings';
+        // 本地Python Embedding服务
+        this.EMBEDDING_SERVICE_URL = 'http://localhost:5001';
+
+        // 动态导入Python客户端
+        this.pythonClient = null;
+    }
+
+    /**
+     * 获取Python Embedding客户端
+     */
+    async getPythonClient() {
+        if (!this.pythonClient) {
+            const { default: PythonEmbeddingClient } = await import('./pythonEmbeddingClient.js');
+            this.pythonClient = new PythonEmbeddingClient();
+        }
+        return this.pythonClient;
     }
 
     /**
@@ -128,8 +142,8 @@ class UnifiedIndexManager {
                 this.index.metadata = {
                     totalDocuments: this.index.documents.length,
                     totalChunks: this.index.chunks.length,
-                    provider: 'ZHIPU',
-                    model: 'embedding-3'
+                    provider: 'LOCAL_PYTHON',
+                    model: 'paraphrase-multilingual-MiniLM-L12-v2'
                 };
             }
 
@@ -164,17 +178,28 @@ class UnifiedIndexManager {
 
     /**
      * 保存索引
+     * ✨ 修复：同时保存到 unified_index.json 和 retrieval_index.json
      */
     async saveIndex() {
         const config = await this.getConfig();
-        const indexPath = config.paths.retrievalIndex;
 
         this.index.timestamp = new Date().toISOString();
         this.index.metadata.totalDocuments = this.index.documents.length;
         this.index.metadata.totalChunks = this.index.chunks.length;
 
-        await fs.writeFile(indexPath, JSON.stringify(this.index, null, 2), 'utf-8');
-        console.log(`✓ 索引已保存: ${this.index.chunks.length} chunks`);
+        const indexContent = JSON.stringify(this.index, null, 2);
+
+        // 保存到统一索引文件（前台系统使用的文件）
+        await fs.writeFile(config.paths.retrievalIndex, indexContent, 'utf-8');
+        console.log(`✓ 索引已保存到 unified_index.json: ${this.index.chunks.length} chunks`);
+
+        // 同时保存备份到 retrieval_index.json（兼容其他系统）
+        try {
+            await fs.writeFile(config.paths.retrievalIndexBackup, indexContent, 'utf-8');
+            console.log(`✓ 索引已备份到 retrieval_index.json`);
+        } catch (error) {
+            console.log(`⚠️ 备份文件保存失败（非致命）`);
+        }
     }
 
     /**
@@ -252,6 +277,11 @@ class UnifiedIndexManager {
      * @param {boolean} skipRegenerateEmbeddings - 如果chunks已有embedding则跳过重新生成
      */
     async addDocument(documentId, chunks, documentMeta, skipRegenerateEmbeddings = true) {
+        // ✨ 防御性检查：确保索引已加载
+        if (!this.index) {
+            await this.loadIndex();
+        }
+
         // 检查文档是否已存在
         const existingIndex = this.index.documents.findIndex(d => d.documentId === documentId);
         if (existingIndex >= 0) {
@@ -320,6 +350,7 @@ class UnifiedIndexManager {
      * 从索引中删除文档
      */
     async removeDocument(documentId) {
+        if (!this.index) await this.loadIndex();
         const docIndex = this.index.documents.findIndex(d => d.documentId === documentId);
         if (docIndex < 0) {
             throw new Error(`文档不在索引中: ${documentId}`);
@@ -353,33 +384,12 @@ class UnifiedIndexManager {
     }
 
     /**
-     * 生成Embedding
+     * 生成Embedding（使用本地Python服务）
      */
     async generateEmbedding(text, apiKey = null) {
-        // 获取API Key
-        if (!apiKey) {
-            const { default: projectConfig } = await import('./projectConfig.js');
-            apiKey = process.env.ZHIPUAI_API_KEY;
-        }
-
         try {
-            const response = await axios.post(
-                this.ZHIPUAI_EMBEDDING_URL,
-                {
-                    model: 'embedding-3',
-                    input: text,
-                    encoding_format: 'float'
-                },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    timeout: 30000
-                }
-            );
-
-            return response.data.data[0].embedding;
+            const pythonClient = await this.getPythonClient();
+            return await pythonClient.getEmbedding(text);
         } catch (error) {
             console.error('Embedding生成失败:', error.message);
             throw error;
@@ -395,6 +405,7 @@ class UnifiedIndexManager {
      * @param {string[]} options.documentIds - 可选：指定要检索的文档ID列表
      */
     async retrieve(queryEmbedding, options = {}) {
+        if (!this.index) await this.loadIndex();
         const { topK = 5, minScore = 0.3, documentIds = null } = options;
 
         // ✨ 新增：文档过滤日志

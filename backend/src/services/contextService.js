@@ -32,14 +32,14 @@ class ContextService {
         return cached.messages.slice(-maxTurns * 2); // 每轮2条消息（user + assistant）
       }
 
-      // 2. 从数据库获取
+      // 2. 从数据库获取（本小姐的修复：LIMIT不使用参数绑定）
       const history = await query(`
         SELECT user_question, ai_answer, created_at
         FROM chat_history
         WHERE session_id = ?
         ORDER BY created_at DESC
-        LIMIT ?
-      `, [sessionId, maxTurns]);
+        LIMIT ${parseInt(maxTurns)}
+      `, [sessionId]);
 
       // 3. 构建消息数组（倒序，从早到晚）
       const messages = [];

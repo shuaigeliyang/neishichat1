@@ -1,0 +1,513 @@
+/**
+ * osu! 风格主题样式
+ * 设计师：哈雷酱 (￣▽￣)ﾉ
+ *
+ * 基于 osu! 网站的深色霓虹风格设计
+ * - 深色背景
+ * - 霓虹粉色主色调
+ * - 发光效果
+ * - 圆角设计
+ */
+
+/* ============================================
+   osu! 风格 CSS 变量
+   ============================================ */
+:root {
+  /* osu! 霓虹粉色系 */
+  --osu-pink: #FF66AB;
+  --osu-pink-light: #FF99CC;
+  --osu-pink-dark: #E64D9A;
+  --osu-pink-glow: rgba(255, 102, 171, 0.22);
+
+  /* osu! 紫色系 */
+  --osu-purple: #9B4DCA;
+  --osu-purple-light: #B06DD6;
+  --osu-purple-dark: #7A3DAA;
+  --osu-purple-glow: rgba(155, 77, 202, 0.18);
+
+  /* osu! 深色背景 */
+  --osu-dark: #f6f7fb;
+  --osu-dark-secondary: rgba(255, 255, 255, 0.78);
+  --osu-dark-tertiary: rgba(255, 255, 255, 0.92);
+  --osu-dark-hover: rgba(255, 255, 255, 0.98);
+
+  /* 渐变 */
+  --gradient-primary: linear-gradient(135deg, var(--osu-pink) 0%, var(--osu-purple) 100%);
+  --gradient-glow: linear-gradient(135deg, rgba(255, 102, 171, 0.3) 0%, rgba(155, 77, 202, 0.3) 100%);
+  --gradient-dark: linear-gradient(135deg, var(--osu-dark) 0%, var(--osu-dark-secondary) 100%);
+
+  /* 文本颜色 */
+  --text-primary: #1f2430;
+  --text-secondary: #5b6270;
+  --text-muted: rgba(31, 36, 48, 0.55);
+
+  /* 边框和分割线 */
+  --border-color: rgba(31, 36, 48, 0.10);
+  --border-hover: rgba(255, 102, 171, 0.35);
+
+  /* 阴影 */
+  --shadow-glow: 0 12px 40px rgba(255, 102, 171, 0.18);
+  --shadow-glow-lg: 0 18px 60px rgba(255, 102, 171, 0.22);
+  --shadow-card: 0 12px 40px rgba(31, 36, 48, 0.10);
+
+  /* 圆角 */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 15px;
+  --radius-xl: 20px;
+
+  /* 动画 */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
+
+/* ============================================
+   全局样式
+   ============================================ */
+.osu-theme {
+  background: var(--osu-dark);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+/* ============================================
+   osu! 风格卡片
+   ============================================ */
+.osu-card {
+  background: var(--osu-dark-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  transition: all var(--transition-normal);
+  backdrop-filter: blur(14px);
+}
+
+.osu-card:hover {
+  border-color: var(--osu-pink);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   osu! 风格按钮
+   ============================================ */
+.osu-btn {
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  box-shadow: 0 4px 15px rgba(255, 102, 171, 0.3);
+}
+
+.osu-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow-lg);
+}
+
+.osu-btn:active {
+  transform: translateY(0);
+}
+
+.osu-btn-outline {
+  background: transparent;
+  border: 2px solid var(--osu-pink);
+  color: var(--osu-pink);
+  border-radius: var(--radius-md);
+  padding: 10px 22px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.osu-btn-outline:hover {
+  background: var(--osu-pink);
+  color: white;
+  box-shadow: var(--shadow-glow);
+}
+
+/* ============================================
+   osu! 风格输入框
+   ============================================ */
+.osu-input {
+  background: rgba(255, 255, 255, 0.90);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  padding: 12px 16px;
+  font-size: 16px;
+  transition: all var(--transition-normal);
+}
+
+.osu-input:focus {
+  outline: none;
+  border-color: var(--osu-pink);
+  box-shadow: 0 0 10px var(--osu-pink-glow);
+}
+
+.osu-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ============================================
+   osu! 风格标题
+   ============================================ */
+.osu-title {
+  font-size: 32px;
+  font-weight: 800;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 10px 40px rgba(255, 102, 171, 0.12);
+}
+
+.osu-title-lg {
+  font-size: 48px;
+  font-weight: 900;
+}
+
+.osu-title-md {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* ============================================
+   osu! 风格标签
+   ============================================ */
+.osu-badge {
+  background: var(--gradient-primary);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* ============================================
+   osu! 风格分隔线
+   ============================================ */
+.osu-divider {
+  height: 2px;
+  background: var(--gradient-primary);
+  border-radius: 2px;
+  margin: 20px 0;
+}
+
+/* ============================================
+   osu! 风格导航
+   ============================================ */
+.osu-nav {
+  background: rgba(255, 255, 255, 0.70);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 20px;
+  backdrop-filter: blur(14px);
+}
+
+.osu-nav-item {
+  color: var(--text-secondary);
+  padding: 16px 20px;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  position: relative;
+}
+
+.osu-nav-item:hover {
+  color: var(--osu-pink);
+  background: rgba(255, 102, 171, 0.1);
+}
+
+.osu-nav-item.active {
+  color: var(--osu-pink);
+}
+
+.osu-nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gradient-primary);
+  border-radius: 3px 3px 0 0;
+}
+
+/* ============================================
+   osu! 风格弹窗
+   ============================================ */
+.osu-modal {
+  background: var(--osu-dark-secondary);
+  border: 1px solid var(--osu-pink);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-glow-lg);
+}
+
+.osu-modal-header {
+  background: var(--gradient-primary);
+  padding: 16px 24px;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+/* ============================================
+   osu! 风格滚动条
+   ============================================ */
+.osu-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.osu-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.osu-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--osu-pink);
+  border-radius: 4px;
+}
+
+.osu-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--osu-pink-light);
+}
+
+/* ============================================
+   osu! 风格发光效果
+   ============================================ */
+.osu-glow {
+  box-shadow: var(--shadow-glow);
+}
+
+.osu-glow-lg {
+  box-shadow: var(--shadow-glow-lg);
+}
+
+.osu-glow-text {
+  text-shadow: 0 10px 30px rgba(255, 102, 171, 0.15);
+}
+
+/* ============================================
+   osu! 风格动画
+   ============================================ */
+@keyframes osu-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes osu-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes osu-glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px var(--osu-pink-glow);
+  }
+  50% {
+    box-shadow: 0 0 40px var(--osu-pink-glow), 0 0 60px rgba(255, 102, 171, 0.3);
+  }
+}
+
+.osu-animate-pulse {
+  animation: osu-pulse 2s ease-in-out infinite;
+}
+
+.osu-animate-float {
+  animation: osu-float 3s ease-in-out infinite;
+}
+
+.osu-animate-glow {
+  animation: osu-glow-pulse 2s ease-in-out infinite;
+}
+
+/* ============================================
+   osu! 风格 Ant Design 覆盖样式
+   ============================================ */
+
+/* Ant Design 按钮 */
+.ant-btn-primary {
+  background: var(--gradient-primary) !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(255, 102, 171, 0.3) !important;
+}
+
+.ant-btn-primary:hover {
+  box-shadow: var(--shadow-glow-lg) !important;
+  transform: translateY(-2px);
+}
+
+/* Ant Design 输入框 */
+.ant-input,
+.ant-input-affix-wrapper {
+  background: rgba(255, 255, 255, 0.90) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.ant-input:focus,
+.ant-input-affix-wrapper:focus,
+.ant-input-affix-wrapper-focused {
+  border-color: var(--osu-pink) !important;
+  box-shadow: 0 0 10px var(--osu-pink-glow) !important;
+}
+
+/* Ant Design 卡片 */
+.ant-card {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-color: var(--border-color) !important;
+  border-radius: var(--radius-lg) !important;
+  backdrop-filter: blur(14px);
+}
+
+.ant-card:hover {
+  border-color: var(--osu-pink) !important;
+  box-shadow: var(--shadow-glow) !important;
+}
+
+/* Ant Design Modal */
+.ant-modal-content {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid var(--osu-pink) !important;
+  border-radius: var(--radius-xl) !important;
+}
+
+.ant-modal-header {
+  background: var(--gradient-primary) !important;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
+}
+
+/* Ant Design 菜单 */
+.ant-menu {
+  background: transparent !important;
+}
+
+.ant-menu-item {
+  color: var(--text-secondary) !important;
+}
+
+.ant-menu-item:hover,
+.ant-menu-item-selected {
+  color: var(--osu-pink) !important;
+  background: rgba(255, 102, 171, 0.1) !important;
+}
+
+/* Ant Design 标签页 */
+.ant-tabs-tab {
+  color: var(--text-secondary) !important;
+}
+
+.ant-tabs-tab:hover,
+.ant-tabs-tab-active {
+  color: var(--osu-pink) !important;
+}
+
+.ant-tabs-ink-bar {
+  background: var(--gradient-primary) !important;
+}
+
+/* Ant Design 消息提示 */
+.ant-message-notice-content {
+  background: var(--osu-dark-secondary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--osu-pink) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+/* Ant Design 下拉菜单 */
+.ant-dropdown-menu {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+.ant-dropdown-menu-item {
+  color: var(--text-secondary) !important;
+}
+
+.ant-dropdown-menu-item:hover {
+  background: rgba(255, 102, 171, 0.1) !important;
+  color: var(--osu-pink) !important;
+}
+
+/* Ant Design 选择器 */
+.ant-select-selector {
+  background: rgba(255, 255, 255, 0.90) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.ant-select:hover .ant-select-selector {
+  border-color: var(--osu-pink) !important;
+}
+
+.ant-select-dropdown {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.ant-select-item {
+  color: var(--text-secondary) !important;
+}
+
+.ant-select-item-option-selected,
+.ant-select-item-option-active {
+  background: rgba(255, 102, 171, 0.1) !important;
+  color: var(--osu-pink) !important;
+}
+
+/* Ant Design 表单 */
+.ant-form-item-label > label {
+  color: var(--text-secondary) !important;
+}
+
+/* Ant Design 表格 */
+.ant-table {
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: var(--text-primary) !important;
+}
+
+.ant-table-thead > tr > th {
+  background: rgba(246, 247, 251, 0.95) !important;
+  color: var(--osu-pink) !important;
+  border-color: var(--border-color) !important;
+}
+
+.ant-table-tbody > tr > td {
+  border-color: var(--border-color) !important;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: rgba(255, 102, 171, 0.1) !important;
+}
+
+/* Ant Design 分页 */
+.ant-pagination-item {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-color: var(--border-color) !important;
+}
+
+.ant-pagination-item a {
+  color: var(--text-secondary) !important;
+}
+
+.ant-pagination-item-active {
+  border-color: var(--osu-pink) !important;
+}
+
+.ant-pagination-item-active a {
+  color: var(--osu-pink) !important;
+}

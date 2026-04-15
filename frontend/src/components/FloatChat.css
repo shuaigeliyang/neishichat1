@@ -1,35 +1,48 @@
 /**
- * 浮窗聊天组件样式
- * @author 内师智能体系统 (￣▽￣)ﾉ
+ * 浮窗聊天组件样式 - osu!霓虹风格
+ * @author 哈雷酱大小姐 (￣▽￣)ﾉ
  */
 
 .float-chat-modal .ant-modal-content {
-  border-radius: 15px;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 20px rgba(255, 102, 171, 0.2);
+  border: 1px solid rgba(255, 102, 171, 0.2);
+  margin: 0;
+  padding: 0;
+}
+
+/* 消除Modal的默认内边距 */
+.float-chat-modal .ant-modal-body {
+  margin: 0;
+  padding: 0;
 }
 
 .float-chat-container {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #f5f5f5;
+  background: var(--osu-dark);
+  margin: 0;
+  padding: 0;
+  position: relative;
 }
 
 .float-chat-container.fullscreen {
-  height: 100vh;
-  border-radius: 0;
+  border-radius: 8px;
 }
 
-/* 聊天头部 */
+/* 聊天头部 - osu! 霓虹风格 */
 .float-chat-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #FF66AB 0%, #9B4DCA 100%);
   color: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(255, 102, 171, 0.4);
+  position: relative;
+  z-index: 1;
 }
 
 .header-left {
@@ -41,6 +54,7 @@
 .chat-avatar {
   font-size: 32px;
   animation: bounce 2s infinite;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
 }
 
 @keyframes bounce {
@@ -56,12 +70,14 @@
   margin: 0;
   font-size: 16px;
   font-weight: 600;
+  color: white;
 }
 
 .chat-title p {
   margin: 0;
   font-size: 12px;
   opacity: 0.9;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .header-right {
@@ -79,28 +95,32 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s;
 }
 
 .header-btn:hover {
   background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
 }
 
 .header-btn.close-btn:hover {
-  background: rgba(255, 77, 79, 0.3);
+  background: rgba(255, 77, 79, 0.4);
 }
 
 .login-btn {
   background: white;
-  color: #667eea;
+  color: #FF66AB;
   border: none;
   font-weight: 600;
   height: 28px;
   font-size: 13px;
+  transition: all 0.2s;
 }
 
 .login-btn:hover {
-  background: #f0f0f0;
-  color: #667eea;
+  background: rgba(255, 255, 255, 0.9);
+  color: #E64D9A;
+  box-shadow: 0 2px 12px rgba(255, 102, 171, 0.3);
 }
 
 /* 聊天内容区 */
@@ -109,18 +129,21 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  background: var(--osu-dark);
+  position: relative;
+  z-index: 1;
 }
 
-/* 访客模式提示 */
+/* 访客模式提示 - osu! 霓虹风格 */
 .guest-mode-tip {
   padding: 10px 15px;
-  background: #fff7e6;
-  border-top: 1px solid #ffd591;
+  background: rgba(255, 102, 171, 0.1);
+  border-top: 1px solid rgba(255, 102, 171, 0.2);
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: #d46b08;
+  color: #FF66AB;
 }
 
 .tip-icon {
@@ -160,4 +183,15 @@
     font-size: 11px;
     padding: 8px 12px;
   }
+}
+
+/* osu! 霓虹发光效果 */
+.osu-glow-border {
+  border: 1px solid rgba(255, 102, 171, 0.3);
+  box-shadow: 0 0 20px rgba(255, 102, 171, 0.2);
+}
+
+/* osu! 霓虹渐变背景 */
+.osu-gradient-bg {
+  background: linear-gradient(135deg, #FF66AB 0%, #9B4DCA 100%);
 }

@@ -209,11 +209,11 @@ class DatabaseSearchService {
             FROM document_chunks
             WHERE ${orConditions}
             ORDER BY match_count DESC, CHAR_LENGTH(text) ASC
-            LIMIT ?
+            LIMIT ${parseInt(limit)}
         `;
 
         try {
-            const [rows] = await this.pool.query(sql, [limit]);
+            const [rows] = await this.pool.query(sql);
             return rows.map(row => ({
                 ...row,
                 matchType: 'exact'
@@ -238,10 +238,10 @@ class DatabaseSearchService {
             SELECT * FROM document_chunks
             WHERE ${conditions}
             ORDER BY CHAR_LENGTH(text) ASC
-            LIMIT ?
+            LIMIT ${parseInt(limit)}
         `;
 
-        const [rows] = await this.pool.query(sql, [...params, limit]);
+        const [rows] = await this.pool.query(sql, [...params]);
 
         return rows.map(row => ({
             ...row,
@@ -264,10 +264,10 @@ class DatabaseSearchService {
                 FROM document_chunks
                 WHERE MATCH(text) AGAINST(? IN BOOLEAN MODE)
                 ORDER BY ft_score DESC
-                LIMIT ?
+                LIMIT ${parseInt(limit)}
             `;
 
-            const [rows] = await this.pool.query(sql, [matchMode, matchMode, limit]);
+            const [rows] = await this.pool.query(sql, [matchMode, matchMode]);
 
             return rows.map(row => ({
                 ...row,

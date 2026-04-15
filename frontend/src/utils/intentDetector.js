@@ -10,7 +10,32 @@
  * @returns {string} - 查询类型：'database' | 'document' | 'form_generate' | 'form_list' | 'chat'
  */
 export const detectIntent = (question) => {
-  // 0. 表单列表查询关键词（优先级最高）
+  // 🔝 最高优先级：基于文档回答（用户明确要求使用RAG/文档问答）
+  // 只要用户提到"基于文档"相关表达，直接触发文档问答，忽略其他所有判断！
+  const ragExplicitKeywords = [
+    // ✨ 核心RAG触发词（最高优先级！）
+    '基于文档', '基于文档库', '基于文档回答', '基于选择的文档',
+    '使用rag', '使用RAG', 'rag服务', 'RAG服务',
+    '文档问答', '文档库回答', '从文档库', '在文档中',
+    '从文档中', '文档里找', '文档里查', '文档查找',
+    '在文档里找', '文档库里', '文档库里找',
+    // 实验相关
+    '实验一', '实验二', '实验三', '实验四', '实验报告',
+    '基于实验', '根据实验', '实验内容摘要', '实验目的',
+    '实验内容', '实验步骤', '实验要求', '实验结果',
+    '实验总结', '实验小结', '实验摘要'
+  ];
+
+  const hasRagExplicit = ragExplicitKeywords.some(keyword =>
+    question.toLowerCase().includes(keyword.toLowerCase())
+  );
+
+  if (hasRagExplicit) {
+    console.log('🎯 意图识别：【最高优先级】文档问答（用户明确要求）');
+    return 'document';
+  }
+
+  // 0. 表单列表查询关键词（第二优先级）
   const formListKeywords = [
     '有哪些表单', '有什么表单', '表单列表', '查看表单',
     '显示表单', '表单有哪些', '表单是什么', '所有表单',
@@ -25,6 +50,37 @@ export const detectIntent = (question) => {
   if (hasFormListKeyword) {
     console.log('🎯 意图识别：表单列表查询');
     return 'form_list';
+  }
+
+  // ✨ 0.05 已索引文档关键词（自动识别文档相关问题）
+  // 优先级最高！确保文档相关问题能触发文档问答
+  const documentKeywords = [
+    // 学生手册
+    '学生手册', '根据学生手册', '手册上', '手册里', '手册中',
+    // 宠物领养系统
+    '宠物', '领养', '领养系统', '领养流程', '领养条件',
+    '动物', '猫', '狗', '宠物信息', '宠物领养',
+    // 技术文档相关
+    '系统', '设计', '实现', '开发', '功能', '模块',
+    '数据库', '架构', '技术', 'Spring', 'Vue', 'MySQL',
+    // 论文相关
+    '论文', '毕业', '课题', '研究',
+    // ✨ 通用文档关键词（必须放最前面，优先级最高）
+    '文档', '文档库', '基于文档', '基于选择的文档',
+    '这篇文档', '这份文档', '该文档', '该文件',
+    // ✨ 实验相关文档关键词
+    '实验三', '实验一', '实验二', '实验四', '实验报告',
+    '实验内容', '实验目的', '实验步骤', '实验要求',
+    '实验结果', '实验总结', '实验摘要', '实验小结'
+  ];
+
+  const hasDocumentKeyword = documentKeywords.some(keyword =>
+    question.toLowerCase().includes(keyword.toLowerCase())
+  );
+
+  if (hasDocumentKeyword) {
+    console.log('🎯 意图识别：文档问答（基于已索引文档）');
+    return 'document';
   }
 
   // 0.1 学生手册关键词（用于纯政策查询，不包含表单相关内容）
@@ -220,7 +276,7 @@ export const detectIntent = (question) => {
 export const getIntentDescription = (intent) => {
   const descriptions = {
     database: '数据库查询（个人数据）',
-    document: '文档问答（基于学生手册）',
+    document: '文档问答（基于政策文档）',
     form_list: '表单列表查询',
     form_generate: '表单生成',
     chat: '智能对话（智谱AI）'

@@ -71,6 +71,7 @@ function Login({ onLogin }) {
               loading={loading}
               block
               size="large"
+              className="login-btn"
             >
               登录
             </Button>

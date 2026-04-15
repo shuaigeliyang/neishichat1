@@ -3,44 +3,52 @@
  * 设计师：哈雷酱大小姐 (￣▽￣)ﾉ
  */
 
+/* ✨ osu! 霓虹暗色主题适配 */
 .handbook-content {
   max-height: 500px;
   overflow-y: auto;
   padding: 16px;
-  background-color: #fafafa;
+  background-color: var(--osu-dark, #1e1e2e);
   border-radius: 8px;
+  border: 1px solid rgba(255, 102, 171, 0.2);
 }
 
 .handbook-text {
   font-size: 14px;
   line-height: 1.8;
-  color: #333;
+  color: #ffffff;
 }
 
+/* ✨ osu! 霓虹风格 Ant Typography */
 .handbook-text .ant-typography {
   margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.9) !important;
 }
 
-/* 自定义滚动条 */
+.handbook-text .ant-typography-secondary {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+/* ✨ osu! 霓虹暗色主题滚动条 */
 .handbook-content::-webkit-scrollbar {
   width: 8px;
 }
 
 .handbook-content::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: rgba(255, 102, 171, 0.1);
   border-radius: 4px;
 }
 
 .handbook-content::-webkit-scrollbar-thumb {
-  background: #888;
+  background: rgba(255, 102, 171, 0.4);
   border-radius: 4px;
 }
 
 .handbook-content::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: rgba(255, 102, 171, 0.6);
 }
 
-/* 标题样式优化 */
+/* ✨ osu! 霓虹风格标题样式 */
 .handbook-text h1,
 .handbook-text h2,
 .handbook-text h3,
@@ -50,18 +58,59 @@
   margin-top: 16px;
   margin-bottom: 8px;
   font-weight: 600;
-  color: #1890ff;
+  color: #FF66AB;
 }
 
-/* 段落样式优化 */
+/* ✨ osu! 霓虹风格段落样式 */
 .handbook-text p {
   margin-bottom: 8px;
   text-align: justify;
   text-indent: 2em;
   line-height: 1.8;
+  color: rgba(255, 255, 255, 0.9);
 }
 
-/* 条款样式 */
+/* ✨ osu! 霓虹风格 Modal 背景适配 */
+.handbook-content ~ .ant-modal-content,
+.handbook-content .ant-modal-content {
+  background-color: var(--osu-dark, #1e1e2e) !important;
+}
+
+/* ✨ osu! 霓虹风格条款标签 */
 .handbook-text .ant-tag {
   margin-right: 8px;
+  border: 1px solid rgba(255, 102, 171, 0.3);
+}
+
+/* ✨ 强制覆盖 Ant Design Modal 背景色（暗色主题适配） */
+.ant-modal-content,
+.ant-modal .ant-modal-content {
+  background-color: #252538 !important;
+}
+
+.ant-modal-header {
+  background-color: #252538 !important;
+  border-bottom: 1px solid rgba(255, 102, 171, 0.2) !important;
+}
+
+.ant-modal-title {
+  color: #ffffff !important;
+}
+
+.ant-modal-close-x {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.ant-modal-footer {
+  border-top: 1px solid rgba(255, 102, 171, 0.2) !important;
+}
+
+/* ✨ 暗色主题下加载动画颜色 */
+.handbook-content .ant-spin-dot-item {
+  background-color: #FF66AB !important;
+}
+
+/* ✨ 暗色主题下加载文字颜色 */
+.handbook-content .ant-spin-text {
+  color: rgba(255, 255, 255, 0.65) !important;
 }

@@ -32,14 +32,10 @@ async function initializeRAG() {
         const indexData = await fs.readFile(INDEX_PATH, 'utf-8')
         retrievalIndex = JSON.parse(indexData)
 
-        // 初始化服务
-        const apiKey = process.env.ZHIPUAI_API_KEY
-        if (!apiKey) {
-            console.warn('警告: ZHIPUAI_API_KEY未设置')
-            return false
-        }
+        // 初始化服务（使用本地Python embedding，不需要API密钥）
+        const apiKey = process.env.ANTHROPIC_API_KEY || null
 
-        embeddingService = new EmbeddingService(apiKey)
+        embeddingService = new EmbeddingService(null) // apiKey参数保留但不使用
         retrievalEngine = new RetrievalEngine(retrievalIndex, apiKey)
         qaGenerator = new QAGenerator(apiKey)
 

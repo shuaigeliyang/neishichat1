@@ -41,6 +41,13 @@ class ApiKeyManager {
                 chatModel: 'ernie-bot',
                 vectorDimension: 384,
                 validateUrl: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/embeddings/embedding-v1'
+            },
+            ANTHROPIC: {
+                name: 'Anthropic/Minimax',
+                embeddingModel: '本地Python服务',
+                chatModel: 'claude-sonnet-4-20250514',
+                vectorDimension: 384,
+                validateUrl: 'https://api.minimaxi.com/anthropic/v1/messages'
             }
         };
 

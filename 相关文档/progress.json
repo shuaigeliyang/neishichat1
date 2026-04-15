@@ -173,5 +173,61 @@
       "pages": 243,
       "chunks": 16
     }
+  },
+  "task_e17b2b59-009d-4187-a9e2-d27ea59dff8f": {
+    "taskId": "task_e17b2b59-009d-4187-a9e2-d27ea59dff8f",
+    "status": "failed",
+    "progress": 100,
+    "currentStep": "失败",
+    "totalSteps": 6,
+    "completedSteps": 6,
+    "startTime": "2026-04-12T11:23:47.416Z",
+    "error": "Cannot read properties of null (reading 'documents')",
+    "endTime": "2026-04-12T11:23:50.581Z"
+  },
+  "task_7e66c41b-dc88-4c54-ba72-43528835b7dd": {
+    "taskId": "task_7e66c41b-dc88-4c54-ba72-43528835b7dd",
+    "status": "completed",
+    "progress": 100,
+    "currentStep": "完成",
+    "totalSteps": 6,
+    "completedSteps": 6,
+    "startTime": "2026-04-12T11:31:07.851Z",
+    "error": null,
+    "endTime": "2026-04-12T11:31:08.352Z",
+    "result": {
+      "pages": 224,
+      "chunks": 3
+    }
+  },
+  "task_a13220f9-a153-4280-8c60-62c783ddcea4": {
+    "taskId": "task_a13220f9-a153-4280-8c60-62c783ddcea4",
+    "status": "completed",
+    "progress": 100,
+    "currentStep": "完成",
+    "totalSteps": 6,
+    "completedSteps": 6,
+    "startTime": "2026-04-12T11:48:52.954Z",
+    "error": null,
+    "endTime": "2026-04-12T11:48:53.561Z",
+    "result": {
+      "pages": 224,
+      "chunks": 3
+    }
+  },
+  "task_8a86d83d-b3b2-4649-abcf-a0a8e269ba23": {
+    "taskId": "task_8a86d83d-b3b2-4649-abcf-a0a8e269ba23",
+    "status": "completed",
+    "progress": 100,
+    "currentStep": "完成",
+    "totalSteps": 6,
+    "completedSteps": 6,
+    "startTime": "2026-04-14T06:41:12.327Z",
+    "error": null,
+    "endTime": "2026-04-14T06:41:14.568Z",
+    "result": {
+      "pages": 224,
+      "chunks": 3
+    }
   }
 }

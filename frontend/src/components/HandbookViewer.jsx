@@ -2,6 +2,7 @@
  * 学生手册查看器组件
  * 设计师：内师智能体系统 (￣▽￣)ﾉ
  * 功能：显示学生手册指定页面的完整内容
+ * 修改：支持传入预加载内容，支持多文档
  */
 
 import React, { useState, useEffect } from 'react';
@@ -12,16 +13,28 @@ import './HandbookViewer.css';
 
 const { Title, Paragraph, Text } = Typography;
 
-function HandbookViewer({ visible, onClose, pageNum }) {
+function HandbookViewer({ visible, onClose, pageNum, preloadContent, documentName }) {
   const [loading, setLoading] = useState(false);
   const [pageData, setPageData] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // 如果有预加载内容，直接使用
+    if (preloadContent) {
+      setPageData({
+        page_num: pageNum,
+        text: preloadContent,
+        total_pages: 999
+      });
+      setLoading(false);
+      return;
+    }
+
+    // 否则调用API获取
     if (visible && pageNum) {
       fetchPageContent();
     }
-  }, [visible, pageNum]);
+  }, [visible, pageNum, preloadContent]);
 
   const fetchPageContent = async () => {
     setLoading(true);
@@ -64,9 +77,10 @@ function HandbookViewer({ visible, onClose, pageNum }) {
       // 检测是否是条款（包含"第X条"）
       const isArticle = /^第[一二三四五六七八九十百零千]+条/.test(line.trim());
 
+      // ✨ osu! 霓虹风格颜色
       if (isTitle) {
         return (
-          <Title key={index} level={4} style={{ marginTop: '16px', color: '#1890ff' }}>
+          <Title key={index} level={4} style={{ marginTop: '16px', color: '#FF66AB' }}>
             {line}
           </Title>
         );
@@ -81,7 +95,7 @@ function HandbookViewer({ visible, onClose, pageNum }) {
       }
 
       return (
-        <Paragraph key={index} style={{ marginBottom: '8px', textAlign: 'justify' }}>
+        <Paragraph key={index} style={{ marginBottom: '8px', textAlign: 'justify', color: 'rgba(255,255,255,0.9)' }}>
           {line}
         </Paragraph>
       );
@@ -93,7 +107,7 @@ function HandbookViewer({ visible, onClose, pageNum }) {
       title={
         <span>
           <BookOutlined style={{ marginRight: '8px' }} />
-          学生手册 - 第{pageNum}页
+          {documentName || '学生手册'} - 第{pageNum}页
         </span>
       }
       open={visible}
@@ -122,7 +136,10 @@ function HandbookViewer({ visible, onClose, pageNum }) {
         <div className="handbook-content">
           <div style={{ marginBottom: '16px' }}>
             <Tag color="blue">页码：{pageData.page_num}</Tag>
-            <Tag color="purple">总页数：{pageData.total_pages}</Tag>
+            {documentName && <Tag color="green">{documentName}</Tag>}
+            {pageData.total_pages && pageData.total_pages < 999 && (
+              <Tag color="purple">总页数：{pageData.total_pages}</Tag>
+            )}
           </div>
 
           <Divider />
@@ -135,7 +152,7 @@ function HandbookViewer({ visible, onClose, pageNum }) {
 
           <div style={{ textAlign: 'center', color: '#999', fontSize: '12px' }}>
             <FileTextOutlined style={{ marginRight: '4px' }} />
-            以上内容来自《学生手册》第{pageNum}页
+            以上内容来自《{documentName || '学生手册'}》第{pageNum}页
           </div>
         </div>
       ) : (

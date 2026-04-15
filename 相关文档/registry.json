@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "createdAt": "2026-04-11T07:10:09.488Z",
-  "updatedAt": "2026-04-11T09:35:13.548Z",
+  "updatedAt": "2026-04-14T06:41:14.520Z",
   "config": {
     "indexName": "retrieval_index",
     "embeddingModel": "embedding-3",
@@ -130,6 +130,71 @@
       ],
       "indexedAt": "2026-04-11T09:35:13.548Z",
       "updatedAt": "2026-04-11T09:35:13.548Z"
+    },
+    {
+      "documentId": "doc_1776148868613_8c1eb506",
+      "name": "实验三-20241022008-李洋",
+      "displayName": "实验三-20241022008-李洋",
+      "description": "",
+      "status": "indexed",
+      "priority": 1,
+      "tags": [],
+      "sourceFiles": [
+        {
+          "fileName": "cd79ef40-a308-44a9-91cb-707a77736999.docx",
+          "originalName": "å®éªä¸-20241022008-ææ´.docx",
+          "fileType": ".docx",
+          "fileSize": 183728,
+          "uploadedAt": "2026-04-14T06:41:08.612Z"
+        }
+      ],
+      "directory": "doc_doc_1776148868613_8c1eb506",
+      "statistics": {
+        "totalPages": 224,
+        "totalChunks": 3,
+        "indexedChunks": 3,
+        "fileSize": 183728
+      },
+      "processingHistory": [
+        {
+          "step": "extract",
+          "status": "processing",
+          "timestamp": "2026-04-14T06:41:12.336Z",
+          "details": "正在提取文档内容"
+        },
+        {
+          "step": "extract",
+          "status": "completed",
+          "timestamp": "2026-04-14T06:41:12.828Z",
+          "details": "提取224页内容"
+        },
+        {
+          "step": "chunk",
+          "status": "processing",
+          "timestamp": "2026-04-14T06:41:12.834Z",
+          "details": "正在进行智能分块"
+        },
+        {
+          "step": "chunk",
+          "status": "completed",
+          "timestamp": "2026-04-14T06:41:12.923Z",
+          "details": "生成3个文档块 (general)"
+        },
+        {
+          "step": "embed",
+          "status": "processing",
+          "timestamp": "2026-04-14T06:41:12.929Z",
+          "details": "正在生成向量"
+        },
+        {
+          "step": "register",
+          "status": "completed",
+          "timestamp": "2026-04-14T06:41:14.520Z",
+          "details": "文档已成功索引到统一索引"
+        }
+      ],
+      "indexedAt": "2026-04-14T06:41:14.520Z",
+      "updatedAt": "2026-04-14T06:41:14.520Z"
     }
   ]
 }

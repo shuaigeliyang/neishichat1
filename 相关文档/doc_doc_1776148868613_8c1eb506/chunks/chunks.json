@@ -1,0 +1,34 @@
+{
+  "metadata": {
+    "total_chunks": 3,
+    "total_pages": 224,
+    "source_file": "E:\\外包\\教育系统智能体\\相关文档\\doc_doc_1776148868613_8c1eb506\\extracted\\content.json",
+    "chunk_config": {
+      "chunk_size": 1000,
+      "overlap": 200
+    }
+  },
+  "chunks": [
+    {
+      "chunk_id": 1,
+      "page_num": 1,
+      "text": "实验三 函数\n实验名称：函数\t\t\t     　     指导教师： 陈艳华\n实验日期：2024年 11 月 21 日 　实验地点：格致楼205　成绩：\n【实验类型】验证性实验\n【实验目的】\n1.掌握定义函数的方法。2.掌握函数实参与形参的对应关系，以及“值传递”的方式。3.掌握函数的嵌套调用和递归调用的方法。4.掌握全局变量和局部变量，动态变量和静态变量的概念和使用方法。【实验内容摘要】\n1．裴波那契数列的前两项是1、1，以后的每一项都是其相邻前两项之和。编写函数过程求: ⑴ 数列前n项和FS。⑵前n项的平均值V。并就n=20计算并输出FS与V。2．编写一个用梯形法求一元函数f(x)在〔a,b〕上积分近似值的函数过程。并就 f(x)=sin(2x)+x，当[a,b]=[0,3.14159]、小区间数n=10和n=20时，分别计算并输出积分的近似值s1和s2，保留3位小数。3．编写一个函数程序,其功能是判定一个数是否为素数,若是素数则函数返回值为1,若不是素数则函数返回值为0。用此函数判定找出 100 以内最大的 3 个素数。【实验基本要求】\n1.实验属性：验证性实验。2.开出要求：必做。3.分组要求：1人1组。4.教师讲授时长占本次课总学时的25%，学生操作时长占75%。5学生平均完成本实验项目的时长为6学时。（1）按照任务要求独立完成实验。（2）实验结果上传至任课教师指定的位置。（3）写出实验中遇到的问题及解决的方法。【主要仪器设备名称】\n电脑：PC+Windows 2020，软件：VC20022或Dev。实验步骤：\n1．裴波那契数列的前两项是1、1，以后的每一项都是其相邻前两项之和。编写函数过程求: ⑴ 数列前n项和FS。⑵前n项的平均值V。并就n=20计算并输出FS与V。#include <stdio.h>\n#include <math.h>\n#define N 1000\nint a[N];\nvoid fib(int n)\n{\nint i;\na[0]=1;\na[1]=1;\nif(n>=3)\n{\nfor(i=2;i<n;i++)\n{\na[i]=a[i-1]+a[i-2];\n}\n}\nfor(i=0;i<n;i++)\n{\nprintf(\"%d \",a[i]);\n}\nprintf(\"\\n\");\n}\nint sum(int a[N],int n)\n{\nint i;\nfloat add=0;\nfor(i=0;i<n;i++)\n{\nadd+=a[i];\n}\nreturn add;\n}\nint avg(int a[N],int n)\n{\nfloat add=sum(a,n);\nfloat num=(float)n;\nfloat avg=add/num;\nreturn avg;\n}\nint main()\n{\nint n;\nfloat FS;\nfloat V;\nscanf(\"%d\",&n);\nfib(n);\nFS=sum(a,n);\nV=avg(a,n);\nprintf(\"前n箱和为%.2f 前n平均值为%.2f\",FS,V);\nreturn 0;\n}\n2. 编写一个用梯形法求一元函数f(x)在〔a,b〕上积分近似值的函数过程。",
+      "char_count": 1331,
+      "full_context": "实验三 函数\n实验名称：函数\t\t\t     　     指导教师： 陈艳华\n实验日期：2024年 11 月 21 日 　实验地点：格致楼205　成绩：\n【实验类型】验证性实验\n【实验目的】\n1.掌握定义函数的方法。2.掌握函数实参与形参的对应关系，以及“值传递”的方式。3.掌握函数的嵌套调用和递归调用的方法。4.掌握全局变量和局部变量，动态变量和静态变量的概念和使用方法。【实验内容摘要】\n1．裴波那契数列的前两项是1、1，以后的每一项都是其相邻前两项之和。编写函数过程求: ⑴ 数列前n项和FS。⑵前n项的平均值V。并就n=20计算并输出FS与V。2．编写一个用梯形法求一元函数f(x)在〔a,b〕上积分近似值的函数过程。并就 f(x)=sin(2x)+x，当[a,b]=[0,3.14159]、小区间数n=10和n=20时，分别计算并输出积分的近似值s1和s2，保留3位小数。3．编写一个函数程序,其功能是判定一个数是否为素数,若是素数则函数返回值为1,若不是素数则函数返回值为0。用此函数判定找出 100 以内最大的 3 个素数。【实验基本要求】\n1.实验属性：验证性实验。2.开出要求：必做。3.分组要求：1人1组。4.教师讲授时长占本次课总学时的25%，学生操作时长占75%。5学生平均完成本实验项目的时长为6学时。（1）按照任务要求独立完成实验。（2）实验结果上传至任课教师指定的位置。（3）写出实验中遇到的问题及解决的方法。【主要仪器设备名称】\n电脑：PC+Windows 2020，软件：VC20022或Dev。实验步骤：\n1．裴波那契数列的前两项是1、1，以后的每一项都是其相邻前两项之和。编写函数过程求: ⑴ 数列前n项和FS。⑵前n项的平均值V。并就n=20计算并输出FS与V。#include <stdio.h>\n#include <math.h>\n#define N 1000\nint a[N];\nvoid fib(int n)\n{\nint i;\na[0]=1;\na[1]=1;\nif(n>=3)\n{\nfor(i=2;i<n;i++)\n{\na[i]=a[i-1]+a[i-2];\n}\n}\nfor(i=0;i<n;i++)\n{\nprintf(\"%d \",a[i]);\n}\nprintf(\"\\n\");\n}\nint sum(int a[N],int n)\n{\nint i;\nfloat add=0;\nfor(i=0;i<n;i++)\n{\nadd+=a[i];\n}\nreturn add;\n}\nint avg(int a[N],int n)\n{\nfloat add=sum(a,n);\nfloat num=(float)n;\nfloat avg=add/num;\nreturn avg;\n}\nint main()\n{\nint n;\nfloat FS;\nfloat V;\nscanf(\"%d\",&n);\nfib(n);\nFS=sum(a,n);\nV=avg(a,n);\nprintf(\"前n箱和为%.2f 前n平均值为%.2f\",FS,V);\nreturn 0;\n}\n2. 编写一个用梯形法求一元函数f(x)在〔a,b〕上积分近似值的函数过程。"
+    },
+    {
+      "chunk_id": 2,
+      "page_num": 1,
+      "text": "并就 f(x)=sin(2x)+x，当[a,b]=[0,3.14159]、小区间数n=10和n=20时，分别计算并输出积分的近似值s1和s2，保留3位小数。#include <stdio.h>\n#include <math.h>\n#define N 1000\nfloat mianji(float a,float b,float h)\n{\nfloat s=((a+b)*h)/2;\nreturn s;\n}\nfloat hanshu(float x)\n{\nfloat y=sin(2*x)+x;。",
+      "char_count": 247,
+      "full_context": "并就 f(x)=sin(2x)+x，当[a,b]=[0,3.14159]、小区间数n=10和n=20时，分别计算并输出积分的近似值s1和s2，保留3位小数。#include <stdio.h>\n#include <math.h>\n#define N 1000\nfloat mianji(float a,float b,float h)\n{\nfloat s=((a+b)*h)/2;\nreturn s;\n}\nfloat hanshu(float x)\n{\nfloat y=sin(2*x)+x;。"
+    },
+    {
+      "chunk_id": 3,
+      "page_num": 2,
+      "text": "return y;\n}\nvoid output(float *p,float n)\n{\nint i;\nfor(i=0;i<=n;i++)\n{\nprintf(\"%.2f \",*(p+i));\n}\nprintf(\"\\n\");\n}\nint main()\n{\nfloat a,b,h;\na=0;b=3.14159;\nfloat n;\nscanf(\"%f\",&n);\n//间隔大小\nh=(b-a)/n;\nprintf(\"输出他们之间的间隔大小:%.3f\\n\",h);\nfloat c[N],d[N];int i;\n//将x轴的各个节点记录下来放入数组\nfor(i=0;i<=n;i++)\n{\nc[i]=a+i*h;\n}\n//printf(\"%.2f\\n\",c[i-1]);\nprintf(\"输出他们的x轴节点\\n\");\noutput(c,n);\n//用x轴的节点通过函数算出y轴的节点并存入数组\nfor(i=0;i<=n;i++)\n{\nd[i]=hanshu(c[i]);\n}\n//printf(\"%.2f\\n\",d[i-1]);\nprintf(\"输出他们的y轴节点\\n\");\noutput(d,n);\nfloat sum=0;\n//计算他们的面积之和\nfor(i=1;i<=n;i++)\n{\nsum+=mianji(d[i-1],d[i],h);\n}\nprintf(\"可以求得该函数的区间积分为:%.3f\",sum);\nreturn 0;\n}\n当n=10时\n当n=20时\n编写一个函数程序,其功能是判定一个数是否为素数,若是素数则函数返回值为1,若不是素数则函数返回值为0。用此函数判定找出 100 以内最大的 3 个素数。#include<stdio.h>\n//判断是否为素数\nint func(int x)\n{\nint i,flag=0;\nfor(i=2;i<x;i++)\n{\nif(x%i == 0)\n{\nflag=1;\nbreak;\n}\n}\nif(flag==0)\n{\nreturn 1;\n}\nelse\n{\nreturn 0;\n}\n}\nint main()\n{\nint i, j, m = 0, a[100],fun;\nfor (i = 1;i <=100;i++)\n{\nfun=func(i);\n//判断是否为素数，若为素数则存入数组中方便后续进行操作\nif(fun==1)\n{\na[m]=i;\nm++;\n}\n}\nprintf(\"将末尾三位数倒序输出\\n\")\nfor(i=m-1;i>=m-3;i--)\n{\nprintf(\"%d \",a[i]);\n}\nreturn 0;\n}。",
+      "char_count": 1089,
+      "full_context": "return y;\n}\nvoid output(float *p,float n)\n{\nint i;\nfor(i=0;i<=n;i++)\n{\nprintf(\"%.2f \",*(p+i));\n}\nprintf(\"\\n\");\n}\nint main()\n{\nfloat a,b,h;\na=0;b=3.14159;\nfloat n;\nscanf(\"%f\",&n);\n//间隔大小\nh=(b-a)/n;\nprintf(\"输出他们之间的间隔大小:%.3f\\n\",h);\nfloat c[N],d[N];int i;\n//将x轴的各个节点记录下来放入数组\nfor(i=0;i<=n;i++)\n{\nc[i]=a+i*h;\n}\n//printf(\"%.2f\\n\",c[i-1]);\nprintf(\"输出他们的x轴节点\\n\");\noutput(c,n);\n//用x轴的节点通过函数算出y轴的节点并存入数组\nfor(i=0;i<=n;i++)\n{\nd[i]=hanshu(c[i]);\n}\n//printf(\"%.2f\\n\",d[i-1]);\nprintf(\"输出他们的y轴节点\\n\");\noutput(d,n);\nfloat sum=0;\n//计算他们的面积之和\nfor(i=1;i<=n;i++)\n{\nsum+=mianji(d[i-1],d[i],h);\n}\nprintf(\"可以求得该函数的区间积分为:%.3f\",sum);\nreturn 0;\n}\n当n=10时\n当n=20时\n编写一个函数程序,其功能是判定一个数是否为素数,若是素数则函数返回值为1,若不是素数则函数返回值为0。用此函数判定找出 100 以内最大的 3 个素数。#include<stdio.h>\n//判断是否为素数\nint func(int x)\n{\nint i,flag=0;\nfor(i=2;i<x;i++)\n{\nif(x%i == 0)\n{\nflag=1;\nbreak;\n}\n}\nif(flag==0)\n{\nreturn 1;\n}\nelse\n{\nreturn 0;\n}\n}\nint main()\n{\nint i, j, m = 0, a[100],fun;\nfor (i = 1;i <=100;i++)\n{\nfun=func(i);\n//判断是否为素数，若为素数则存入数组中方便后续进行操作\nif(fun==1)\n{\na[m]=i;\nm++;\n}\n}\nprintf(\"将末尾三位数倒序输出\\n\")\nfor(i=m-1;i>=m-3;i--)\n{\nprintf(\"%d \",a[i]);\n}\nreturn 0;\n}。"
+    }
+  ]
+}

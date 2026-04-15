@@ -40,9 +40,15 @@ class ProjectConfigManager {
             }
 
             return {
+                // Anthropic/Minimax配置（当前使用）
+                anthropicApiKey: config.ANTHROPIC_API_KEY || null,
+                anthropicBaseUrl: config.ANTHROPIC_BASE_URL || 'https://api.minimaxi.com/anthropic',
+                anthropicModel: config.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514',
+                // Embedding配置
+                embeddingMode: config.EMBEDDING_MODE || 'local',  // 使用本地embedding
+                // 保留旧配置以兼容（但不再使用）
                 zhipuApiKey: config.ZHIPU_API_KEY || null,
                 zhipuApiBase: config.ZHIPU_API_BASE || null,
-                embeddingModel: config.EMBEDDING_MODE || 'api',
                 rerankModel: config.RERANK_MODEL || 'rerank'
             };
         } catch (error) {

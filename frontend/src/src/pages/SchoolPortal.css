@@ -1,0 +1,277 @@
+/**
+ * 内江师范学院学校门户页面样式
+ * @author 哈雷酱大小姐 (￣▽￣)ﾉ
+ *
+ * osu! 风格深色霓虹主题
+ */
+
+.school-portal {
+  min-height: 100vh;
+  background: var(--osu-dark);
+  padding: 20px;
+  position: relative;
+}
+
+/* 顶部导航 */
+.portal-header {
+  background: rgba(255, 255, 255, 0.75);
+  padding: 25px 40px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  margin-bottom: 30px;
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-normal);
+}
+
+.portal-header:hover {
+  border-color: var(--osu-pink);
+  box-shadow: var(--shadow-glow);
+}
+
+.school-logo-area {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* 头部登录/用户信息区域 */
+.header-auth-area {
+  display: flex;
+  align-items: center;
+}
+
+.login-button {
+  background: var(--gradient-primary);
+  border: none;
+  height: 40px;
+  padding: 0 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+  box-shadow: 0 4px 15px rgba(255, 102, 171, 0.3);
+}
+
+.login-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow-lg);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: var(--osu-dark-tertiary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  border: 1px solid var(--border-color);
+}
+
+.user-info:hover {
+  background: var(--osu-dark-hover);
+  border-color: var(--osu-pink);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+.user-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.user-type {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.school-logo {
+  width: 80px;
+  height: 80px;
+  background: var(--gradient-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 4px 20px rgba(255, 102, 171, 0.4);
+  animation: osu-glow-pulse 3s ease-in-out infinite;
+}
+
+.school-title h2 {
+  margin: 0 !important;
+  color: var(--text-primary);
+}
+
+/* 主内容区 */
+.portal-content {
+  margin-bottom: 30px;
+}
+
+.content-card {
+  height: 100%;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-card);
+  transition: all var(--transition-normal);
+  background: var(--osu-dark-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.content-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--osu-pink) !important;
+  box-shadow: var(--shadow-glow);
+}
+
+.content-card .ant-card-head {
+  background: transparent;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.content-card .ant-card-head-title {
+  color: var(--text-primary);
+}
+
+.content-card .ant-card-body {
+  color: var(--text-secondary);
+}
+
+.card-icon {
+  margin-bottom: 15px;
+}
+
+.card-content {
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin-bottom: 0 !important;
+}
+
+.card-content ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.card-content li {
+  padding: 8px 0;
+  padding-left: 20px;
+  position: relative;
+  color: var(--text-secondary);
+}
+
+.card-content li:before {
+  content: "▸";
+  position: absolute;
+  left: 0;
+  color: var(--osu-pink);
+  font-weight: bold;
+}
+
+/* 特色功能区 */
+.features-section {
+  background: rgba(255, 255, 255, 0.75);
+  padding: 40px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(10px);
+  margin-bottom: 30px;
+  border: 1px solid var(--border-color);
+}
+
+.section-title {
+  text-align: center !important;
+  margin-bottom: 30px !important;
+  color: var(--text-primary);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.feature-card {
+  text-align: center;
+  border-radius: var(--radius-lg) !important;
+  background: var(--osu-dark-tertiary) !important;
+  transition: all var(--transition-normal);
+  height: 100%;
+  border: 1px solid var(--border-color) !important;
+}
+
+.feature-card:hover {
+  transform: scale(1.05);
+  border-color: var(--osu-pink) !important;
+  box-shadow: var(--shadow-glow);
+}
+
+.feature-card .ant-card-body {
+  padding: 24px;
+}
+
+.feature-icon {
+  margin-bottom: 15px;
+}
+
+.feature-title {
+  margin-bottom: 10px !important;
+  color: var(--text-primary);
+}
+
+.feature-desc {
+  color: var(--text-secondary);
+  display: block;
+}
+
+/* 底部信息 */
+.portal-footer {
+  background: rgba(255, 255, 255, 0.75);
+  padding: 25px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(10px);
+  text-align: center;
+  border: 1px solid var(--border-color);
+}
+
+.portal-footer p {
+  margin: 5px 0;
+  color: var(--text-secondary);
+}
+
+.portal-footer strong {
+  color: var(--osu-pink);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .school-portal {
+    padding: 15px;
+  }
+
+  .portal-header {
+    padding: 20px;
+  }
+
+  .school-logo {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+
+  .school-title h2 {
+    font-size: 20px !important;
+  }
+
+  .features-section {
+    padding: 25px;
+  }
+}

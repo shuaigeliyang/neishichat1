@@ -9,13 +9,15 @@ import {
   SendOutlined,
   UserOutlined,
   RobotOutlined,
-  LoginOutlined
+  LoginOutlined,
+  FullscreenOutlined,
+  FullscreenExitOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
 import Markdown from 'react-markdown';
 import './GuestChat.css';
 
-function GuestChat({ onLoginRequest }) {
+function GuestChat({ onLoginRequest, isFullscreen, onFullscreenToggle }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -270,6 +272,20 @@ function GuestChat({ onLoginRequest }) {
 
   return (
     <div className="guest-chat">
+      {/* 顶部控制栏 */}
+      <div className="guest-chat-header" style={{ position: 'relative', padding: '12px 12px', borderBottom: '1px solid var(--border-color)', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <h3 style={{ margin: 0, fontSize: '18px', color: 'var(--text-primary)', textAlign: 'center' }}>🤖 内江师院智能助手</h3>
+        <div style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>
+          <Button
+            type="default"
+            icon={isFullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
+            onClick={onFullscreenToggle}
+            disabled={loading}
+            style={{ height: '40px', width: '40px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          />
+        </div>
+      </div>
+
       {/* 消息区域 */}
       <div className="guest-messages" ref={messagesContainerRef}>
         {messages.map((msg, index) => (
@@ -336,6 +352,7 @@ function GuestChat({ onLoginRequest }) {
           autoSize={{ minRows: 1, maxRows: 4 }}
           className="guest-input"
           disabled={loading}
+          style={{ fontSize: '13px' }}
         />
         <Button
           type="primary"
@@ -346,11 +363,6 @@ function GuestChat({ onLoginRequest }) {
         >
           发送
         </Button>
-      </div>
-
-      {/* 底部提示 */}
-      <div className="guest-footer-tip">
-        💡 访客模式仅支持基本问答，登录后可使用完整功能
       </div>
     </div>
   );

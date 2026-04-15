@@ -12,6 +12,7 @@ import axios from 'axios';
 import ProjectConfigManager from './projectConfigManager.js';
 import ApiKeyManager from './apiKeyManager.js';
 import IndexManager from './indexManager.js';
+import PythonEmbeddingClient from './pythonEmbeddingClient.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,6 +21,9 @@ class DocumentProcessingService {
     constructor() {
         this.configManager = new ProjectConfigManager();
         this.apiKeyManager = new ApiKeyManager();
+
+        // 本地Python Embedding客户端（本小姐的终极武器！）
+        this.pythonEmbeddingClient = new PythonEmbeddingClient();
 
         // 路径配置
         // ✨ 将索引保存到前台系统的根目录，这样前台系统可以直接使用
@@ -111,11 +115,9 @@ class DocumentProcessingService {
     }
 
     /**
-     * 批量生成向量
+     * 批量生成向量（使用本地Python服务）
      */
     async generateEmbeddings(chunks, apiKey, taskId, onUpdate) {
-        const ZHIPUAI_EMBEDDING_URL = 'https://open.bigmodel.cn/api/paas/v4/embeddings';
-
         try {
             const chunksWithEmbeddings = [];
             let cacheHits = 0;
@@ -132,23 +134,10 @@ class DocumentProcessingService {
                 }
 
                 try {
-                    const response = await axios.post(
-                        ZHIPUAI_EMBEDDING_URL,
-                        {
-                            model: 'embedding-3',
-                            input: chunk.full_context || chunk.text,
-                            encoding_format: 'float'
-                        },
-                        {
-                            headers: {
-                                'Authorization': `Bearer ${apiKey}`,
-                                'Content-Type': 'application/json'
-                            },
-                            timeout: 30000
-                        }
+                    // 使用本地Python服务生成embedding（完全免费，无限流！）
+                    const embedding = await this.pythonEmbeddingClient.getEmbedding(
+                        chunk.full_context || chunk.text
                     );
-
-                    const embedding = response.data.data[0].embedding;
 
                     chunksWithEmbeddings.push({
                         ...chunk,
@@ -220,7 +209,7 @@ class DocumentProcessingService {
                     updatedAt: new Date().toISOString(),
                     totalDocuments: 1,
                     totalChunks: chunksWithEmbeddings.length,
-                    provider: 'ZHIPU',
+                    provider: 'LOCAL_PYTHON',
                     model: 'embedding-3',
                     dimension: 2048
                 },
