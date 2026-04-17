@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Search, Plus, Edit, Trash2, Loader2, Upload, FileText, RefreshCw, Eye, Play, AlertCircle, CheckCircle2, Clock } from 'lucide-react'
+import { buildApiUrl } from '@/config/api.js'
 import {
   Dialog,
   DialogContent,
@@ -152,7 +153,7 @@ export default function PolicyDocuments() {
     setDocumentsError(null)
 
     try {
-      const response = await fetch('http://localhost:3005/api/documents')
+      const response = await fetch(buildApiUrl('/api/documents'))
       const result = await response.json()
 
       if (result.success) {
@@ -179,7 +180,7 @@ export default function PolicyDocuments() {
   // 获取索引状态
   const fetchIndexStatus = async () => {
     try {
-      const response = await fetch('http://localhost:3005/api/documents/index/status')
+      const response = await fetch(buildApiUrl('/api/documents/index/status'))
       const result = await response.json()
 
       if (result.success) {
@@ -196,7 +197,7 @@ export default function PolicyDocuments() {
 
     try {
       // 使用 /api/documents 获取所有文档，然后过滤已处理的
-      const response = await fetch('http://localhost:3005/api/documents')
+      const response = await fetch(buildApiUrl('/api/documents'))
       const result = await response.json()
 
       if (result.success) {
@@ -230,7 +231,7 @@ export default function PolicyDocuments() {
   const handleViewFileContent = async (documentId: string, documentName: string, fileType: 'student_handbook_full' | 'document_chunks' | 'embedding_cache') => {
     try {
       // ✨ 修复：使用正确的API路径 /api/documents/:documentId/chunks
-      const response = await fetch(`http://localhost:3005/api/documents/${documentId}/chunks`)
+      const response = await fetch(buildApiUrl(`/api/documents/${documentId}/chunks`))
       const result = await response.json()
 
       if (result.success) {
@@ -310,7 +311,7 @@ export default function PolicyDocuments() {
       formData.append('description', uploadForm.description)
       formData.append('tags', uploadForm.tags)
 
-      const response = await fetch('http://localhost:3005/api/documents/upload', {
+      const response = await fetch(buildApiUrl('/api/documents/upload'), {
         method: 'POST',
         body: formData,
       })
@@ -337,7 +338,7 @@ export default function PolicyDocuments() {
     if (!confirm('确定要开始处理这个文档吗？这可能需要一些时间。')) return
 
     try {
-      const response = await fetch(`http://localhost:3005/api/documents/${documentId}/process`, {
+      const response = await fetch(buildApiUrl(`/api/documents/${documentId}/process`), {
         method: 'POST',
       })
 
@@ -360,7 +361,7 @@ export default function PolicyDocuments() {
     if (!confirm('确定要删除这个文档吗？这将同时删除相关的索引数据。')) return
 
     try {
-      const response = await fetch(`http://localhost:3005/api/documents/${documentId}`, {
+      const response = await fetch(buildApiUrl(`/api/documents/${documentId}`), {
         method: 'DELETE',
       })
 
@@ -385,7 +386,7 @@ export default function PolicyDocuments() {
     setSelectedChunks([])  // 先清空，避免显示旧数据
 
     try {
-      const response = await fetch(`http://localhost:3005/api/documents/${document.documentId}/chunks`)
+      const response = await fetch(buildApiUrl(`/api/documents/${document.documentId}/chunks`))
       const result = await response.json()
 
       if (result.success && result.data?.chunks) {
@@ -415,7 +416,7 @@ export default function PolicyDocuments() {
       const formData = new FormData()
       formData.append('file', uploadForm.file)
 
-      const response = await fetch(`http://localhost:3005/api/documents/${documentId}/replace`, {
+      const response = await fetch(buildApiUrl(`/api/documents/${documentId}/replace`), {
         method: 'POST',
         body: formData,
       })
@@ -453,7 +454,7 @@ export default function PolicyDocuments() {
   const startPolling = (documentId: string) => {
     const interval = setInterval(async () => {
       try {
-        const response = await fetch(`http://localhost:3005/api/documents/${documentId}/status`)
+        const response = await fetch(buildApiUrl(`/api/documents/${documentId}/status`))
         const result = await response.json()
 
         if (result.success) {
