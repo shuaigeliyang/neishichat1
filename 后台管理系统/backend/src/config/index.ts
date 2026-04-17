@@ -1,13 +1,10 @@
-import dotenv from 'dotenv'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import dotenv = require('dotenv')
+import path = require('path')
+import * as process from 'process'
 
 dotenv.config()
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
-export const config = {
+export = {
   port: parseInt(process.env.PORT || '3005', 10),  // ✨ 后台管理系统后端端口：3005
   nodeEnv: process.env.NODE_ENV || 'development',
   database: {
@@ -27,4 +24,4 @@ export const config = {
   knowledgeBase: {
     dir: path.resolve(__dirname, '../../', '..'),
   },
-} as const
+}

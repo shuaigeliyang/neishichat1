@@ -1,5 +1,5 @@
-import { createApp } from './app.ts'
-import { config } from './config/index.ts'
+import { createApp } from './app'
+import config = require('./config/index')
 
 const app = createApp()
 

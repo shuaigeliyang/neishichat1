@@ -1,5 +1,5 @@
 import mysql from 'mysql2/promise'
-import { config } from '../config/index.js'
+import config = require('../config/index')
 
 let pool: mysql.Pool | null = null
 

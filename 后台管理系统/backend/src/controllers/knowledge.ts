@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { promises as fs } from 'fs'
 import path from 'path'
-import { config } from '../config/index.js'
+import config = require('../config/index')
 import { executeQuery } from '../utils/db.js'
 import type { ApiResponse, KnowledgeFile } from '../types/index.js'
 

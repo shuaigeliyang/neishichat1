@@ -1,5 +1,5 @@
 import multer from 'multer'
-import { config } from '../config/index.js'
+import config = require('../config/index')
 
 // 配置文件上传中间件
 const upload = multer({

@@ -12,7 +12,7 @@ const router = Router()
 router.get('/', getMajors)
 router.get('/:id', getMajorById)
 router.post('/', createMajor)
-router.put('/:id', updateMajor)
+router.put('/:id', updateMajor as any)
 router.delete('/:id', deleteMajor)
 
 export default router

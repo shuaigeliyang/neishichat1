@@ -1,6 +1,6 @@
 import express from 'express'
 import cors from 'cors'
-import { config } from './config/index.js'
+import config = require('./config/index')
 import apiRoutes from './routes/index.js'
 import { errorHandler } from './middleware/errorHandler.js'
 

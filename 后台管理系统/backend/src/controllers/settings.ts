@@ -1,15 +1,15 @@
 import { Request, Response } from 'express'
 import { promises as fs } from 'fs'
 import path from 'path'
-import { config } from '../config/index.js'
+import config = require('../config/index')
 import type { ApiResponse } from '../types/index.js'
 
 // 系统设置（内存中，实际应该持久化）
 let systemSettings = {
   apiUrl: config.mainApi.url,
-  databasePath: config.database.path,
-  chunkSize: config.knowledgeBase.chunkSize,
-  chunkOverlap: config.knowledgeBase.chunkOverlap,
+  databasePath: config.database.host,
+  chunkSize: 500,
+  chunkOverlap: 50,
 }
 
 export async function getSettings(req: Request, res: Response<ApiResponse<typeof systemSettings>>): Promise<void> {
