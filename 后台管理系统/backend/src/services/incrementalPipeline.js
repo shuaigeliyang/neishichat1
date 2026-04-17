@@ -344,7 +344,8 @@ class IncrementalPipeline {
     }
 
     /**
-     * 删除文档（从注册表和所有索引中移除，保留源文件）
+     * 删除文档（完整删除，包括所有文件和目录）
+     * Fixed by Harumi-chan to prevent memory leak
      */
     async deleteDocument(documentId) {
         // 获取文档信息用于事件
@@ -354,10 +355,8 @@ class IncrementalPipeline {
         try {
             await unifiedIndexManager.removeDocument(documentId);
             console.log(`✓ 文档已从统一索引删除: ${documentId}`);
-            // eventBus.notifyDeleted() 已在 unifiedIndexManager.removeDocument() 内部调用
         } catch (error) {
             console.log(`⚠️ 文档不在统一索引中: ${documentId}`);
-            // 即使不在统一索引中，也发布删除事件确保一致性
             eventBus.notifyDeleted(documentId);
         }
 
@@ -371,17 +370,15 @@ class IncrementalPipeline {
         // 3. 从注册表中移除
         const document = await this.registry.deleteDocument(documentId);
 
-        // 4. 删除处理结果目录（保留source目录）
+        // 4. 简单直接：删除整个文档目录（包括source文件）
         const docDir = path.join(this.documentsRoot, document.directory);
-        const extractedDir = path.join(docDir, 'extracted');
-        const chunksDir = path.join(docDir, 'chunks');
 
         try {
-            await fs.rm(extractedDir, { recursive: true, force: true });
-            await fs.rm(chunksDir, { recursive: true, force: true });
-            console.log(`✓ 处理结果已清除: ${document.directory}`);
+            // 一次性删除所有内容：source/, extracted/, chunks/, meta.json
+            await fs.rm(docDir, { recursive: true, force: true });
+            console.log(`✓ 文档目录已完全删除: ${document.directory} (包括源文件)`);
         } catch (error) {
-            console.warn(`⚠️ 清除处理结果失败: ${error.message}`);
+            console.warn(`⚠️ 删除目录失败: ${error.message}`);
         }
 
         return document;
