@@ -8,11 +8,11 @@ FROM node:18-alpine AS build
 WORKDIR /app
 
 # 安装前台依赖
-COPY 后台管理系统/frontend/package*.json ./
+COPY frontend/package*.json ./
 RUN npm install
 
 # 复制源代码并构建
-COPY 后台管理系统/frontend/ ./
+COPY frontend/ ./
 RUN npm run build
 
 # Nginx生产环境
@@ -22,7 +22,7 @@ FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # 复制nginx配置
-COPY 后台管理系统/backend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY backend/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
