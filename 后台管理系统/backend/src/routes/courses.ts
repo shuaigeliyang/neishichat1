@@ -1,13 +1,10 @@
 import { Router } from 'express'
-import {
-  getCourses,
-  getCourse,
-  createCourse,
-  updateCourse,
-  deleteCourse,
-} from '../controllers/courses.js'
+import { getCourses, getCourse, createCourse, updateCourse, deleteCourse } from '../controllers/courses.js'
+import { authMiddleware } from '../middleware/auth.js'
 
 const router = Router()
+
+router.use(authMiddleware)
 
 router.get('/', getCourses)
 router.get('/:id', getCourse)

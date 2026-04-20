@@ -13,6 +13,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
+import { dataApi } from '@/lib/api'
+import api from '@/lib/api'
 
 export default function CourseManager() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -24,7 +26,6 @@ export default function CourseManager() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // 表单相关状态
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingCourse, setEditingCourse] = useState<any>(null)
   const [formData, setFormData] = useState({
@@ -34,32 +35,26 @@ export default function CourseManager() {
     description: '',
   })
 
-  // 获取课程数据
   const fetchData = async () => {
     setLoading(true)
     setError(null)
-
     try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        pageSize: pageSize.toString(),
-        ...(searchQuery && { search: searchQuery })
+      const response = await dataApi.getCourses({
+        page,
+        pageSize,
+        search: searchQuery || undefined
       })
-
-      const response = await fetch(`/api/courses?${params}`)
-      const result = await response.json()
-
-      if (result.success) {
-        setData(result.data || [])
-        setTotal(result.total || 0)
+      if (response.data.success) {
+        setData(response.data.data || [])
+        setTotal(response.data.total || 0)
       } else {
-        setError(result.error || '获取数据失败')
+        setError(response.data.error || '获取数据失败')
         setData([])
         setTotal(0)
       }
     } catch (err: any) {
       console.error('请求失败:', err)
-      setError('网络错误: ' + err.message)
+      setError('网络错误')
       setData([])
       setTotal(0)
     } finally {
@@ -67,12 +62,10 @@ export default function CourseManager() {
     }
   }
 
-  // 当页码或搜索词变化时重新获取数据
   useEffect(() => {
     fetchData()
   }, [page, searchQuery])
 
-  // 重置表单
   const resetForm = () => {
     setFormData({
       course_code: '',
@@ -83,13 +76,11 @@ export default function CourseManager() {
     setEditingCourse(null)
   }
 
-  // 打开新增对话框
   const handleAdd = () => {
     resetForm()
     setDialogOpen(true)
   }
 
-  // 打开编辑对话框
   const handleEdit = (course: any) => {
     setEditingCourse(course)
     setFormData({
@@ -101,69 +92,45 @@ export default function CourseManager() {
     setDialogOpen(true)
   }
 
-  // 保存数据
   const handleSave = async () => {
-    // 表单验证
-    if (!formData.course_name.trim()) {
-      alert('请输入课程名称')
-      return
-    }
-    if (!formData.course_code.trim()) {
-      alert('请输入课程代码')
-      return
-    }
+    if (!formData.course_name.trim()) { alert('请输入课程名称'); return }
+    if (!formData.course_code.trim()) { alert('请输入课程代码'); return }
 
     try {
-      const url = editingCourse
-        ? `/api/courses/${editingCourse.course_id}`
-        : '/api/courses'
-
-      const method = editingCourse ? 'PUT' : 'POST'
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          credits: parseInt(formData.credits) || 0,
-        }),
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
+      const payload = {
+        ...formData,
+        credits: parseInt(formData.credits) || 0,
+      }
+      let response
+      if (editingCourse) {
+        response = await api.put(`/courses/${editingCourse.course_id}`, payload)
+      } else {
+        response = await api.post('/courses', payload)
+      }
+      if (response.data.success) {
         alert(editingCourse ? '修改成功！' : '新增成功！')
         setDialogOpen(false)
         fetchData()
       } else {
-        alert('操作失败：' + (result.error || '未知错误'))
+        alert('操作失败：' + (response.data.error || '未知错误'))
       }
     } catch (err: any) {
-      alert('操作失败：' + err.message)
+      alert('操作失败：' + (err.response?.data?.error || err.message))
     }
   }
 
-  // 删除数据
   const handleDelete = async (id: number) => {
     if (!confirm('确定要删除这条数据吗？')) return
-
     try {
-      const response = await fetch(`/api/courses/${id}`, {
-        method: 'DELETE',
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
+      const response = await api.delete(`/courses/${id}`)
+      if (response.data.success) {
         alert('删除成功！')
         fetchData()
       } else {
-        alert('删除失败：' + (result.error || '未知错误'))
+        alert('删除失败：' + (response.data.error || '未知错误'))
       }
     } catch (err: any) {
-      alert('删除失败：' + err.message)
+      alert('删除失败：' + (err.response?.data?.error || err.message))
     }
   }
 
@@ -171,17 +138,13 @@ export default function CourseManager() {
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">课程信息管理</h2>
-        <p className="text-muted-foreground">
-          管理课程信息，支持新增、编辑、删除操作（共{total}条数据）
-        </p>
+        <p className="text-muted-foreground">管理课程信息，支持新增、编辑、删除操作（共{total}条数据）</p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>课程列表</CardTitle>
-          <CardDescription>
-            管理课程基本信息，包括课程代码、课程名称、学分、课程描述等
-          </CardDescription>
+          <CardDescription>管理课程基本信息，包括课程代码、课程名称、学分等</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4 mb-4">
@@ -190,13 +153,12 @@ export default function CourseManager() {
               <Input
                 placeholder="搜索课程名称或代码..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => { setSearchQuery(e.target.value); setPage(1) }}
                 className="pl-10"
               />
             </div>
             <Button onClick={handleAdd}>
-              <Plus className="mr-2 h-4 w-4" />
-              新增课程
+              <Plus className="mr-2 h-4 w-4" />新增课程
             </Button>
           </div>
 
@@ -221,33 +183,27 @@ export default function CourseManager() {
                       <TableHead>课程代码</TableHead>
                       <TableHead>课程名称</TableHead>
                       <TableHead>学分</TableHead>
-                      <TableHead>课程描述</TableHead>
+                      <TableHead>教师</TableHead>
+                      <TableHead>学院</TableHead>
                       <TableHead>操作</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data && data.length > 0 ? (
-                      data.map((row: any) => (
+                    {data.length > 0 ? (
+                      data.map((row) => (
                         <TableRow key={row.course_id}>
                           <TableCell>{row.course_id}</TableCell>
                           <TableCell>{row.course_code}</TableCell>
                           <TableCell>{row.course_name}</TableCell>
                           <TableCell>{row.credits || '-'}</TableCell>
-                          <TableCell>{row.description || '-'}</TableCell>
+                          <TableCell>{row.teacher_name || '-'}</TableCell>
+                          <TableCell>{row.college_name || '-'}</TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                onClick={() => handleEdit(row)}
-                              >
+                              <Button size="icon" variant="ghost" onClick={() => handleEdit(row)}>
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                onClick={() => handleDelete(row.course_id)}
-                              >
+                              <Button size="icon" variant="ghost" onClick={() => handleDelete(row.course_id)}>
                                 <Trash2 className="h-4 w-4 text-destructive" />
                               </Button>
                             </div>
@@ -256,7 +212,7 @@ export default function CourseManager() {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center text-muted-foreground">
+                        <TableCell colSpan={7} className="text-center text-muted-foreground">
                           {error ? '数据加载失败' : '暂无数据'}
                         </TableCell>
                       </TableRow>
@@ -265,29 +221,14 @@ export default function CourseManager() {
                 </Table>
               </div>
 
-              {/* 分页 */}
               {total > pageSize && (
                 <div className="flex items-center justify-between mt-4">
                   <div className="text-sm text-muted-foreground">
                     共 {total} 条数据，第 {page} / {Math.ceil(total / pageSize)} 页
                   </div>
                   <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage(p => Math.max(1, p - 1))}
-                      disabled={page === 1}
-                    >
-                      上一页
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage(p => Math.min(Math.ceil(total / pageSize), p + 1))}
-                      disabled={page >= Math.ceil(total / pageSize)}
-                    >
-                      下一页
-                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>上一页</Button>
+                    <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(Math.ceil(total / pageSize), p + 1))} disabled={page >= Math.ceil(total / pageSize)}>下一页</Button>
                   </div>
                 </div>
               )}
@@ -296,70 +237,35 @@ export default function CourseManager() {
         </CardContent>
       </Card>
 
-      {/* 新增/编辑对话框 */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>
-              {editingCourse ? '编辑课程信息' : '新增课程'}
-            </DialogTitle>
-            <DialogDescription>
-              请填写课程信息，带*号的是必填项
-            </DialogDescription>
+            <DialogTitle>{editingCourse ? '编辑课程信息' : '新增课程'}</DialogTitle>
+            <DialogDescription>请填写课程信息，带*号的是必填项</DialogDescription>
           </DialogHeader>
-
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="course_code">课程代码 *</Label>
-                <Input
-                  id="course_code"
-                  value={formData.course_code}
-                  onChange={(e) => setFormData({ ...formData, course_code: e.target.value })}
-                  placeholder="例如: CS101"
-                />
+                <Input id="course_code" value={formData.course_code} onChange={(e) => setFormData({ ...formData, course_code: e.target.value })} placeholder="例如: CS101" />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="course_name">课程名称 *</Label>
-                <Input
-                  id="course_name"
-                  value={formData.course_name}
-                  onChange={(e) => setFormData({ ...formData, course_name: e.target.value })}
-                  placeholder="请输入课程名称"
-                />
+                <Input id="course_name" value={formData.course_name} onChange={(e) => setFormData({ ...formData, course_name: e.target.value })} placeholder="请输入课程名称" />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="credits">学分</Label>
-                <Input
-                  id="credits"
-                  type="number"
-                  value={formData.credits}
-                  onChange={(e) => setFormData({ ...formData, credits: e.target.value })}
-                  placeholder="请输入学分"
-                />
+                <Input id="credits" type="number" value={formData.credits} onChange={(e) => setFormData({ ...formData, credits: e.target.value })} placeholder="请输入学分" />
               </div>
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="description">课程描述</Label>
-              <Input
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="请输入课程描述"
-              />
+              <Input id="description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="请输入课程描述" />
             </div>
           </div>
-
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              取消
-            </Button>
-            <Button onClick={handleSave}>
-              {editingCourse ? '保存' : '新增'}
-            </Button>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>取消</Button>
+            <Button onClick={handleSave}>{editingCourse ? '保存' : '新增'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -1,0 +1,32 @@
+# ============================================
+# 教育系统智能体 - 前台服务（后端+前端）
+# 设计者：哈雷酱 (￣▽￣)／
+# ============================================
+
+FROM node:18-alpine as build
+
+WORKDIR /app
+
+# 先构建前端
+COPY frontend/package*.json ./
+RUN cd frontend && npm install
+
+COPY frontend/ ./
+RUN cd frontend && npm run build
+
+# 后端
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY backend/ ./
+
+# 复制前端构建产物
+COPY --from=0 /app/frontend/dist ./public
+
+EXPOSE 3000
+
+CMD ["node", "src/server.js"]

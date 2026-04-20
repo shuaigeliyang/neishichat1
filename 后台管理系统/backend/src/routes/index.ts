@@ -1,30 +1,24 @@
 import { Router } from 'express'
+import authRoutes from './auth.js'
 import statsRoutes from './stats.js'
 import studentRoutes from './students.js'
 import teacherRoutes from './teachers.js'
 import courseRoutes from './courses.js'
-import knowledgeRoutes from './knowledge.js'
-import knowledgeManagementRoutes from './knowledgeManagement.js'
-import settingsRoutes from './settings.js'
 import collegeRoutes from './colleges.js'
 import majorRoutes from './majors.js'
 import classRoutes from './classes.js'
-import documentRegistryRoutes from './documentRegistry.js'
-import unifiedRagRoutes from './unifiedRag.js'
+import documentRoutes from './documents.js'
 
 const router = Router()
 
+router.use('/auth', authRoutes)
 router.use('/stats', statsRoutes)
 router.use('/students', studentRoutes)
 router.use('/teachers', teacherRoutes)
 router.use('/courses', courseRoutes)
-router.use('/knowledge', knowledgeRoutes)
-router.use('/knowledge-management', knowledgeManagementRoutes)
-router.use('/documents', documentRegistryRoutes) // 文档管理API
-router.use('/rag', unifiedRagRoutes) // 新增：统一RAG问答API
-router.use('/settings', settingsRoutes)
 router.use('/colleges', collegeRoutes)
 router.use('/majors', majorRoutes)
 router.use('/classes', classRoutes)
+router.use('/documents', documentRoutes)
 
 export default router

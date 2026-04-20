@@ -1,0 +1,81 @@
+============================================
+  Start All Services - Manual Commands
+  Designer: Harumi-chan (￣▽￣)／
+============================================
+
+IMPORTANT: Execute in THIS ORDER!
+
+============================================
+Step 1: Python Embedding Service (Port 5001)
+============================================
+CD to project root:
+  cd E:\外包\教育系统智能体
+
+Using virtual environment (recommended):
+  .venv\Scripts\python.exe embedding_server.py
+
+OR using system Python:
+  python embedding_server.py
+
+WAIT for: "Embedding service is running on port 5001"
+Typical wait: 10-15 seconds
+
+============================================
+Step 2: Main Backend (Port 3000)
+============================================
+Open NEW terminal window, then:
+  cd E:\外包\教育系统智能体\主系统\backend
+  npm start
+
+WAIT for: "Server started successfully on port 3000"
+Typical wait: 8-10 seconds
+
+============================================
+Step 3: Admin Backend (Port 3005)
+============================================
+Open NEW terminal window, then:
+  cd E:\外包\教育系统智能体\后台管理系统\backend
+  npm start
+
+WAIT for: Server listening message
+Typical wait: 8-10 seconds
+
+============================================
+Step 4: Main Frontend (Port 5173)
+============================================
+Open NEW terminal window, then:
+  cd E:\外包\教育系统智能体\主系统\frontend
+  npm run dev
+
+WAIT for: "Local: http://localhost:5173/"
+Typical wait: 5-8 seconds
+
+============================================
+Step 5: Admin Frontend (Port 5176)
+============================================
+Open NEW terminal window, then:
+  cd E:\外包\教育系统智能体\后台管理系统\frontend
+  npm run dev
+
+WAIT for: "Local: http://localhost:5176/"
+Typical wait: 5-8 seconds
+
+============================================
+Verification
+============================================
+Open in browser:
+  - Main Frontend:  http://localhost:5173
+  - Admin Frontend: http://localhost:5176
+  - Main Backend:   http://localhost:3000/health
+  - Admin Backend:  http://localhost:3005/api/health
+  - Embedding:      http://localhost:5001/health
+
+============================================
+Tips
+============================================
+- Keep 5 terminal windows open to see logs
+- Python Embedding MUST start first (others depend on it)
+- If port already in use: check for existing processes
+- Check each window for errors before starting next service
+
+============================================

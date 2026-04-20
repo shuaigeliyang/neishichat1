@@ -20,6 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { dataApi } from '@/lib/api'
+import api from '@/lib/api'
 
 export default function TeacherManager() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -31,7 +33,6 @@ export default function TeacherManager() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // 表单相关状态
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingTeacher, setEditingTeacher] = useState<any>(null)
   const [formData, setFormData] = useState({
@@ -44,32 +45,26 @@ export default function TeacherManager() {
     title: '讲师',
   })
 
-  // 获取教师数据
   const fetchData = async () => {
     setLoading(true)
     setError(null)
-
     try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        pageSize: pageSize.toString(),
-        ...(searchQuery && { search: searchQuery })
+      const response = await dataApi.getTeachers({
+        page,
+        pageSize,
+        search: searchQuery || undefined
       })
-
-      const response = await fetch(`/api/teachers?${params}`)
-      const result = await response.json()
-
-      if (result.success) {
-        setData(result.data || [])
-        setTotal(result.total || 0)
+      if (response.data.success) {
+        setData(response.data.data || [])
+        setTotal(response.data.total || 0)
       } else {
-        setError(result.error || '获取数据失败')
+        setError(response.data.error || '获取数据失败')
         setData([])
         setTotal(0)
       }
     } catch (err: any) {
       console.error('请求失败:', err)
-      setError('网络错误: ' + err.message)
+      setError('网络错误')
       setData([])
       setTotal(0)
     } finally {
@@ -77,12 +72,10 @@ export default function TeacherManager() {
     }
   }
 
-  // 当页码或搜索词变化时重新获取数据
   useEffect(() => {
     fetchData()
   }, [page, searchQuery])
 
-  // 重置表单
   const resetForm = () => {
     setFormData({
       teacher_code: '',
@@ -96,13 +89,11 @@ export default function TeacherManager() {
     setEditingTeacher(null)
   }
 
-  // 打开新增对话框
   const handleAdd = () => {
     resetForm()
     setDialogOpen(true)
   }
 
-  // 打开编辑对话框
   const handleEdit = (teacher: any) => {
     setEditingTeacher(teacher)
     setFormData({
@@ -117,66 +108,41 @@ export default function TeacherManager() {
     setDialogOpen(true)
   }
 
-  // 保存数据
   const handleSave = async () => {
-    // 表单验证
-    if (!formData.name.trim()) {
-      alert('请输入姓名')
-      return
-    }
-    if (!formData.teacher_code.trim()) {
-      alert('请输入工号')
-      return
-    }
+    if (!formData.name.trim()) { alert('请输入姓名'); return }
+    if (!formData.teacher_code.trim()) { alert('请输入工号'); return }
 
     try {
-      const url = editingTeacher
-        ? `/api/teachers/${editingTeacher.teacher_id}`
-        : '/api/teachers'
-
-      const method = editingTeacher ? 'PUT' : 'POST'
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
+      let response
+      if (editingTeacher) {
+        response = await api.put(`/teachers/${editingTeacher.teacher_id}`, formData)
+      } else {
+        response = await api.post('/teachers', formData)
+      }
+      if (response.data.success) {
         alert(editingTeacher ? '修改成功！' : '新增成功！')
         setDialogOpen(false)
         fetchData()
       } else {
-        alert('操作失败：' + (result.error || '未知错误'))
+        alert('操作失败：' + (response.data.error || '未知错误'))
       }
     } catch (err: any) {
-      alert('操作失败：' + err.message)
+      alert('操作失败：' + (err.response?.data?.error || err.message))
     }
   }
 
-  // 删除数据
   const handleDelete = async (id: number) => {
     if (!confirm('确定要删除这条数据吗？')) return
-
     try {
-      const response = await fetch(`/api/teachers/${id}`, {
-        method: 'DELETE',
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
+      const response = await api.delete(`/teachers/${id}`)
+      if (response.data.success) {
         alert('删除成功！')
         fetchData()
       } else {
-        alert('删除失败：' + (result.error || '未知错误'))
+        alert('删除失败：' + (response.data.error || '未知错误'))
       }
     } catch (err: any) {
-      alert('删除失败：' + err.message)
+      alert('删除失败：' + (err.response?.data?.error || err.message))
     }
   }
 

@@ -1,0 +1,95 @@
+============================================
+  Stop All Services - Manual Commands
+  Designer: Harumi-chan (￣▽￣)／
+============================================
+
+Method 1: Find and Kill by Port (RECOMMENDED)
+============================================
+
+Open Command Prompt (cmd) and execute:
+
+1. Check Python Embedding (Port 5001):
+   netstat -ano | findstr :5001
+   If found, note the PID (last column), then:
+   taskkill /F /PID <PID>
+
+2. Check Main Backend (Port 3000):
+   netstat -ano | findstr :3000
+   If found, note the PID, then:
+   taskkill /F /PID <PID>
+
+3. Check Admin Backend (Port 3005):
+   netstat -ano | findstr :3005
+   If found, note the PID, then:
+   taskkill /F /PID <PID>
+
+4. Check Main Frontend (Port 5173):
+   netstat -ano | findstr :5173
+   If found, note the PID, then:
+   taskkill /F /PID <PID>
+
+5. Check Admin Frontend (Port 5176):
+   netstat -ano | findstr :5176
+   If found, note the PID, then:
+   taskkill /F /PID <PID>
+
+============================================
+Method 2: Kill All Node and Python Processes
+============================================
+
+WARNING: This will kill ALL Node.js and Python processes!
+
+Open Command Prompt (cmd) and execute:
+
+1. Kill all Node.js:
+   taskkill /F /IM node.exe
+
+2. Kill all Python:
+   taskkill /F /IM python.exe
+
+3. Verify all processes are gone:
+   tasklist | findstr "node.exe"
+   tasklist | findstr "python.exe"
+
+============================================
+Method 3: Close Terminal Windows
+============================================
+
+Simply close all terminal windows where services are running:
+- Python Embedding window
+- Main Backend window
+- Admin Backend window
+- Main Frontend window
+- Admin Frontend window
+
+Note: Some processes may remain after closing windows.
+Use Method 1 or 2 to ensure cleanup.
+
+============================================
+Verification
+============================================
+
+Check that all ports are free:
+  netstat -ano | findstr ":5001"
+  netstat -ano | findstr ":3000"
+  netstat -ano | findstr ":3005"
+  netstat -ano | findstr ":5173"
+  netstat -ano | findstr ":5176"
+
+All should return empty (no output).
+
+============================================
+Common Issues
+============================================
+
+Q: "Access Denied" when killing process
+A: Run Command Prompt as Administrator
+
+Q: "The process cannot be killed"
+A: Close the terminal window first, then try again
+
+Q: Port still in use after killing process
+A: Wait 5-10 seconds, Windows needs time to release the port
+   If still in use, restart your computer
+
+============================================

@@ -8,10 +8,15 @@
 
 import fs from 'fs/promises';
 import path from 'path';
+import { fileURLToPath } from 'url';
+import { v4 as uuidv4 } from 'uuid';
 import DocumentRegistry from '../services/documentRegistry.js';
 import IncrementalPipeline from '../services/incrementalPipeline.js';
 import IndexManager from '../services/indexManager.js';
 import unifiedIndexManager from '../services/unifiedIndexManager.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const registry = new DocumentRegistry();
 const pipeline = new IncrementalPipeline();
@@ -125,6 +130,67 @@ export async function registerDocument(req, res) {
         });
     } catch (error) {
         console.error('注册文档失败:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+}
+
+/**
+ * 上传并注册文档（兼容前端上传功能）
+ */
+export async function uploadDocument(req, res) {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, error: '请上传文件' });
+        }
+
+        const { name, description, tags } = req.body;
+
+        // 使用UUID文件名
+        const ext = path.extname(req.file.originalname);
+        const uniqueName = `${uuidv4()}${ext}`;
+
+        // 注册文档
+        const document = await registry.registerDocument({
+            name: name || path.basename(req.file.originalname, ext),
+            displayName: name,
+            description: description || '',
+            tags: tags ? (Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim())) : [],
+            sourceFiles: [{
+                fileName: uniqueName,
+                originalName: req.file.originalname,
+                fileType: ext,
+                fileSize: req.file.size,
+                uploadedAt: new Date().toISOString()
+            }]
+        });
+
+        // 将上传的文件移动到文档目录
+        const UPLOAD_DIR = path.resolve(__dirname, '../../../../相关文档');
+        const sourceDir = path.join(UPLOAD_DIR, document.directory, 'source');
+        const destPath = path.join(sourceDir, uniqueName);
+
+        try {
+            await fs.mkdir(sourceDir, { recursive: true });
+            await fs.rename(req.file.path, destPath);
+            console.log(`✓ 文件已移动到: ${destPath}`);
+        } catch (error) {
+            console.warn(`⚠ 移动文件失败: ${error.message}，文件保留在原位置`);
+            // 仍然移动到上传目录的根目录
+            const rootDest = path.join(UPLOAD_DIR, uniqueName);
+            try {
+                await fs.rename(req.file.path, rootDest);
+            } catch {}
+        }
+
+        res.json({
+            success: true,
+            data: document,
+            message: '文档上传成功，请开始处理'
+        });
+    } catch (error) {
+        if (req.file?.path) {
+            try { await fs.unlink(req.file.path); } catch {}
+        }
         res.status(500).json({ success: false, error: error.message });
     }
 }

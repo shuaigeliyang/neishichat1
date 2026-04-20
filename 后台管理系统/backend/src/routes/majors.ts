@@ -1,18 +1,14 @@
 import { Router } from 'express'
-import {
-  getMajors,
-  getMajorById,
-  createMajor,
-  updateMajor,
-  deleteMajor,
-} from '../controllers/majors.js'
+import { getMajors, createMajor, updateMajor, deleteMajor } from '../controllers/majors.js'
+import { authMiddleware } from '../middleware/auth.js'
 
 const router = Router()
 
+router.use(authMiddleware)
+
 router.get('/', getMajors)
-router.get('/:id', getMajorById)
 router.post('/', createMajor)
-router.put('/:id', updateMajor as any)
+router.put('/:id', updateMajor)
 router.delete('/:id', deleteMajor)
 
 export default router

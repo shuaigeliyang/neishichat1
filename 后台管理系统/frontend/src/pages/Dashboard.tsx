@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Database, BookOpen, Users, GraduationCap, Loader2 } from 'lucide-react'
+import { Database, BookOpen, Users, GraduationCap, Loader2, Building } from 'lucide-react'
+import { dataApi } from '@/lib/api'
 
 interface StatCardProps {
   title: string
@@ -31,21 +32,21 @@ function StatCard({ title, value, description, icon, loading }: StatCardProps) {
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
-    totalStudents: 0,
-    totalTeachers: 0,
-    totalCourses: 0,
-    totalClasses: 0
+    students: 0,
+    teachers: 0,
+    courses: 0,
+    colleges: 0,
+    majors: 0,
+    classes: 0
   })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch('/api/stats')
-        const result = await response.json()
-
-        if (result.success) {
-          setStats(result.data)
+        const response = await dataApi.getStats()
+        if (response.data.success && response.data.data) {
+          setStats(response.data.data as typeof stats)
         }
       } catch (error) {
         console.error('获取统计数据失败:', error)
@@ -62,35 +63,49 @@ export default function Dashboard() {
       <div>
         <h2 className="text-3xl font-bold tracking-tight">系统概览</h2>
         <p className="text-muted-foreground">
-          查看系统整体运行状态和数据统计（实时数据）
+          查看系统整体运行状态和数据统计
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <StatCard
           title="学生总数"
-          value={stats.totalStudents}
+          value={stats.students}
           description="在校学生数量"
           icon={<Users className="h-4 w-4 text-muted-foreground" />}
           loading={loading}
         />
         <StatCard
           title="教师总数"
-          value={stats.totalTeachers}
+          value={stats.teachers}
           description="在职教师数量"
           icon={<GraduationCap className="h-4 w-4 text-muted-foreground" />}
           loading={loading}
         />
         <StatCard
           title="课程总数"
-          value={stats.totalCourses}
+          value={stats.courses}
           description="开设课程数量"
           icon={<BookOpen className="h-4 w-4 text-muted-foreground" />}
           loading={loading}
         />
         <StatCard
+          title="学院总数"
+          value={stats.colleges}
+          description="教学学院数量"
+          icon={<Building className="h-4 w-4 text-muted-foreground" />}
+          loading={loading}
+        />
+        <StatCard
+          title="专业总数"
+          value={stats.majors}
+          description="开设专业数量"
+          icon={<Database className="h-4 w-4 text-muted-foreground" />}
+          loading={loading}
+        />
+        <StatCard
           title="班级总数"
-          value={stats.totalClasses}
+          value={stats.classes}
           description="教学班级数量"
           icon={<Database className="h-4 w-4 text-muted-foreground" />}
           loading={loading}
@@ -122,7 +137,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-4">
                 <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium">加载真实数据（541个学生）</p>
+                  <p className="text-sm font-medium">加载数据统计</p>
                   <p className="text-xs text-muted-foreground">刚刚</p>
                 </div>
               </div>
@@ -159,10 +174,10 @@ export default function Dashboard() {
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm">数据同步</span>
+                <span className="text-sm">认证状态</span>
                 <span className="flex items-center gap-2 text-sm">
                   <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                  实时
+                  已认证
                 </span>
               </div>
             </div>

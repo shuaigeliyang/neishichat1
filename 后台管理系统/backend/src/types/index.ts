@@ -1,4 +1,16 @@
-// 数据类型定义 - 基于真实数据库结构
+export interface ApiResponse<T = unknown> {
+  success: boolean
+  data?: T
+  error?: string
+  message?: string
+}
+
+export interface PaginatedResponse<T = unknown> extends ApiResponse<T[]> {
+  total: number
+  page: number
+  pageSize: number
+}
+
 export interface Student {
   student_id: number
   student_code: string
@@ -7,90 +19,70 @@ export interface Student {
   class_id: number
   phone?: string
   email?: string
-  enrollment_date?: string
-  status?: string
-  password?: string
-  created_at?: string
+  enrollment_date: string
+  status: string
+  class_name?: string
+  major_name?: string
+  college_name?: string
 }
 
 export interface Teacher {
   teacher_id: number
   teacher_code: string
   name: string
-  gender?: string
+  gender: string
   college_id: number
-  title?: string
   phone?: string
   email?: string
-  status?: number
-  password?: string
-  created_at?: string
+  title: string
+  college_name?: string
 }
 
 export interface Course {
   course_id: number
   course_code: string
   course_name: string
-  course_type?: string
-  credits?: number
-  total_hours?: number
-  status?: number
-  created_at?: string
-}
-
-export interface Class {
-  class_id: number
-  class_name: string
-  major_id: number
+  teacher_id: number
   college_id: number
-  grade?: string
-  status?: number
+  credits: number
+  semester: string
+  teacher_name?: string
+  college_name?: string
 }
 
 export interface College {
   college_id: number
+  college_code: string
   college_name: string
-  dean?: string
+  dean_name?: string
   phone?: string
-  status?: number
+  email?: string
 }
 
 export interface Major {
   major_id: number
+  major_code: string
   major_name: string
   college_id: number
-  status?: number
+  degree_type: string
+  college_name?: string
 }
 
-export interface KnowledgeFile {
+export interface Class {
+  class_id: number
+  class_code: string
+  class_name: string
+  major_id: number
+  enrollment_year: number
+  student_count?: number
+  major_name?: string
+  college_name?: string
+}
+
+export interface AdminUser {
   id: number
-  filename: string
-  file_type: string
-  file_size: number
-  chunk_count: number
-  upload_time: string
-  status: 'processing' | 'completed' | 'failed'
-  description?: string
-}
-
-export interface ApiResponse<T = any> {
-  success: boolean
-  data?: T
-  message?: string
-  error?: string
-}
-
-export interface PaginatedResponse<T = any> extends ApiResponse<T[]> {
-  total: number
-  page: number
-  pageSize: number
-}
-
-export interface DatabaseStats {
-  totalStudents: number
-  totalTeachers: number
-  totalCourses: number
-  totalClasses: number
-  knowledgeFiles: number
-  totalChunks: number
+  username: string
+  password_hash: string
+  role: 'admin' | 'superadmin'
+  created_at: string
 }

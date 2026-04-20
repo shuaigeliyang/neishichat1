@@ -1,0 +1,28 @@
+# ============================================
+# 教育系统智能体 - Docker部署配置
+# 设计者：哈雷酱 (￣▽￣)／
+# ============================================
+
+# Python Embedding服务
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# 安装系统依赖
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# 复制requirements并安装
+COPY backend/requirements-embedding.txt .
+RUN pip install --no-cache-dir -r requirements-embedding.txt
+
+# 复制embedding服务
+COPY backend/local_embedding_service.py .
+
+# 暴露端口
+EXPOSE 5001
+
+# 启动命令
+CMD ["python", "local_embedding_service.py"]

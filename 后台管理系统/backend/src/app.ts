@@ -1,10 +1,9 @@
 import express from 'express'
 import cors from 'cors'
-import config = require('./config/index')
 import apiRoutes from './routes/index.js'
 import { errorHandler } from './middleware/errorHandler.js'
 
-export function createApp(): express.Application {
+export function createApp() {
   const app = express()
 
   // 中间件

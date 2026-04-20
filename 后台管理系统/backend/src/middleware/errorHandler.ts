@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import type { ApiResponse } from '../types/index.js'
+import { ApiResponse } from '../types/index.js'
 
 export function errorHandler(
   err: Error,
@@ -7,12 +7,11 @@ export function errorHandler(
   res: Response<ApiResponse>,
   next: NextFunction
 ): void {
-  console.error('Error:', err)
+  console.error('[Error]', err.message)
+  console.error('[Stack]', err.stack)
 
-  const response: ApiResponse = {
+  res.status(500).json({
     success: false,
-    error: err.message || 'Internal server error',
-  }
-
-  res.status(500).json(response)
+    error: process.env.NODE_ENV === 'production' ? '服务器内部错误' : err.message,
+  })
 }

@@ -2,11 +2,11 @@ import { Request, Response } from 'express'
 import { executeQuery, executeOne, executeUpdate } from '../utils/db.js'
 import type { ApiResponse, PaginatedResponse, Student } from '../types/index.js'
 
-export async function getStudents(req: Request, res: Response<PaginatedResponse<Student>>): Promise<void> {
+export async function getStudents(req: Request, res: Response<PaginatedResponse<Student>>) {
   try {
     const page = parseInt(req.query.page as string) || 1
     const pageSize = parseInt(req.query.pageSize as string) || 10
-    const search = req.query.search as string || ''
+    const search = (req.query.search as string) || ''
 
     let query = `
       SELECT s.*, c.class_name, m.major_name, col.college_name
@@ -15,7 +15,7 @@ export async function getStudents(req: Request, res: Response<PaginatedResponse<
       LEFT JOIN majors m ON c.major_id = m.major_id
       LEFT JOIN colleges col ON m.college_id = col.college_id
     `
-    const params: any[] = []
+    const params: unknown[] = []
 
     if (search) {
       query += ' WHERE s.name LIKE ? OR s.student_code LIKE ?'
@@ -24,156 +24,90 @@ export async function getStudents(req: Request, res: Response<PaginatedResponse<
 
     query += ' ORDER BY s.student_id DESC'
 
-    // 获取总数
     const countQuery = `SELECT COUNT(*) as count FROM students s ${search ? 'WHERE s.name LIKE ? OR s.student_code LIKE ?' : ''}`
     const countResult = await executeQuery<{ count: number }>(countQuery, search ? params : [])
     const total = countResult[0]?.count || 0
 
-    // 获取分页数据
     const offset = (page - 1) * pageSize
     const paginatedQuery = `${query} LIMIT ${pageSize} OFFSET ${offset}`
     const data = await executeQuery<Student>(paginatedQuery, params)
 
-    res.json({
-      success: true,
-      data,
-      total,
-      page,
-      pageSize,
-    })
+    res.json({ success: true, data, total, page, pageSize })
   } catch (error) {
-    console.error('Error fetching students:', error)
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch students',
-      data: [],
-      total: 0,
-      page: 1,
-      pageSize: 10,
-    })
+    console.error('[Students] Fetch error:', error)
+    res.status(500).json({ success: false, error: '获取学生列表失败', data: [], total: 0, page: 1, pageSize: 10 })
   }
 }
 
-export async function getStudent(req: Request, res: Response<ApiResponse<Student>>): Promise<void> {
+export async function getStudent(req: Request, res: Response<ApiResponse<Student>>) {
   try {
     const { id } = req.params
     const student = await executeOne<Student>(
       `SELECT s.*, c.class_name, m.major_name, col.college_name
-       FROM students s
-       LEFT JOIN classes c ON s.class_id = c.class_id
+       FROM students s LEFT JOIN classes c ON s.class_id = c.class_id
        LEFT JOIN majors m ON c.major_id = m.major_id
        LEFT JOIN colleges col ON m.college_id = col.college_id
-       WHERE s.student_id = ?`,
-      [id]
+       WHERE s.student_id = ?`, [id]
     )
 
     if (!student) {
-      res.status(404).json({
-        success: false,
-        error: 'Student not found',
-      })
+      res.status(404).json({ success: false, error: '学生不存在' })
       return
     }
 
-    res.json({
-      success: true,
-      data: student,
-    })
+    res.json({ success: true, data: student })
   } catch (error) {
-    console.error('Error fetching student:', error)
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch student',
-    })
+    res.status(500).json({ success: false, error: '获取学生信息失败' })
   }
 }
 
-export async function createStudent(req: Request, res: Response<ApiResponse<Student>>): Promise<void> {
+export async function createStudent(req: Request, res: Response<ApiResponse<Student>>) {
   try {
-    const data = req.body
+    const { student_code, name, gender = '男', class_id, phone, email, enrollment_date, status = '在读' } = req.body
 
-    const result = await executeUpdate(`
-      INSERT INTO students (student_code, name, gender, class_id, phone, email, enrollment_date, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      data.student_code,
-      data.name,
-      data.gender || '男',
-      data.class_id,
-      data.phone || null,
-      data.email || null,
-      data.enrollment_date || new Date().toISOString().split('T')[0],
-      data.status || '在读',
-    ])
+    if (!student_code || !name || !class_id) {
+      res.status(400).json({ success: false, error: '学号、姓名和班级不能为空' })
+      return
+    }
 
-    // 获取新插入的学生
-    const studentId = result.insertId
-    const student = await executeOne<Student>('SELECT * FROM students WHERE student_id = ?', [studentId])
+    const result = await executeUpdate(
+      `INSERT INTO students (student_code, name, gender, class_id, phone, email, enrollment_date, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [student_code, name, gender, class_id, phone || null, email || null, enrollment_date || new Date().toISOString().split('T')[0], status]
+    )
 
-    res.json({
-      success: true,
-      data: student,
-      message: 'Student created successfully',
-    })
+    const student = await executeOne<Student>('SELECT * FROM students WHERE student_id = ?', [result.insertId])
+    res.json({ success: true, data: student, message: '添加成功' })
   } catch (error: any) {
-    console.error('Error creating student:', error)
-    res.status(500).json({
-      success: false,
-      error: error.code === 'ER_DUP_ENTRY' ? '学号已存在' : 'Failed to create student',
-    })
+    console.error('[Students] Create error:', error)
+    res.status(500).json({ success: false, error: error.code === 'ER_DUP_ENTRY' ? '学号已存在' : '添加失败' })
   }
 }
 
-export async function updateStudent(req: Request, res: Response<ApiResponse<Student>>): Promise<void> {
+export async function updateStudent(req: Request, res: Response<ApiResponse<Student>>) {
   try {
     const { id } = req.params
-    const data = req.body
+    const { student_code, name, gender, class_id, phone, email, status } = req.body
 
-    await executeUpdate(`
-      UPDATE students
-      SET student_code = ?, name = ?, gender = ?, class_id = ?, phone = ?, email = ?, status = ?
-      WHERE student_id = ?
-    `, [
-      data.student_code,
-      data.name,
-      data.gender,
-      data.class_id,
-      data.phone,
-      data.email,
-      data.status,
-      id,
-    ])
+    await executeUpdate(
+      `UPDATE students SET student_code = ?, name = ?, gender = ?, class_id = ?, phone = ?, email = ?, status = ? WHERE student_id = ?`,
+      [student_code, name, gender, class_id, phone, email, status, id]
+    )
 
     const student = await executeOne<Student>('SELECT * FROM students WHERE student_id = ?', [id])
-
-    res.json({
-      success: true,
-      data: student,
-      message: 'Student updated successfully',
-    })
+    res.json({ success: true, data: student, message: '更新成功' })
   } catch (error: any) {
-    console.error('Error updating student:', error)
-    res.status(500).json({
-      success: false,
-      error: error.code === 'ER_DUP_ENTRY' ? '学号已存在' : 'Failed to update student',
-    })
+    console.error('[Students] Update error:', error)
+    res.status(500).json({ success: false, error: error.code === 'ER_DUP_ENTRY' ? '学号已存在' : '更新失败' })
   }
 }
 
-export async function deleteStudent(req: Request, res: Response<ApiResponse<void>>): Promise<void> {
+export async function deleteStudent(req: Request, res: Response<ApiResponse<void>>) {
   try {
     const { id } = req.params
     await executeUpdate('DELETE FROM students WHERE student_id = ?', [id])
-
-    res.json({
-      success: true,
-      message: 'Student deleted successfully',
-    })
+    res.json({ success: true, message: '删除成功' })
   } catch (error) {
-    console.error('Error deleting student:', error)
-    res.status(500).json({
-      success: false,
-      error: 'Failed to delete student',
-    })
+    res.status(500).json({ success: false, error: '删除失败' })
   }
 }

@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "createdAt": "2026-04-11T07:10:09.488Z",
-  "updatedAt": "2026-04-14T06:41:14.520Z",
+  "updatedAt": "2026-04-18T13:14:45.013Z",
   "config": {
     "indexName": "retrieval_index",
     "embeddingModel": "embedding-3",
@@ -11,60 +11,60 @@
   },
   "documents": [
     {
-      "documentId": "doc_1775891409495_a3bac578",
-      "name": "2025年本科学生手册-定 (1)",
-      "displayName": "2025年本科学生手册-定 (1)",
-      "description": "自动扫描发现的文档",
-      "status": "pending",
-      "priority": 1,
-      "tags": [],
-      "sourceFiles": [
-        {
-          "fileName": "2025年本科学生手册-定 (1).pdf",
-          "fileType": ".pdf",
-          "fileSize": 21208769,
-          "uploadedAt": "2026-03-25T02:27:08.211Z",
-          "autoDetected": true
-        }
-      ],
-      "statistics": {
-        "totalPages": 0,
-        "totalChunks": 0,
-        "indexedChunks": 0,
-        "fileSize": 21208769
-      },
-      "processingHistory": [],
-      "indexedAt": null,
-      "updatedAt": "2026-03-25T02:27:08.211Z",
-      "autoDetected": true
-    },
-    {
-      "documentId": "doc_1775891409706_8034112e",
+      "documentId": "doc_student_handbook",
       "name": "2025年本科学生手册-定",
       "displayName": "2025年本科学生手册-定",
-      "description": "自动扫描发现的文档",
+      "description": "学生手册官方文档",
       "status": "indexed",
       "priority": 2,
-      "tags": [],
+      "tags": [
+        "学生手册",
+        "政策",
+        "管理"
+      ],
       "sourceFiles": [
         {
           "fileName": "2025年本科学生手册-定.docx",
           "fileType": ".docx",
           "fileSize": 3061408,
-          "uploadedAt": "2026-03-30T14:23:07.095Z",
-          "autoDetected": true
+          "uploadedAt": "2026-03-30T14:23:07.095Z"
         }
       ],
+      "directory": "doc_doc_1775891409706_8034112e",
       "statistics": {
         "totalPages": 128,
-        "totalChunks": 252,
-        "indexedChunks": 252,
+        "totalChunks": 256,
+        "indexedChunks": 256,
         "fileSize": 3061408
       },
-      "processingHistory": [],
-      "indexedAt": "2026-04-11T07:10:09.706Z",
-      "updatedAt": "2026-03-30T14:23:07.095Z",
-      "autoDetected": true
+      "processingHistory": [
+        {
+          "step": "extract",
+          "status": "completed",
+          "timestamp": "2026-04-18T19:00:00.000Z",
+          "details": "提取文档内容完成"
+        },
+        {
+          "step": "chunk",
+          "status": "completed",
+          "timestamp": "2026-04-18T19:00:00.000Z",
+          "details": "生成256个文档块"
+        },
+        {
+          "step": "embed",
+          "status": "completed",
+          "timestamp": "2026-04-18T19:00:00.000Z",
+          "details": "向量生成完成"
+        },
+        {
+          "step": "register",
+          "status": "completed",
+          "timestamp": "2026-04-18T19:00:00.000Z",
+          "details": "文档已成功索引"
+        }
+      ],
+      "indexedAt": "2026-04-18T19:00:00.000Z",
+      "updatedAt": "2026-04-18T21:05:00.000Z"
     },
     {
       "documentId": "doc_1775900105128_7fb98a3c",
@@ -77,7 +77,6 @@
       "sourceFiles": [
         {
           "fileName": "7da05d61-f52d-4d3f-96e2-0735f0467822.docx",
-          "originalName": "åºäºWebçå® ç©é¢å»ç³»ç»çè®¾è®¡ä¸å®ç°20260329.docx",
           "fileType": ".docx",
           "fileSize": 6722195,
           "uploadedAt": "2026-04-11T09:35:05.127Z"
@@ -93,33 +92,21 @@
       "processingHistory": [
         {
           "step": "extract",
-          "status": "processing",
-          "timestamp": "2026-04-11T09:35:09.088Z",
-          "details": "正在提取文档内容"
-        },
-        {
-          "step": "extract",
           "status": "completed",
           "timestamp": "2026-04-11T09:35:09.298Z",
           "details": "提取243页内容"
         },
         {
           "step": "chunk",
-          "status": "processing",
-          "timestamp": "2026-04-11T09:35:09.301Z",
-          "details": "正在进行智能分块"
-        },
-        {
-          "step": "chunk",
           "status": "completed",
           "timestamp": "2026-04-11T09:35:09.367Z",
-          "details": "生成16个文档块 (general)"
+          "details": "生成16个文档块"
         },
         {
           "step": "embed",
-          "status": "processing",
-          "timestamp": "2026-04-11T09:35:09.369Z",
-          "details": "正在生成向量"
+          "status": "completed",
+          "timestamp": "2026-04-11T09:35:13.548Z",
+          "details": "向量生成完成"
         },
         {
           "step": "register",
@@ -142,7 +129,6 @@
       "sourceFiles": [
         {
           "fileName": "cd79ef40-a308-44a9-91cb-707a77736999.docx",
-          "originalName": "å®éªä¸-20241022008-ææ´.docx",
           "fileType": ".docx",
           "fileSize": 183728,
           "uploadedAt": "2026-04-14T06:41:08.612Z"
@@ -158,33 +144,21 @@
       "processingHistory": [
         {
           "step": "extract",
-          "status": "processing",
-          "timestamp": "2026-04-14T06:41:12.336Z",
-          "details": "正在提取文档内容"
-        },
-        {
-          "step": "extract",
           "status": "completed",
           "timestamp": "2026-04-14T06:41:12.828Z",
           "details": "提取224页内容"
         },
         {
           "step": "chunk",
-          "status": "processing",
-          "timestamp": "2026-04-14T06:41:12.834Z",
-          "details": "正在进行智能分块"
-        },
-        {
-          "step": "chunk",
           "status": "completed",
           "timestamp": "2026-04-14T06:41:12.923Z",
-          "details": "生成3个文档块 (general)"
+          "details": "生成3个文档块"
         },
         {
           "step": "embed",
-          "status": "processing",
-          "timestamp": "2026-04-14T06:41:12.929Z",
-          "details": "正在生成向量"
+          "status": "completed",
+          "timestamp": "2026-04-14T06:41:14.520Z",
+          "details": "向量生成完成"
         },
         {
           "step": "register",

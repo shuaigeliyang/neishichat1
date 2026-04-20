@@ -1,0 +1,52 @@
+{
+  "documentId": "doc_1775891409706_8034112e",
+  "name": "2025年本科学生手册-定",
+  "displayName": "2025年本科学生手册-定",
+  "description": "学生手册官方文档",
+  "status": "indexed",
+  "priority": 2,
+  "tags": ["学生手册", "政策", "管理"],
+  "sourceFiles": [
+    {
+      "fileName": "2025年本科学生手册-定.docx",
+      "fileType": ".docx",
+      "fileSize": 3061408,
+      "uploadedAt": "2026-03-30T14:23:07.095Z"
+    }
+  ],
+  "directory": "doc_doc_1775891409706_8034112e",
+  "statistics": {
+    "totalPages": 128,
+    "totalChunks": 252,
+    "indexedChunks": 252,
+    "fileSize": 3061408
+  },
+  "processingHistory": [
+    {
+      "step": "extract",
+      "status": "completed",
+      "timestamp": "2026-04-18T19:00:00.000Z",
+      "details": "提取文档内容完成"
+    },
+    {
+      "step": "chunk",
+      "status": "completed",
+      "timestamp": "2026-04-18T19:00:00.000Z",
+      "details": "生成252个文档块"
+    },
+    {
+      "step": "embed",
+      "status": "completed",
+      "timestamp": "2026-04-18T19:00:00.000Z",
+      "details": "向量生成完成"
+    },
+    {
+      "step": "register",
+      "status": "completed",
+      "timestamp": "2026-04-18T19:00:00.000Z",
+      "details": "文档已成功索引"
+    }
+  ],
+  "indexedAt": "2026-04-18T19:00:00.000Z",
+  "updatedAt": "2026-04-18T13:00:00.000Z"
+}

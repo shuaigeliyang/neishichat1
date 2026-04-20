@@ -1,49 +1,29 @@
 import { Request, Response } from 'express'
 import { executeQuery } from '../utils/db.js'
-import type { ApiResponse, DatabaseStats } from '../types/index.js'
+import type { ApiResponse } from '../types/index.js'
 
-export async function getStats(req: Request, res: Response<ApiResponse<DatabaseStats>>): Promise<void> {
+export async function getStats(req: Request, res: Response<ApiResponse<object>>) {
   try {
-    // 获取学生总数
-    const studentResult = await executeQuery<{ count: number }>('SELECT COUNT(*) as count FROM students')
-    const totalStudents = studentResult[0]?.count || 0
-
-    // 获取教师总数
-    const teacherResult = await executeQuery<{ count: number }>('SELECT COUNT(*) as count FROM teachers')
-    const totalTeachers = teacherResult[0]?.count || 0
-
-    // 获取课程总数
-    const courseResult = await executeQuery<{ count: number }>('SELECT COUNT(*) as count FROM courses')
-    const totalCourses = courseResult[0]?.count || 0
-
-    // 获取班级总数
-    const classResult = await executeQuery<{ count: number }>('SELECT COUNT(*) as count FROM classes')
-    const totalClasses = classResult[0]?.count || 0
-
-    // 获取知识库文件数量（从主系统获取）
-    const knowledgeFiles = 0 // TODO: 从主系统API获取
-
-    // 获取文档块总数
-    const totalChunks = 0 // TODO: 从主系统API获取
-
-    const stats: DatabaseStats = {
-      totalStudents,
-      totalTeachers,
-      totalCourses,
-      totalClasses,
-      knowledgeFiles,
-      totalChunks,
-    }
+    const [students] = await executeQuery<{ count: number }>('SELECT COUNT(*) as count FROM students')
+    const [teachers] = await executeQuery<{ count: number }>('SELECT COUNT(*) as count FROM teachers')
+    const [courses] = await executeQuery<{ count: number }>('SELECT COUNT(*) as count FROM courses')
+    const [colleges] = await executeQuery<{ count: number }>('SELECT COUNT(*) as count FROM colleges')
+    const [majors] = await executeQuery<{ count: number }>('SELECT COUNT(*) as count FROM majors')
+    const [classes] = await executeQuery<{ count: number }>('SELECT COUNT(*) as count FROM classes')
 
     res.json({
       success: true,
-      data: stats,
+      data: {
+        students: students?.count || 0,
+        teachers: teachers?.count || 0,
+        courses: courses?.count || 0,
+        colleges: colleges?.count || 0,
+        majors: majors?.count || 0,
+        classes: classes?.count || 0,
+      },
     })
   } catch (error) {
-    console.error('Error fetching stats:', error)
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch statistics',
-    })
+    console.error('[Stats] Error:', error)
+    res.status(500).json({ success: false, error: '获取统计数据失败' })
   }
 }

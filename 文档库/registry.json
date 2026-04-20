@@ -1,11 +1,84 @@
 {
   "version": "2.0",
-  "createdAt": "2026-04-11T04:49:33.359Z",
-  "updatedAt": "2026-04-11T06:11:13.147Z",
+  "createdAt": "2026-04-18T19:20:00.000Z",
+  "updatedAt": "2026-04-18T19:20:00.000Z",
   "config": {
     "indexName": "unified_policy_index",
     "embeddingModel": "embedding-3",
     "rerankModel": "rerank"
   },
-  "documents": []
+  "documents": [
+    {
+      "documentId": "doc_student_handbook",
+      "name": "2025年本科学生手册-定",
+      "displayName": "2025年本科学生手册",
+      "description": "学生手册官方文档",
+      "status": "indexed",
+      "tags": ["学生手册", "政策", "管理"],
+      "sourceFiles": [
+        {
+          "fileName": "2025年本科学生手册-定.docx",
+          "fileType": ".docx",
+          "fileSize": 3061408,
+          "uploadedAt": "2026-03-30T14:23:07.095Z"
+        }
+      ],
+      "statistics": {
+        "totalPages": 4735,
+        "totalChunks": 252,
+        "indexedChunks": 252,
+        "fileSize": 3061408
+      },
+      "indexedAt": "2026-04-18T19:00:00.000Z",
+      "updatedAt": "2026-04-18T19:00:00.000Z"
+    },
+    {
+      "documentId": "doc_1775900105128_7fb98a3c",
+      "name": "基于Web的宠物领养系统的设计与实现20260329",
+      "displayName": "基于Web的宠物领养系统的设计与实现",
+      "description": "",
+      "status": "indexed",
+      "tags": [],
+      "sourceFiles": [
+        {
+          "fileName": "7da05d61-f52d-4d3f-96e2-0735f0467822.docx",
+          "fileType": ".docx",
+          "fileSize": 6722195,
+          "uploadedAt": "2026-04-11T09:35:05.127Z"
+        }
+      ],
+      "statistics": {
+        "totalPages": 243,
+        "totalChunks": 16,
+        "indexedChunks": 16,
+        "fileSize": 6722195
+      },
+      "indexedAt": "2026-04-11T09:35:13.548Z",
+      "updatedAt": "2026-04-11T09:35:13.548Z"
+    },
+    {
+      "documentId": "doc_1776148868613_8c1eb506",
+      "name": "实验三-20241022008-李洋",
+      "displayName": "实验三-20241022008-李洋",
+      "description": "",
+      "status": "indexed",
+      "tags": [],
+      "sourceFiles": [
+        {
+          "fileName": "cd79ef40-a308-44a9-91cb-707a77736999.docx",
+          "fileType": ".docx",
+          "fileSize": 183728,
+          "uploadedAt": "2026-04-14T06:41:08.612Z"
+        }
+      ],
+      "statistics": {
+        "totalPages": 224,
+        "totalChunks": 3,
+        "indexedChunks": 3,
+        "fileSize": 183728
+      },
+      "indexedAt": "2026-04-14T06:41:14.520Z",
+      "updatedAt": "2026-04-14T06:41:14.520Z"
+    }
+  ]
 }

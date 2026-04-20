@@ -1,18 +1,14 @@
 import { Router } from 'express'
-import {
-  getClasses,
-  getClassById,
-  createClass,
-  updateClass,
-  deleteClass,
-} from '../controllers/classes.js'
+import { getClasses, createClass, updateClass, deleteClass } from '../controllers/classes.js'
+import { authMiddleware } from '../middleware/auth.js'
 
 const router = Router()
 
+router.use(authMiddleware)
+
 router.get('/', getClasses)
-router.get('/:id', getClassById)
 router.post('/', createClass)
-router.put('/:id', updateClass as any)
+router.put('/:id', updateClass)
 router.delete('/:id', deleteClass)
 
 export default router

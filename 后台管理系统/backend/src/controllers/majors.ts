@@ -1,121 +1,84 @@
-import { executeQuery } from '../utils/db'
+import { Request, Response } from 'express'
+import { executeQuery, executeOne, executeUpdate } from '../utils/db.js'
+import type { ApiResponse, PaginatedResponse, Major } from '../types/index.js'
 
-export async function getMajors() {
+export async function getMajors(req: Request, res: Response<PaginatedResponse<Major>>) {
   try {
-    const query = `
-      SELECT
-        m.major_id,
-        m.major_name,
-        m.college_id,
-        c.college_name
-      FROM majors m
-      LEFT JOIN colleges c ON m.college_id = c.college_id
-      ORDER BY m.major_id
-    `
-    const majors = await executeQuery(query)
+    const page = parseInt(req.query.page as string) || 1
+    const pageSize = parseInt(req.query.pageSize as string) || 50
+    const search = (req.query.search as string) || ''
 
-    return {
-      success: true,
-      data: majors,
-      total: majors.length
+    let query = `SELECT m.*, c.college_name FROM majors m LEFT JOIN colleges c ON m.college_id = c.college_id`
+    const params: unknown[] = []
+
+    if (search) {
+      query += ' WHERE m.major_name LIKE ? OR m.major_code LIKE ?'
+      params.push(`%${search}%`, `%${search}%`)
     }
-  } catch (error: any) {
-    console.error('获取专业列表失败:', error)
-    return {
-      success: false,
-      error: error.message || '获取专业列表失败',
-      data: [],
-      total: 0
-    }
+
+    query += ' ORDER BY m.major_id DESC'
+
+    const countResult = await executeQuery<{ count: number }>(
+      `SELECT COUNT(*) as count FROM majors m ${search ? 'WHERE m.major_name LIKE ? OR m.major_code LIKE ?' : ''}`,
+      search ? params : []
+    )
+    const total = countResult[0]?.count || 0
+
+    const offset = (page - 1) * pageSize
+    const data = await executeQuery<Major>(`${query} LIMIT ${pageSize} OFFSET ${offset}`, params)
+
+    res.json({ success: true, data, total, page, pageSize })
+  } catch (error) {
+    res.status(500).json({ success: false, error: '获取专业列表失败', data: [], total: 0, page: 1, pageSize: 10 })
   }
 }
 
-export async function getMajorById(id: number) {
+export async function createMajor(req: Request, res: Response<ApiResponse<Major>>) {
   try {
-    const query = `
-      SELECT
-        m.major_id,
-        m.major_name,
-        m.college_id,
-        c.college_name
-      FROM majors m
-      LEFT JOIN colleges c ON m.college_id = c.college_id
-      WHERE m.major_id = ?
-    `
-    const majors = await executeQuery(query, [id])
+    const { major_code, major_name, college_id, degree_type } = req.body
 
-    if (majors.length === 0) {
-      return {
-        success: false,
-        error: '专业不存在',
-        data: null
-      }
+    if (!major_code || !major_name || !college_id || !degree_type) {
+      res.status(400).json({ success: false, error: '请填写所有必填字段' })
+      return
     }
 
-    return {
-      success: true,
-      data: majors[0]
-    }
+    const result = await executeUpdate(
+      'INSERT INTO majors (major_code, major_name, college_id, degree_type) VALUES (?, ?, ?, ?)',
+      [major_code, major_name, college_id, degree_type]
+    )
+
+    const major = await executeOne<Major>('SELECT * FROM majors WHERE major_id = ?', [result.insertId])
+    res.json({ success: true, data: major, message: '添加成功' })
   } catch (error: any) {
-    console.error('获取专业详情失败:', error)
-    return {
-      success: false,
-      error: error.message || '获取专业详情失败',
-      data: null
-    }
+    console.error('[Majors] Create error:', error)
+    res.status(500).json({ success: false, error: error.code === 'ER_DUP_ENTRY' ? '专业代码已存在' : '添加失败' })
   }
 }
 
-export async function createMajor(data: { major_name: string; college_id: number }) {
+export async function updateMajor(req: Request, res: Response<ApiResponse<Major>>) {
   try {
-    const query = 'INSERT INTO majors (major_name, college_id) VALUES (?, ?)'
-    await executeQuery(query, [data.major_name, data.college_id])
+    const { id } = req.params
+    const { major_code, major_name, college_id, degree_type } = req.body
 
-    return {
-      success: true,
-      message: '专业创建成功'
-    }
+    await executeUpdate(
+      'UPDATE majors SET major_code = ?, major_name = ?, college_id = ?, degree_type = ? WHERE major_id = ?',
+      [major_code, major_name, college_id, degree_type, id]
+    )
+
+    const major = await executeOne<Major>('SELECT * FROM majors WHERE major_id = ?', [id])
+    res.json({ success: true, data: major, message: '更新成功' })
   } catch (error: any) {
-    console.error('创建专业失败:', error)
-    return {
-      success: false,
-      error: error.message || '创建专业失败'
-    }
+    console.error('[Majors] Update error:', error)
+    res.status(500).json({ success: false, error: error.code === 'ER_DUP_ENTRY' ? '专业代码已存在' : '更新失败' })
   }
 }
 
-export async function updateMajor(id: number, data: { major_name: string; college_id: number }) {
+export async function deleteMajor(req: Request, res: Response<ApiResponse<void>>) {
   try {
-    const query = 'UPDATE majors SET major_name = ?, college_id = ? WHERE major_id = ?'
-    await executeQuery(query, [data.major_name, data.college_id, id])
-
-    return {
-      success: true,
-      message: '专业更新成功'
-    }
-  } catch (error: any) {
-    console.error('更新专业失败:', error)
-    return {
-      success: false,
-      error: error.message || '更新专业失败'
-    }
-  }
-}
-
-export async function deleteMajor(id: number) {
-  try {
-    const query = 'DELETE FROM majors WHERE major_id = ?'
-    await executeQuery(query, [id])
-
-    return {
-      success: true,
-      message: '专业删除成功'
-    }
-  } catch (error: any) {
-    console.error('删除专业失败:', error)
-    return {
-      success: false,
-      error: error.message || '删除专业失败'
-    }
+    const { id } = req.params
+    await executeUpdate('DELETE FROM majors WHERE major_id = ?', [id])
+    res.json({ success: true, message: '删除成功' })
+  } catch (error) {
+    res.status(500).json({ success: false, error: '删除失败' })
   }
 }

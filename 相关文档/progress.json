@@ -229,5 +229,20 @@
       "pages": 224,
       "chunks": 3
     }
+  },
+  "task_39839d71-c5f0-4158-9f77-abf71bcd1738": {
+    "taskId": "task_39839d71-c5f0-4158-9f77-abf71bcd1738",
+    "status": "completed",
+    "progress": 100,
+    "currentStep": "完成",
+    "totalSteps": 6,
+    "completedSteps": 6,
+    "startTime": "2026-04-18T13:14:22.694Z",
+    "error": null,
+    "endTime": "2026-04-18T13:14:25.611Z",
+    "result": {
+      "pages": 109,
+      "chunks": 3
+    }
   }
 }

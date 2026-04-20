@@ -1,0 +1,127 @@
+# ============================================
+# 教育系统智能体 - Docker Compose配置
+# 设计者：哈雷酱 (￣▽￣)／
+# 适用于阿里云ECS一键部署
+# ============================================
+
+version: '3.8'
+
+services:
+  # ============================================
+  # Nginx反向代理（统一入口）
+  # ============================================
+  nginx:
+    image: nginx:alpine
+    container_name: edu-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./ssl:/etc/nginx/ssl  # SSL证书（可选）
+    depends_on:
+      - frontend-backend
+      - admin-frontend
+      - admin-backend
+    networks:
+      - edu-network
+    restart: unless-stopped
+
+  # ============================================
+  # Python Embedding服务（向量嵌入）
+  # ============================================
+  embedding-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.embedding
+    container_name: edu-embedding
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./backend/local_embedding_cache.json:/app/local_embedding_cache.json
+      - ./backend/embedding_cache.json:/app/embedding_cache.json
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - edu-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+
+  # ============================================
+  # 前台服务（Node.js后端 + React前端）
+  # ============================================
+  frontend-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: edu-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      # 配置文件
+      - ./backend/.env.production:/app/.env
+      # 索引文件
+      - ./文档库:/app/文档库
+      - ./backend/embedding_cache.json:/app/embedding_cache.json
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    networks:
+      - edu-network
+    depends_on:
+      - embedding-service
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  # ============================================
+  # 后台管理后端服务
+  # ============================================
+  admin-backend:
+    build:
+      context: ./后台管理系统
+      dockerfile: ../../Dockerfile.admin.backend
+    container_name: edu-admin-backend
+    ports:
+      - "3005:3005"
+    volumes:
+      - ./后台管理系统/backend/.env.production:/app/.env
+      - ./后台管理系统/uploads:/app/uploads
+      - ./文档库:/app/文档库
+    environment:
+      - NODE_ENV=production
+      - PORT=3005
+    networks:
+      - edu-network
+    depends_on:
+      - embedding-service
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  # ============================================
+  # 后台管理前端（Nginx）
+  # ============================================
+  admin-frontend:
+    build:
+      context: ./后台管理系统
+      dockerfile: ../../Dockerfile.admin.frontend
+    container_name: edu-admin-frontend
+    networks:
+      - edu-network
+    restart: unless-stopped
+
+networks:
+  edu-network:
+    driver: bridge
+
+volumes:
+  uploads:
+    driver: local

@@ -1,12 +1,23 @@
 import { Request, Response } from 'express'
 import { executeQuery, executeOne, executeUpdate } from '../utils/db.js'
-import type { ApiResponse, PaginatedResponse, Course } from '../types/index.js'
+import type { ApiResponse, PaginatedResponse } from '../types/index.js'
 
-export async function getCourses(req: Request, res: Response<PaginatedResponse<Course>>): Promise<void> {
+interface Course {
+  course_id: number
+  course_code: string
+  course_name: string
+  course_type?: string
+  credits?: number
+  total_hours?: number
+  status?: number
+  created_at?: string
+}
+
+export async function getCourses(req: Request, res: Response<PaginatedResponse<Course>>) {
   try {
     const page = parseInt(req.query.page as string) || 1
     const pageSize = parseInt(req.query.pageSize as string) || 10
-    const search = req.query.search as string || ''
+    const search = (req.query.search as string) || ''
 
     let query = 'SELECT * FROM courses'
     const params: any[] = []
@@ -18,144 +29,81 @@ export async function getCourses(req: Request, res: Response<PaginatedResponse<C
 
     query += ' ORDER BY course_id DESC'
 
-    // 获取总数
-    const countQuery = `SELECT COUNT(*) as count FROM courses ${search ? 'WHERE course_name LIKE ? OR course_code LIKE ?' : ''}`
-    const countResult = await executeQuery<{ count: number }>(countQuery, search ? params : [])
+    const countResult = await executeQuery<{ count: number }>('SELECT COUNT(*) as count FROM courses')
     const total = countResult[0]?.count || 0
 
-    // 获取分页数据
     const offset = (page - 1) * pageSize
-    const paginatedQuery = `${query} LIMIT ${pageSize} OFFSET ${offset}`
-    const data = await executeQuery<Course>(paginatedQuery, params)
+    const data = await executeQuery<Course>(`${query} LIMIT ${pageSize} OFFSET ${offset}`, params)
 
-    res.json({
-      success: true,
-      data,
-      total,
-      page,
-      pageSize,
-    })
+    res.json({ success: true, data, total, page, pageSize })
   } catch (error) {
-    console.error('Error fetching courses:', error)
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch courses',
-      data: [],
-      total: 0,
-      page: 1,
-      pageSize: 10,
-    })
+    console.error('[Courses] getCourses error:', error)
+    res.status(500).json({ success: false, error: '获取课程列表失败', data: [], total: 0, page: 1, pageSize: 10 })
   }
 }
 
-export async function getCourse(req: Request, res: Response<ApiResponse<Course>>): Promise<void> {
+export async function getCourse(req: Request, res: Response<ApiResponse<Course>>) {
   try {
     const { id } = req.params
     const course = await executeOne<Course>('SELECT * FROM courses WHERE course_id = ?', [id])
 
     if (!course) {
-      res.status(404).json({
-        success: false,
-        error: 'Course not found',
-      })
+      res.status(404).json({ success: false, error: '课程不存在' })
       return
     }
 
-    res.json({
-      success: true,
-      data: course,
-    })
+    res.json({ success: true, data: course })
   } catch (error) {
-    console.error('Error fetching course:', error)
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch course',
-    })
+    res.status(500).json({ success: false, error: '获取课程信息失败' })
   }
 }
 
-export async function createCourse(req: Request, res: Response<ApiResponse<Course>>): Promise<void> {
+export async function createCourse(req: Request, res: Response<ApiResponse<Course>>) {
   try {
-    const data = req.body
+    const { course_code, course_name, course_type, credits, total_hours } = req.body
 
-    const result = await executeUpdate(`
-      INSERT INTO courses (course_code, course_name, course_type, credits, total_hours, status)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `, [
-      data.course_code,
-      data.course_name,
-      data.course_type || null,
-      data.credits || null,
-      data.total_hours || null,
-      data.status !== undefined ? data.status : 1,
-    ])
+    if (!course_code || !course_name) {
+      res.status(400).json({ success: false, error: '课程代码和名称不能为空' })
+      return
+    }
 
-    const courseId = result.insertId
-    const course = await executeOne<Course>('SELECT * FROM courses WHERE course_id = ?', [courseId])
+    const result = await executeUpdate(
+      'INSERT INTO courses (course_code, course_name, course_type, credits, total_hours) VALUES (?, ?, ?, ?, ?)',
+      [course_code, course_name, course_type || null, credits || null, total_hours || null]
+    )
 
-    res.json({
-      success: true,
-      data: course,
-      message: 'Course created successfully',
-    })
+    const course = await executeOne<Course>('SELECT * FROM courses WHERE course_id = ?', [result.insertId])
+    res.json({ success: true, data: course, message: '添加成功' })
   } catch (error: any) {
-    console.error('Error creating course:', error)
-    res.status(500).json({
-      success: false,
-      error: error.code === 'ER_DUP_ENTRY' ? '课程代码已存在' : 'Failed to create course',
-    })
+    console.error('[Courses] Create error:', error)
+    res.status(500).json({ success: false, error: error.code === 'ER_DUP_ENTRY' ? '课程代码已存在' : '添加失败' })
   }
 }
 
-export async function updateCourse(req: Request, res: Response<ApiResponse<Course>>): Promise<void> {
+export async function updateCourse(req: Request, res: Response<ApiResponse<Course>>) {
   try {
     const { id } = req.params
-    const data = req.body
+    const { course_code, course_name, course_type, credits, total_hours, status } = req.body
 
-    await executeUpdate(`
-      UPDATE courses
-      SET course_code = ?, course_name = ?, course_type = ?, credits = ?, total_hours = ?, status = ?
-      WHERE course_id = ?
-    `, [
-      data.course_code,
-      data.course_name,
-      data.course_type,
-      data.credits,
-      data.total_hours,
-      data.status,
-      id,
-    ])
+    await executeUpdate(
+      'UPDATE courses SET course_code = ?, course_name = ?, course_type = ?, credits = ?, total_hours = ?, status = ? WHERE course_id = ?',
+      [course_code, course_name, course_type, credits, total_hours, status, id]
+    )
 
     const course = await executeOne<Course>('SELECT * FROM courses WHERE course_id = ?', [id])
-
-    res.json({
-      success: true,
-      data: course,
-      message: 'Course updated successfully',
-    })
+    res.json({ success: true, data: course, message: '更新成功' })
   } catch (error: any) {
-    console.error('Error updating course:', error)
-    res.status(500).json({
-      success: false,
-      error: error.code === 'ER_DUP_ENTRY' ? '课程代码已存在' : 'Failed to update course',
-    })
+    console.error('[Courses] Update error:', error)
+    res.status(500).json({ success: false, error: error.code === 'ER_DUP_ENTRY' ? '课程代码已存在' : '更新失败' })
   }
 }
 
-export async function deleteCourse(req: Request, res: Response<ApiResponse<void>>): Promise<void> {
+export async function deleteCourse(req: Request, res: Response<ApiResponse<void>>) {
   try {
     const { id } = req.params
     await executeUpdate('DELETE FROM courses WHERE course_id = ?', [id])
-
-    res.json({
-      success: true,
-      message: 'Course deleted successfully',
-    })
+    res.json({ success: true, message: '删除成功' })
   } catch (error) {
-    console.error('Error deleting course:', error)
-    res.status(500).json({
-      success: false,
-      error: 'Failed to delete course',
-    })
+    res.status(500).json({ success: false, error: '删除失败' })
   }
 }

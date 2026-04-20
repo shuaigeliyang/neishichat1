@@ -1,73 +1,111 @@
 @echo off
-chcp 65001 >nul
-echo ========================================
-echo   教育系统智能体 - 一键启动脚本
-echo   设计师：哈雷酱 (￣▽￣)ﾉ
-echo ========================================
+chcp 65001 >/dev/null
+echo ================================================
+echo         Start All Services
+echo ================================================
 echo.
 
-:: 检查端口5001是否已被占用
-netstat -ano | findstr ":5001" | findstr "LISTENING" >nul
-if %errorlevel% equ 0 (
-    echo [INFO] Python Embedding服务已在运行 (port 5001)
-    goto :check_backend
-)
+set PROJECT_DIR=%~dp0
+set PYTHON_ENV=%PROJECT_DIR%.venv\Scripts\python.exe
+set EMBEDDING_SCRIPT=%PROJECT_DIR%embedding_server.py
 
-:: 启动Python Embedding服务
-echo [1/2] 启动Python Embedding服务...
-cd /d "%~dp0backend"
-start "Python Embedding" cmd /c "python local_embedding_service.py"
-echo [OK] Python Embedding服务启动中（需要等待模型加载，约30秒）
-timeout /t 5 /nobreak >nul
+echo [1/5] Starting Python Embedding Service (port 5001)...
+tasklist | findstr "python.exe" >/dev/null 2>&1
+if errorlevel 1 (
+    if exist "%PYTHON_ENV%" (
+        echo   Using virtual environment: %PYTHON_ENV%
+        start "Embedding-Service" cmd /k "%PYTHON_ENV% %EMBEDDING_SCRIPT%"
+    ) else (
+        echo   Using system Python
+        start "Embedding-Service" cmd /k "python %EMBEDDING_SCRIPT%"
+    )
+    echo   Waiting 15 seconds for service to initialize...
+    timeout /t 15 /nobreak >/dev/null
 
-:: 检查Python服务是否启动成功
-:check_python
-curl -s http://localhost:5001/health >nul 2>&1
-if %errorlevel% equ 0 (
-    echo [OK] Python Embedding服务已就绪
+    echo   Checking health...
+    curl -s http://localhost:5001/health >/dev/null 2>&1
+    if %errorlevel% equ 0 (
+        echo   [SUCCESS] Python Embedding Service is running!
+    ) else (
+        echo   [WARNING] Service may not be ready yet.
+    )
 ) else (
-    echo [INFO] 等待服务启动...
-    timeout /t 3 /nobreak >nul
-    goto :check_python
+    echo   [INFO] Python already running.
 )
 
-:check_backend
-:: 检查端口3000是否已被占用
-netstat -ano | findstr ":3000" | findstr "LISTENING" >nul
-if %errorlevel% equ 0 (
-    echo [INFO] 后端服务已在运行 (port 3000)
-    goto :done
-)
-
-:: 启动后端服务
 echo.
-echo [2/2] 启动后端服务...
-cd /d "%~dp0backend"
-start "Backend API" cmd /c "npm start"
-echo [OK] 后端服务启动中...
+echo [2/5] Starting Main Backend (port 3000)...
+netstat -ano | findstr ":3000" | findstr "LISTENING" >/dev/null
+if errorlevel 1 (
+    start "Main-Backend" cmd /k "cd /d %PROJECT_DIR%主系统\backend && npm start"
+    echo   Waiting 10 seconds...
+    timeout /t 10 /nobreak >/dev/null
 
-:: 等待后端启动
-timeout /t 5 /nobreak >nul
-
-:: 检查后端服务
-curl -s http://localhost:3000/health >nul 2>&1
-if %errorlevel% equ 0 (
-    echo [OK] 后端服务已就绪
+    echo   Checking health...
+    curl -s http://localhost:3000/health >/dev/null 2>&1
+    if %errorlevel% equ 0 (
+        echo   [SUCCESS] Main Backend is running!
+    ) else (
+        echo   [WARNING] Backend may not be ready yet.
+    )
 ) else (
-    echo [INFO] 等待后端启动...
-    timeout /t 3 /nobreak >nul
+    echo   [INFO] Main Backend already running.
 )
 
-:done
 echo.
-echo ========================================
-echo   启动完成！
-echo ========================================
+echo [3/5] Starting Admin Backend (port 3005)...
+netstat -ano | findstr ":3005" | findstr "LISTENING" >/dev/null
+if errorlevel 1 (
+    start "Admin-Backend" cmd /k "cd /d %PROJECT_DIR%后台管理系统\backend && npm start"
+    echo   Waiting 10 seconds...
+    timeout /t 10 /nobreak >/dev/null
+
+    echo   [INFO] Admin Backend started (check window for errors).
+) else (
+    echo   [INFO] Admin Backend already running.
+)
+
 echo.
-echo   Python Embedding: http://localhost:5001
-echo   后端API:          http://localhost:3000
-echo   健康检查:         http://localhost:3000/health
+echo [4/5] Starting Main Frontend (port 5173)...
+netstat -ano | findstr ":5173" | findstr "LISTENING" >/dev/null
+if errorlevel 1 (
+    start "Main-Frontend" cmd /k "cd /d %PROJECT_DIR%主系统\frontend && npm run dev"
+    echo   Waiting 8 seconds...
+    timeout /t 8 /nobreak >/dev/null
+) else (
+    echo   [INFO] Main Frontend already running.
+)
+
 echo.
-echo   按任意键打开浏览器测试...
-pause >nul
-start http://localhost:3000
+echo [5/5] Starting Admin Frontend (port 5176)...
+netstat -ano | findstr ":5176" | findstr "LISTENING" >/dev/null
+if errorlevel 1 (
+    start "Admin-Frontend" cmd /k "cd /d %PROJECT_DIR%后台管理系统\frontend && npm run dev"
+    echo   Waiting 8 seconds...
+    timeout /t 8 /nobreak >/dev/null
+) else (
+    echo   [INFO] Admin Frontend already running.
+)
+
+echo.
+echo ================================================
+echo         All Services Started!
+echo ================================================
+echo.
+echo Service URLs:
+echo   - Main Frontend:     http://localhost:5173
+echo   - Admin Frontend:    http://localhost:5176
+echo   - Main Backend:      http://localhost:3000
+echo   - Admin Backend:     http://localhost:3005
+echo   - Embedding Service: http://localhost:5001
+echo.
+echo Opening browsers...
+timeout /t 2 /nobreak >/dev/null
+start http://localhost:5173
+timeout /t 1 /nobreak >/dev/null
+start http://localhost:5176
+
+echo.
+echo Done! Check the service windows for any errors.
+echo.
+pause
