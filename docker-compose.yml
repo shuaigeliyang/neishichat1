@@ -8,6 +8,32 @@ version: '3.8'
 
 services:
   # ============================================
+  # MySQL数据库
+  # ============================================
+  mysql:
+    image: mysql:8.0
+    container_name: edu-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: edu123456
+      MYSQL_DATABASE: education_system
+      MYSQL_USER: edu_user
+      MYSQL_PASSWORD: edu123456
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/:/docker-entrypoint-initdb.d/
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - edu-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
   # Nginx反向代理（统一入口）
   # ============================================
   nginx:
@@ -69,9 +95,15 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=edu_user
+      - DB_PASSWORD=edu123456
+      - DB_NAME=education_system
     networks:
       - edu-network
     depends_on:
+      - mysql
       - embedding-service
     restart: unless-stopped
     deploy:
@@ -90,15 +122,20 @@ services:
     ports:
       - "3005:3005"
     volumes:
-      - ./后台管理系统/backend/.env.production:/app/.env
       - ./后台管理系统/uploads:/app/uploads
       - ./文档库:/app/文档库
     environment:
       - NODE_ENV=production
       - PORT=3005
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=edu_user
+      - DB_PASSWORD=edu123456
+      - DB_NAME=education_system
     networks:
       - edu-network
     depends_on:
+      - mysql
       - embedding-service
     restart: unless-stopped
     deploy:
@@ -123,5 +160,7 @@ networks:
     driver: bridge
 
 volumes:
+  mysql_data:
+    driver: local
   uploads:
     driver: local
