@@ -117,7 +117,7 @@ services:
   admin-backend:
     build:
       context: ./后台管理系统
-      dockerfile: ../../Dockerfile.admin.backend
+      dockerfile: Dockerfile.admin.backend
     container_name: edu-admin-backend
     ports:
       - "3005:3005"
@@ -149,7 +149,7 @@ services:
   admin-frontend:
     build:
       context: ./后台管理系统
-      dockerfile: ../../Dockerfile.admin.frontend
+      dockerfile: Dockerfile.admin.frontend
     container_name: edu-admin-frontend
     networks:
       - edu-network

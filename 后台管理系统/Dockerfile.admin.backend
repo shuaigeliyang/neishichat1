@@ -1,0 +1,31 @@
+# ============================================
+# 教育系统智能体 - 后台管理服务
+# 设计者：哈雷酱 (￣▽￣)／
+# ============================================
+
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# 复制package.json并安装依赖
+COPY 后台管理系统/backend/package*.json ./
+RUN npm install
+
+# 复制源代码
+COPY 后台管理系统/backend/ ./
+
+# 编译TypeScript
+RUN npm run build
+
+# 生产镜像
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
+RUN npm install --only=production
+
+EXPOSE 3005
+
+CMD ["node", "dist/index.js"]
