@@ -126,3 +126,23 @@ desktop.ini
 
 # node_modules（如果有前端构建）
 node_modules/
+
+# 本地备份文件
+*.backup
+*_backup*
+*.old.backup
+
+# neishichat_reference - 旧的参考资料目录
+neishichat_reference/
+
+# uploads - 用户上传文件
+后台管理系统/uploads/
+
+# frontend node_modules - Docker构建时不需上传
+后台管理系统/frontend/node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+# 大文件缓存
+embedding_cache.json.backup
+*.old.backup
